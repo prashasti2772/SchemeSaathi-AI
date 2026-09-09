@@ -1,0 +1,14 @@
+﻿services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set a random JWT_SECRET_KEY in your shell}
+      PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-http://localhost:8000}
+      CORS_ORIGINS: '["http://localhost:8000"]'
+    volumes:
+      - scheme-data:/data
+volumes:
+  scheme-data:
+

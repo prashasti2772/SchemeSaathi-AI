@@ -1,0 +1,73 @@
+# ===== Environment & Secrets =====
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# ===== Python (backend) =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+venv/
+env/
+ENV/
+.venv/
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+.coverage.*
+celerybeat-schedule
+celerybeat.pid
+
+# Alembic (keep versions, ignore local db files if any get created)
+*.sqlite3
+*.db
+
+# ===== Node / React / Vite (frontend) =====
+node_modules/
+dist/
+dist-ssr/
+build/
+.vite/
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ===== IDE / Editor =====
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# ===== OS junk =====
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== Logs =====
+*.log
+logs/
+
+# ===== Uploaded/generated files (if any local testing artifacts) =====
+/apps/backend/uploads/
+/apps/backend/create_tables.py
+/apps/backend/create_admin.py
+# Local review/test artifacts
+artifacts/
+**/test-results/
+**/playwright-report/
+debug-*.html
+district-*.html
+states-source.html
