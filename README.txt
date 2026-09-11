@@ -1,5 +1,7 @@
 # SchemeSaathi AI — SIH26092
 
+Latest repair details: [11 September update](docs/UPDATE_2026-09-11.md). Provider and hosting instructions: [PROVIDER_SETUP](docs/PROVIDER_SETUP.md).
+
 A working citizen prototype for **AI-Driven Scheme Matching for Marginalized Entrepreneurs**, based on the problem title and MoSJE context supplied by the team. This is a student project, not an official government service.
 
 ## What works
@@ -9,8 +11,8 @@ A working citizen prototype for **AI-Driven Scheme Matching for Marginalized Ent
 - Screening for age, income, gender, social category, disability, rural residence, business and state. SC and ST remain distinct.
 - State/district dropdowns from an offline NIC iGOD snapshot, refreshed 9 September 2026. A changed state clears the district; the server validates the pair.
 - Real citizen signup/login, hashed passwords, access tokens, SQLite persistence and staff authorization.
-- Chatbot with local keyword/TF-IDF retrieval and source-based answers. Gemini generation is optional.
-- Voice page with browser English speech and a Bhashini ASR → translation → scheme assistant → translation → TTS integration.
+- Chatbot with local keyword/BM25 retrieval and source-based answers. Gemini generation is optional.
+- Voice page with browser multilingual speech recognition and a Bhashini ASR → translation → scheme assistant → translation → TTS integration.
 - Customer care: private support tickets, staff replies, email and telephone links.
 - Explicit SMS opt-in/opt-out, staff campaign preview, and a disabled-by-default MSG91 adapter.
 - Production frontend build served by FastAPI, Docker image, persistent storage configuration and GitHub CI.
@@ -98,7 +100,7 @@ BHASHINI_PIPELINE_ID=your-authorized-pipeline-id
 
 Restart the backend. Open **Voice assistant**, choose **Bhashini**, select a language, record a question and stop. The browser creates mono 16-bit PCM WAV at 16 kHz. Recording is capped below 45 seconds. Microphone use requires HTTPS or localhost and permission.
 
-The backend discovers task service IDs and the inference endpoint from the pipeline configuration. Language/model access depends on your provider account. Missing credentials or provider failures return an error, never a fake transcript or audio. Browser mode remains available in supporting browsers and uses English answers.
+The backend discovers task service IDs and the inference endpoint from the pipeline configuration. Language/model access depends on your provider account. Missing credentials or provider failures return an error, never a fake transcript or audio. Browser microphone mode is available in supporting browsers. English answers work locally; other languages need Bhashini translation.
 
 Live Bhashini calls have **not** been verified without the team's credentials. See [Bhashini pipeline documentation](https://bhashini.gitbook.io/bhashini-apis/pipeline-compute-call).
 

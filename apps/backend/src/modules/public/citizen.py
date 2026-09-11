@@ -1,5 +1,6 @@
 """Persistent citizen accounts, support tickets and consent-based outreach."""
 import uuid
+from urllib.parse import urlsplit
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, EmailStr, Field
@@ -114,6 +115,17 @@ async def reply(ticket_id: str, payload: TicketReply, db: AsyncSession = Depends
 class Consent(BaseModel):
     consent: bool
 
+def sms_ready():
+    url = urlsplit(settings.PUBLIC_SITE_URL)
+    return bool(settings.SMS_LIVE_ENABLED and settings.MSG91_AUTH_KEY and settings.MSG91_TEMPLATE_ID
+                and settings.MSG91_SENDER_ID and url.scheme == "https" and url.hostname
+                and url.hostname not in {"localhost", "127.0.0.1"} and not url.hostname.endswith(".example"))
+
+@router.get("/sms-consent")
+async def consent_status(user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    row = await db.get(Subscription, str(user.id))
+    return {"consent": bool(row and row.consent), "mobile": user.mobile, "live_enabled": sms_ready()}
+
 @router.put("/sms-consent")
 async def consent(payload: Consent, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     if not user.mobile:
@@ -130,13 +142,13 @@ async def consent(payload: Consent, user: User = Depends(get_current_user), db: 
 async def preview(db: AsyncSession = Depends(get_db)):
     rows = (await db.execute(select(Subscription).where(Subscription.consent.is_(True), Subscription.last_sent.is_(None)).limit(100))).scalars().all()
     return {"recipients": len(rows), "message": f"Discover schemes for your business: {settings.PUBLIC_SITE_URL}",
-            "live_enabled": settings.SMS_LIVE_ENABLED, "status": "preview_only"}
+            "live_enabled": sms_ready(), "status": "preview_only"}
 
 @router.post("/outreach-send", dependencies=[Depends(require_any_staff)])
 @limiter.limit("1/minute")
 async def send_outreach(request: Request, db: AsyncSession = Depends(get_db)):
-    if not settings.SMS_LIVE_ENABLED or not settings.MSG91_AUTH_KEY or not settings.MSG91_TEMPLATE_ID:
-        raise HTTPException(503, "Live SMS is disabled. Configure MSG91 and an approved template first.")
+    if not sms_ready():
+        raise HTTPException(503, "Live SMS is disabled. Configure MSG91, an approved template and the public HTTPS website URL first.")
     # Atomically reserve a batch before the network call to prevent duplicate sends.
     pending = select(Subscription.user_id).where(Subscription.consent.is_(True), Subscription.last_sent.is_(None)).limit(100)
     rows = (await db.execute(update(Subscription).where(

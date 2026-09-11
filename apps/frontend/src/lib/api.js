@@ -42,13 +42,14 @@ export async function fetchMatchingSchemes(profilePayload) {
 
 /* Sends message and history to the SchemeSathi AI Chatbot (FAISS RAG + Gemini)
    and returns { reply: string, retrieved_schemes: array }. */
-export async function sendAssistantMessage(message, history = [], phoneNumber = null, profile = null) {
+export async function sendAssistantMessage(message, history = [], phoneNumber = null, profile = null, language = "en") {
   const response = await api.post("/public/self-service/assistant-chat", {
     message,
-    history,
+    language,
+    history: history.slice(-20),
     phone_number: phoneNumber || null,
     profile: profile || null,
-  });
+  }, { timeout: language === "en" ? 45000 : 150000 });
   return response.data;
 }
 
@@ -73,9 +74,9 @@ export async function searchSchemesSemantically(query, topK = 5) {
 }
 
 /* Fetches catalog schemes filtered by category or query */
-export async function fetchCatalogSchemes(query = "", limit = 50) {
+export async function fetchCatalogSchemes(query = "", limit = 50, offset = 0) {
   const response = await api.get("/eligibility/schemes", {
-    params: { query: query || undefined, limit },
+    params: { query: query || undefined, limit, offset },
   });
   return response.data;
 }

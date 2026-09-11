@@ -1,4 +1,5 @@
 from typing import Any, Optional
+import re
 from fastapi import APIRouter, Query
 from pydantic import BaseModel
 
@@ -71,18 +72,19 @@ def explain_best_scheme(payload: UserProfilePayload):
 
 
 @router.get("/schemes")
-def search_schemes(query: Optional[str] = None, limit: int = Query(20, ge=1, le=100)):
+def search_schemes(query: Optional[str] = Query(None, max_length=200), limit: int = Query(20, ge=1, le=100), offset: int = Query(0, ge=0)):
     """Searches or lists catalog schemes."""
     catalog = list(eligibility_service.scheme_catalog.values())
     if query:
-        q = query.lower()
+        tokens = re.findall(r"\w+", query.casefold())
         catalog = [
             s for s in catalog
-            if q in s.get("scheme_name", "").lower()
-            or q in s.get("description", "").lower()
-            or q in s.get("tags", "").lower()
+            if all(t in " ".join(str(s.get(k) or "") for k in
+                ("scheme_name", "description", "tags", "benefits", "eligibility")).casefold() for t in tokens)
         ]
     return {
         "total": len(catalog),
-        "schemes": catalog[:limit],
+        "schemes": catalog[offset:offset + limit],
+        "offset": offset,
+        "has_more": offset + limit < len(catalog),
     }

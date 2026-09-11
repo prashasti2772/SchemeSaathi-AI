@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import FormattedText from "./FormattedText";
 import Header from "../layout/Header";
 import { Footer } from "../layout";
-import { sendAssistantMessage } from "../../lib/api";
-import { useLanguage } from "../../lib/i18n.jsx";
+import { sendAssistantMessage, apiError } from "../../lib/api";
+import { useLanguage, LANGUAGES } from "../../lib/i18n.jsx";
 import { getUserItem, getCurrentUserId } from "../../lib/userStorage";
 
 import { FaMicrophone } from "react-icons/fa";
@@ -139,8 +139,9 @@ function FormattedContent({ text }) {
 }
 
 export default function AIAssistantPage() {
-  const { t } = useLanguage();
-  const [message, setMessage] = useState("");
+  const { t, language: preferredLanguage } = useLanguage();
+  const [chatLanguage, setChatLanguage] = useState(preferredLanguage || "en");
+  const [message, setMessage] = useState(new URLSearchParams(window.location.search).get("q") || "");
   const [messages, setMessages] = useState(() => {
     const saved = loadHistory();
     return saved.length > 0 ? saved : [WELCOME_MESSAGE];
@@ -172,12 +173,12 @@ export default function AIAssistantPage() {
     setIsSending(true);
 
     try {
-      const history = nextMessages
+      const history = messages
         .filter((m) => m !== WELCOME_MESSAGE && !m.content.startsWith("Sorry, I couldn't reach"))
         .map((m) => ({ role: m.role, content: m.content }));
 
       const profile = getStoredProfile();
-      const result = await sendAssistantMessage(text, history, getPhoneNumber(), profile);
+      const result = await sendAssistantMessage(text, history, getPhoneNumber(), profile, chatLanguage);
 
       setMessages((current) => [
         ...current,
@@ -194,7 +195,7 @@ export default function AIAssistantPage() {
         {
           role: "assistant",
           content:
-            "Sorry, I couldn't reach the SchemeSathi assistant service right now. Please check your connection and try again.",
+            apiError(error),
         },
       ]);
     } finally {
@@ -311,14 +312,14 @@ export default function AIAssistantPage() {
           {/* ================= STATS BADGE ================= */}
           <div className="mt-auto p-6 text-[10px] text-slate-400 border-t border-white/10">
             <p className="font-semibold text-slate-300">🏛️ SchemeSathi AI</p>
-            <p className="mt-1">Grounded in 650+ verified Central & State welfare schemes.</p>
+            <p className="mt-1">Searches the supplied scheme catalogue. Verify current official guidelines.</p>
           </div>
         </aside>
 
         {/* ============= MAIN CHAT AREA ============= */}
         <main className="flex min-w-0 flex-1 flex-col">
           {/* ============ CHAT HEADER =========== */}
-          <div className="px-7 pt-5 pb-3 border-b border-slate-100 sm:px-9 flex items-center justify-between">
+          <div className="px-7 pt-5 pb-3 border-b border-slate-100 sm:px-9 flex flex-wrap gap-3 items-center justify-between">
             <div>
               <h1
                 className="
@@ -329,6 +330,11 @@ export default function AIAssistantPage() {
                 "
               >
                 {t("assistant_title")}
+                <label className="ml-4 inline-block text-sm font-normal">Chat language
+                  <select className="ml-2 rounded border p-2" value={chatLanguage} disabled={isSending} onChange={e => {setChatLanguage(e.target.value); handleNewChat();}}>
+                    {LANGUAGES.map(l => <option key={l.code} value={l.code}>{l.label}</option>)}
+                  </select>
+                </label>
               </h1>
               <p
                 className="

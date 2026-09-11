@@ -1,7 +1,7 @@
 ﻿import base64
 import io
 import wave
-import asyncio
+import re
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
 from src.config.settings import settings
@@ -18,7 +18,7 @@ class VoiceInput(BaseModel):
 
 @router.get("/status")
 async def status():
-    return {"configured": bool(settings.BHASHINI_USER_ID and settings.BHASHINI_API_KEY),
+    return {"configured": bhashini_client.configured(),
             "provider": "bhashini", "languages": sorted(LANGUAGES)}
 
 @router.post("/chat")
@@ -26,14 +26,14 @@ async def status():
 async def voice_chat(request: Request, payload: VoiceInput):
     if payload.language not in LANGUAGES:
         raise HTTPException(422, "Unsupported language")
-    if not settings.BHASHINI_USER_ID or not settings.BHASHINI_API_KEY:
+    if not bhashini_client.configured():
         raise HTTPException(503, "Bhashini is not configured. Use the text assistant or browser voice mode.")
     transcript = payload.text
     if payload.audio_base64:
         try:
             audio = base64.b64decode(payload.audio_base64, validate=True)
             with wave.open(io.BytesIO(audio)) as wav:
-                if wav.getnchannels() != 1 or wav.getsampwidth() != 2 or wav.getframerate() != 16000 or wav.getnframes() > 16000 * 45:
+                if wav.getnchannels() != 1 or wav.getsampwidth() != 2 or wav.getframerate() != 16000 or not 0 < wav.getnframes() <= 16000 * 45:
                     raise ValueError()
         except (ValueError, wave.Error, EOFError):
             raise HTTPException(422, "Use mono 16-bit PCM WAV at 16000 Hz, maximum 45 seconds")
@@ -47,6 +47,13 @@ async def voice_chat(request: Request, payload: VoiceInput):
     reply = answer["reply"]
     if payload.language != "en":
         reply = await bhashini_client.translate_text(reply, "en", payload.language)
-    audio = await bhashini_client.text_to_speech(reply[:2500], payload.language)
-    return {"transcript": transcript, "reply": reply, "audio_base64": audio, "provider": "bhashini"}
+    warning = None
+    audio = None
+    spoken = re.sub(r"\[([^]]+)\]\([^)]+\)", r"\1", reply)
+    spoken = re.sub(r"https?://\S+|[#*]", "", spoken)
+    try:
+        audio = await bhashini_client.text_to_speech(spoken[:2500], payload.language)
+    except HTTPException:
+        warning = "The answer is ready, but Bhashini audio is unavailable. Read the answer below or try again."
+    return {"transcript": transcript, "reply": reply, "audio_base64": audio, "audio_mime_type": "audio/wav", "warning": warning, "provider": "bhashini"}
 

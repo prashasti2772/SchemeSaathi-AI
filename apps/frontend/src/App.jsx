@@ -100,7 +100,7 @@ export default function App() {
   return <AboutPage />;
 }
 
-if (path === "/categories") {
+if (path === "/categories" || path === "/search") {
   return <CategoriesPage />;
 }
 

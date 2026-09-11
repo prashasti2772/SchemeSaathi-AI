@@ -1,8 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { MainLayout } from "../layout";
-import { fetchCatalogSchemes } from "../../lib/api";
-
-/* ======= BASE CATEGORY CONFIGURATION ========= */
+import { apiError, fetchCatalogSchemes } from "../../lib/api";
 
 const baseCategories = [
   {
@@ -128,412 +126,53 @@ const QUICK_TAGS = [
   "Health",
 ];
 
-/* ============================================================
-   PAGE COMPONENT
-============================================================ */
 
 export default function CategoriesPage() {
-  const [search, setSearch] = useState("");
-  const [selectedTag, setSelectedTag] = useState("All");
-  const [categoryCounts, setCategoryCounts] = useState({});
-  const [activeCategoryModal, setActiveCategoryModal] = useState(null);
-
-  /* ===== FETCH LIVE CATALOG COUNTS PER CATEGORY ======= */
+  const initial = new URLSearchParams(window.location.search);
+  const [query, setQuery] = useState(initial.get("q") || "");
+  const [category, setCategory] = useState("");
+  const [page, setPage] = useState(0);
+  const [result, setResult] = useState({ schemes: [], total: 0 });
+  const [busy, setBusy] = useState(true);
+  const [error, setError] = useState("");
+  const [retry, setRetry] = useState(0);
+  const [expanded, setExpanded] = useState(null);
   useEffect(() => {
-    let isMounted = true;
-    const loadCounts = async () => {
+    let active = true;
+    setBusy(true); setError("");
+    const timer = setTimeout(async () => {
       try {
-        const counts = {};
-        for (const cat of baseCategories) {
-          const data = await fetchCatalogSchemes(cat.queryKey, 100);
-          counts[cat.id] = data.total || cat.defaultCount;
-        }
-        if (isMounted) {
-          setCategoryCounts(counts);
-        }
-      } catch (err) {
-        console.warn("Could not fetch category counts:", err);
-      }
-    };
-    loadCounts();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  /* ==========================================================
-     FILTER CATEGORIES BY SEARCH & QUICK TAG
-  ========================================================== */
-
-  const filteredCategories = useMemo(() => {
-    const searchText = search.trim().toLowerCase();
-
-    return baseCategories.filter((category) => {
-      const matchesTag =
-        selectedTag === "All" ||
-        category.tags.some((t) => t.toLowerCase() === selectedTag.toLowerCase());
-
-      if (!searchText) return matchesTag;
-
-      const matchesSearch =
-        category.name.toLowerCase().includes(searchText) ||
-        category.description.toLowerCase().includes(searchText) ||
-        category.tags.some((tag) => tag.toLowerCase().includes(searchText));
-
-      return matchesTag && matchesSearch;
-    });
-  }, [search, selectedTag]);
-
-  /* ======= HANDLE VIEW CATEGORY SCHEMES MODAL ======== */
-
-  const handleOpenModal = (category) => {
-    setActiveCategoryModal(category);
-  };
-
-  return (
-    <MainLayout>
-      <div className="min-h-[calc(100vh-132px)] bg-[#f7f8fc] pb-20">
-        {/* ====== HERO SECTION ======= */}
-        <section className="border-b border-slate-200 bg-white">
-          <div className="mx-auto max-w-300 px-5 py-12 sm:px-8">
-            <div className="mx-auto max-w-190 text-center">
-              <div className="mx-auto mb-3 inline-flex items-center rounded-full bg-[#fff4c7] px-3.5 py-1 text-[11px] font-bold text-[#9b7815]">
-                🏛️ 650+ Verified Welfare Schemes
-              </div>
-
-              <h1 className="text-[30px] font-extrabold tracking-tight text-[#172b49] sm:text-[36px]">
-                Explore Government Schemes by Category
-              </h1>
-
-              <p className="mx-auto mt-3 max-w-170 text-[14px] leading-6 text-slate-500">
-                Discover government subsidies, credit facilities, training programs, and welfare support across key sectors.
-              </p>
-            </div>
-
-            {/* ================= SEARCH INPUT ================= */}
-            <div className="mx-auto mt-8 max-w-162.5">
-              <div className="relative">
-                <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg">
-                  ⌕
-                </span>
-
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search categories (e.g. Loans, MSME, Women, Solar, Agriculture)..."
-                  className="h-12 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-[13px] text-slate-700 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-[#0d2b55] focus:ring-2 focus:ring-[#0d2b55]/10"
-                />
-                {search && (
-                  <button
-                    type="button"
-                    onClick={() => setSearch("")}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400 hover:text-slate-600"
-                  >
-                    Clear ✕
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* ================= QUICK FILTER TAG CHIPS ================= */}
-            <div className="mx-auto mt-6 flex max-w-200 flex-wrap items-center justify-center gap-2">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">Filter:</span>
-              {QUICK_TAGS.map((tag) => (
-                <button
-                  key={tag}
-                  type="button"
-                  onClick={() => setSelectedTag(tag)}
-                  className={`rounded-full px-3 py-1 text-[11px] font-medium transition ${
-                    selectedTag === tag
-                      ? "bg-[#0d2b55] text-white shadow-xs"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                  }`}
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ============= MAIN CONTENT ============= */}
-        <main className="mx-auto max-w-300 px-5 sm:px-8">
-          {/* ================= SUMMARY HEADER ================= */}
-          <div className="flex flex-col gap-2 py-7 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-[18px] font-bold text-[#172b49]">
-                Browse Categories ({filteredCategories.length})
-              </h2>
-              <p className="mt-0.5 text-[12px] text-slate-500">
-                Click any category to view all official schemes available in that category.
-              </p>
-            </div>
-
-            <div className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-[12px] font-semibold text-[#0d2b55] shadow-xs">
-              Total 650+ Catalog Schemes Grounded
-            </div>
-          </div>
-
-          {/* ============= CATEGORY GRID ============= */}
-          {filteredCategories.length === 0 ? (
-            <EmptyCategories
-              onReset={() => {
-                setSearch("");
-                setSelectedTag("All");
-              }}
-            />
-          ) : (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredCategories.map((category) => (
-                <CategoryCard
-                  key={category.id}
-                  category={category}
-                  liveCount={categoryCounts[category.id]}
-                  onViewSchemes={() => handleOpenModal(category)}
-                />
-              ))}
-            </div>
-          )}
-        </main>
-      </div>
-
-      {/* ============= MODAL: SCHEMES IN SELECTED CATEGORY ============= */}
-      {activeCategoryModal && (
-        <CategorySchemesModal
-          category={activeCategoryModal}
-          onClose={() => setActiveCategoryModal(null)}
-        />
-      )}
-    </MainLayout>
-  );
-}
-
-/* ======= CATEGORY CARD ======= */
-
-function CategoryCard({ category, liveCount, onViewSchemes }) {
-  const countDisplay = liveCount || category.defaultCount;
-
-  return (
-    <article
-      onClick={onViewSchemes}
-      className="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-[#d7aa2d] hover:shadow-md cursor-pointer"
-    >
-      <div>
-        {/* TOP ROW */}
-        <div className="flex items-start justify-between">
-          <div className="flex h-13 w-13 items-center justify-center rounded-2xl bg-[#0d2b55] text-2xl shadow-xs transition group-hover:scale-105">
-            {category.icon}
-          </div>
-
-          <span className="rounded-full bg-[#fff5c9] px-3 py-1 text-[11px] font-bold text-[#8c6b00]">
-            {countDisplay} Schemes
-          </span>
-        </div>
-
-        {/* TITLE & DESCRIPTION */}
-        <h3 className="mt-5 text-[18px] font-bold text-[#172b49] transition-colors group-hover:text-[#0d2b55]">
-          {category.name}
-        </h3>
-
-        <p className="mt-2 text-[12px] leading-5 text-slate-500">
-          {category.description}
-        </p>
-
-        {/* TAGS */}
-        <div className="mt-4 flex flex-wrap gap-1.5">
-          {category.tags.map((tag) => (
-            <span
-              key={tag}
-              className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* ACTION BUTTON */}
-      <div className="mt-6 border-t border-slate-100 pt-4">
-        <button
-          type="button"
-          onClick={(e) => { e.stopPropagation(); onViewSchemes(); }}
-          className="flex h-9.5 w-full items-center justify-center rounded-lg bg-[#0d2b55] text-[12px] font-semibold text-white transition hover:bg-[#173b70] active:scale-[0.99]"
-        >
-          View All {countDisplay} Schemes →
-        </button>
-      </div>
-    </article>
-  );
-}
-
-/* ======= CATEGORY SCHEMES MODAL ======= */
-
-function CategorySchemesModal({ category, onClose }) {
-  const [schemes, setSchemes] = useState([]);
-  const [modalSearch, setModalSearch] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    let isMounted = true;
-    const loadSchemes = async () => {
-      setIsLoading(true);
-      try {
-        const res = await fetchCatalogSchemes(category.queryKey, 60);
-        if (isMounted) {
-          setSchemes(res.schemes || []);
-        }
-      } catch (e) {
-        console.error("Failed fetching category schemes:", e);
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    };
-    loadSchemes();
-    return () => {
-      isMounted = false;
-    };
-  }, [category]);
-
-  const filteredModalSchemes = useMemo(() => {
-    if (!modalSearch.trim()) return schemes;
-    const q = modalSearch.toLowerCase();
-    return schemes.filter(
-      (s) =>
-        (s.scheme_name || "").toLowerCase().includes(q) ||
-        (s.description || "").toLowerCase().includes(q) ||
-        (s.benefits || "").toLowerCase().includes(q)
-    );
-  }, [schemes, modalSearch]);
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 backdrop-blur-xs p-4 sm:p-6 animate-fade-in">
-      <div className="flex h-[88vh] max-h-180 w-full max-w-220 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
-        {/* HEADER */}
-        <div className="flex items-center justify-between border-b border-slate-100 bg-[#0d2b55] px-6 py-4 text-white">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">{category.icon}</span>
-            <div>
-              <h3 className="text-[16px] font-bold tracking-tight">{category.name}</h3>
-              <p className="text-[11px] text-slate-300">
-                {schemes.length} verified government schemes loaded
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-white/80 transition hover:bg-white/10 hover:text-white"
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* CONTROLS — search only */}
-        <div className="flex items-center border-b border-slate-100 bg-slate-50 px-6 py-3.5">
-          <div className="relative w-full max-w-md">
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
-              ⌕
-            </span>
-            <input
-              type="text"
-              value={modalSearch}
-              onChange={(e) => setModalSearch(e.target.value)}
-              placeholder={`Filter in ${category.name}...`}
-              className="h-9 w-full rounded-lg border border-slate-200 bg-white pl-8 pr-3 text-[12px] text-slate-700 outline-none focus:border-[#0d2b55]"
-            />
-          </div>
-        </div>
-
-        {/* SCHEMES LIST */}
-        <div className="flex-1 overflow-y-auto p-6 bg-[#fdfdfd] space-y-4">
-          {isLoading ? (
-            <div className="py-16 text-center text-slate-500 text-sm">
-              Loading official schemes for {category.name}...
-            </div>
-          ) : filteredModalSchemes.length === 0 ? (
-            <div className="py-16 text-center text-slate-500 text-sm">
-              No matching schemes found for "{modalSearch}".
-            </div>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2">
-              {filteredModalSchemes.map((doc, idx) => (
-                <article
-                  key={idx}
-                  className="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 shadow-xs hover:border-[#d7aa2d] transition"
-                >
-                  <div>
-                    <div className="flex items-start justify-between gap-2">
-                      <h4 className="text-[13px] font-bold leading-5 text-[#172b49]">
-                        {doc.scheme_name}
-                      </h4>
-                      {doc.level && (
-                        <span className="shrink-0 rounded bg-slate-100 px-2 py-0.5 text-[9px] font-semibold text-slate-600">
-                          {doc.level}
-                        </span>
-                      )}
-                    </div>
-
-                    <p className="mt-2 text-[11px] leading-4.5 text-slate-500 line-clamp-3">
-                      {doc.description}
-                    </p>
-
-                    {doc.benefits && (
-                      <div className="mt-3 rounded-md bg-slate-50 p-2 text-[10px]">
-                        <span className="font-bold text-[#0d2b55]">Benefits: </span>
-                        <span className="text-slate-700 line-clamp-2">{doc.benefits}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-[11px]">
-                    {doc.official_url ? (
-                      <a
-                        href={doc.official_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-bold text-[#0d2b55] hover:underline"
-                      >
-                        Visit Official Portal ↗
-                      </a>
-                    ) : (
-                      <span className="text-slate-400">Government Portal</span>
-                    )}
-
-                    <span className="text-[10px] font-medium text-slate-400">
-                      {doc.tags ? doc.tags.split(",")[0] : "Welfare"}
-                    </span>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+        const data = await fetchCatalogSchemes([category, query.trim()].filter(Boolean).join(" "), 12, page * 12);
+        if (active) setResult(data);
+      } catch (e) { if (active) setError(apiError(e)); }
+      finally { if (active) setBusy(false); }
+    }, 250);
+    const url = new URL(window.location.href);
+    if (query) url.searchParams.set("q", query); else url.searchParams.delete("q");
+    window.history.replaceState({}, "", url);
+    return () => { active = false; clearTimeout(timer); };
+  }, [query, category, page, retry]);
+  function reset() { setQuery(""); setCategory(""); setPage(0); setExpanded(null); }
+  return <MainLayout><main className="mx-auto max-w-6xl px-5 py-12">
+    <p className="text-sm font-semibold text-amber-700">SchemeSaathi - SIH26092</p>
+    <h1 className="mt-2 text-3xl font-bold">Explore government schemes</h1>
+    <p className="mt-3 text-slate-600">Search business finance, self-employment, skills and inclusion support. Use Find Schemes for screening against your profile.</p>
+    <div className="my-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm">Catalogue records may be incomplete or outdated. A search result does not confirm eligibility or that applications are open. Check the linked official guidance before applying.</div>
+    <label className="block font-medium" htmlFor="scheme-search">Search schemes</label>
+    <input id="scheme-search" type="search" maxLength={150} value={query} onChange={e => {setQuery(e.target.value); setPage(0); setExpanded(null);}} placeholder="Scheme name or keywords, e.g. MUDRA, women loan, tailoring" className="mt-2 w-full rounded-xl border bg-white p-4" />
+    <div className="my-4 flex flex-wrap gap-2" aria-label="Scheme categories">
+      <button aria-pressed={!category} onClick={() => {setCategory(""); setPage(0);}} className="rounded-full border px-4 py-2">All schemes</button>
+      {baseCategories.map(c => <button key={c.id} aria-pressed={category === c.queryKey} onClick={() => {setCategory(category === c.queryKey ? "" : c.queryKey); setPage(0); setExpanded(null);}} className={`rounded-full border px-4 py-2 text-sm ${category === c.queryKey ? "bg-[#0d2b55] text-white" : "bg-white"}`}>{c.name}</button>)}
     </div>
-  );
-}
-
-/* ======= EMPTY STATE ========= */
-
-function EmptyCategories({ onReset }) {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white px-6 py-16 text-center shadow-sm">
-      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-2xl">
-        🔎
-      </div>
-      <h2 className="mt-4 text-lg font-bold text-[#172b49]">No categories found</h2>
-      <p className="mx-auto mt-2 max-w-md text-[13px] leading-5 text-slate-500">
-        We couldn't find a category matching your search. Try another keyword.
-      </p>
-      <button
-        type="button"
-        onClick={onReset}
-        className="mt-5 rounded-lg bg-[#0d2b55] px-5 py-2.5 text-[12px] font-medium text-white hover:bg-[#173b70]"
-      >
-        Clear Search & Filters
-      </button>
-    </div>
-  );
+    <div aria-live="polite" className="my-6">{busy ? "Searching catalogue..." : error ? <p role="alert" className="text-red-700">{error} <button className="underline" onClick={() => setRetry(n => n+1)}>Retry search</button></p> : `${result.total} schemes found`}</div>
+    {!busy && !error && result.schemes.length === 0 && <div className="rounded-xl border bg-white p-8"><h2 className="text-xl font-bold">No matching schemes</h2><p className="my-3">Try fewer keywords or remove the category filter.</p><button className="underline" onClick={reset}>Clear search and filters</button></div>}
+    {!busy && !error && <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">{result.schemes.map((s, i) => <article key={s.scheme_name} className="flex flex-col rounded-xl border bg-white p-5 shadow-sm">
+      <p className="text-xs font-semibold text-slate-500">{s.level || "Catalogue record"}</p><h2 className="my-2 text-lg font-bold">{s.scheme_name}</h2>
+      <p className="line-clamp-4 text-sm text-slate-600">{s.description}</p>
+      <button aria-expanded={expanded === i} onClick={() => setExpanded(expanded === i ? null : i)} className="my-4 text-left font-semibold underline">{expanded === i ? "Hide details" : "Benefits, eligibility and application details"}</button>
+      {expanded === i && <dl className="mb-4 space-y-3 text-sm">{[["Benefits","benefits"],["Eligibility","eligibility"],["Documents","documents"],["How to apply","application_process"]].map(([label,key]) => <div key={key}><dt className="font-bold">{label}</dt><dd className="whitespace-pre-wrap">{s[key] || "Not recorded. Check the official guidance."}</dd></div>)}</dl>}
+      <div className="mt-auto flex flex-wrap gap-3 border-t pt-4 text-sm">{/^https?:\/\//i.test(s.official_url || "") && <a href={s.official_url} target="_blank" rel="noopener noreferrer" className="font-semibold underline">Official guidance</a>}<a href={"/ai-assistant?q="+encodeURIComponent("Tell me about " + s.scheme_name)} className="underline">Ask assistant</a></div>
+    </article>)}</div>}
+    {!busy && !error && result.total > 12 && <nav aria-label="Search result pages" className="my-8 flex items-center justify-center gap-5"><button disabled={page === 0} onClick={() => {setPage(p => p-1); setExpanded(null);}} className="rounded border p-3 disabled:opacity-40">Previous</button><span>Page {page+1} of {Math.ceil(result.total/12)}</span><button disabled={!result.has_more} onClick={() => {setPage(p => p+1); setExpanded(null);}} className="rounded border p-3 disabled:opacity-40">Next</button></nav>}
+  </main></MainLayout>;
 }

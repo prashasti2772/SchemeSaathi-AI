@@ -71,3 +71,6 @@ artifacts/
 debug-*.html
 district-*.html
 states-source.html
+
+# Optional local hosting API credentials
+.env.deploy

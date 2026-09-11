@@ -124,6 +124,7 @@ def test_outreach_batches_are_reserved_and_not_sent_twice(client, monkeypatch):
     monkeypatch.setattr(settings, "SMS_LIVE_ENABLED", True)
     monkeypatch.setattr(settings, "MSG91_AUTH_KEY", "test-only")
     monkeypatch.setattr(settings, "MSG91_TEMPLATE_ID", "test-only")
+    monkeypatch.setattr(settings, "PUBLIC_SITE_URL", "https://schemesaathi.test")
     r = client.post("/api/v1/citizen/outreach-send",headers=staff)
     assert r.status_code == 200, r.text
     assert r.json()["status"] == "provider_accepted" and r.json()["count"] == 1
@@ -131,3 +132,97 @@ def test_outreach_batches_are_reserved_and_not_sent_twice(client, monkeypatch):
     assert client.post("/api/v1/citizen/outreach-send",headers=staff).json()["count"] == 0
     assert len(sent) == 1
 
+
+
+def test_search_pagination_and_multiple_words(client):
+    first = client.get("/api/v1/eligibility/schemes?limit=12").json()
+    second = client.get("/api/v1/eligibility/schemes?limit=12&offset=12").json()
+    assert first["has_more"] and len(second["schemes"]) == 12
+    assert not set(s["scheme_name"] for s in first["schemes"]) & set(s["scheme_name"] for s in second["schemes"])
+    found = client.get("/api/v1/eligibility/schemes", params={"query":"women loan"}).json()
+    assert found["total"] > 0
+    assert client.get("/api/v1/eligibility/schemes?query=zzzzqqqqxxxx").json()["total"] == 0
+    assert client.get("/api/v1/eligibility/schemes?offset=-1").status_code == 422
+
+
+def test_scheme_specific_chat_and_followup(client):
+    result = chatbot_service.search("Tell me about PMEGP")
+    assert "employment generation" in result[0]["scheme_name"].lower()
+    followup = client.post("/api/v1/public/self-service/assistant-chat", json={
+        "message":"What documents are needed?", "history":[{"role":"user","content":"Tell me about PMEGP"}]}).json()
+    assert "employment generation" in followup["retrieved_schemes"][0]["scheme_name"].lower()
+
+
+def test_sms_preference_persists(client):
+    auth = new_account(client, 15)
+    assert client.get("/api/v1/citizen/sms-consent", headers=auth).json()["consent"] is False
+    client.put("/api/v1/citizen/sms-consent", headers=auth, json={"consent":True})
+    assert client.get("/api/v1/citizen/sms-consent", headers=auth).json()["consent"] is True
+
+
+def test_voice_retains_answer_when_audio_fails(client, monkeypatch):
+    from fastapi import HTTPException
+    from src.integrations import bhashini_client
+    monkeypatch.setattr(bhashini_client, "configured", lambda: True)
+    async def translate(text, source, target): return "tailoring loan" if target == "en" else "Translated answer"
+    async def tts(*args): raise HTTPException(503, "provider unavailable")
+    monkeypatch.setattr(bhashini_client, "translate_text", translate)
+    monkeypatch.setattr(bhashini_client, "text_to_speech", tts)
+    result = client.post("/api/v1/public/voice/chat", json={"text":"question","language":"hi"})
+    assert result.status_code == 200
+    assert result.json()["reply"] == "Translated answer" and result.json()["warning"]
+    assert result.json()["audio_base64"] is None
+    assert client.post("/api/v1/public/voice/chat", json={"audio_base64":"bad", "language":"hi"}).status_code == 422
+
+
+def test_bhashini_selects_requested_language(monkeypatch):
+    import asyncio
+    from src.integrations import bhashini_client as b
+    from src.config.settings import settings
+    calls = []
+    class Response:
+        def __init__(self, data): self.data = data
+        def raise_for_status(self): pass
+        def json(self): return self.data
+    class Provider:
+        def __init__(self, **kw): pass
+        async def __aenter__(self): return self
+        async def __aexit__(self, *a): pass
+        async def post(self, url, **kw):
+            calls.append(kw)
+            if len(calls) == 1:
+                return Response({"pipelineResponseConfig":[{"taskType":"tts","config":[
+                    {"serviceId":"wrong","language":{"sourceLanguage":"en"}},
+                    {"serviceId":"hindi","language":{"sourceLanguage":"hi"},"supportedVoices":["male"]}]}],
+                    "pipelineInferenceAPIEndPoint":{"callbackUrl":"https://dhruva-api.bhashini.gov.in/services/inference/pipeline", "inferenceApiKey":{"name":"Authorization","value":"test"}}})
+            return Response({"pipelineResponse":[{"taskType":"tts","audio":[{"audioContent":"test-audio"}]}]})
+    monkeypatch.setattr(b, "configured", lambda: True)
+    monkeypatch.setattr(b.httpx, "AsyncClient", Provider)
+    assert asyncio.run(b.text_to_speech("test", "hi")) == "test-audio"
+    config = calls[1]["json"]["pipelineTasks"][0]["config"]
+    assert config["serviceId"] == "hindi" and config["gender"] == "male"
+    assert config["audioFormat"] == "wav"
+
+
+def test_multilingual_chat_translates_query_and_reply(client, monkeypatch):
+    from src.integrations import bhashini_client as b
+    calls = []
+    monkeypatch.setattr(b, "configured", lambda: True)
+    async def translate(text, source, target):
+        calls.append((source,target))
+        return "Tell me about PMEGP" if target == "en" else "Translated scheme answer"
+    monkeypatch.setattr(b, "translate_text", translate)
+    result = client.post("/api/v1/public/self-service/assistant-chat", json={"message":"test question", "language":"hi"})
+    assert result.status_code == 200 and result.json()["reply"] == "Translated scheme answer"
+    assert calls == [("hi","en"),("en","hi")]
+    assert result.json()["retrieved_schemes"]
+    monkeypatch.setattr(b, "configured", lambda: False)
+    assert client.post("/api/v1/public/self-service/assistant-chat", json={"message":"test", "language":"hi"}).status_code == 503
+
+
+def test_income_decimal_and_open_ended_band():
+    from src.modules.eligibility.service import _parse_income
+    assert _parse_income("1.3 lakh") == 130000
+    assert _parse_income("Below 2.5 lakh") == 250000
+    assert _parse_income("1 - 3 lakh") == 300000
+    assert _parse_income("Above 25 lakh") == float("inf")

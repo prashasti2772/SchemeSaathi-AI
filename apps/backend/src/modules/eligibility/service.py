@@ -29,40 +29,30 @@ def _parse_income(val: Any) -> float:
     if isinstance(val, (int, float)):
         return float(val)
 
-    text = str(val).lower()
-    if "below" in text or "under" in text:
-        if "50" in text:
-            return 50000.0
-        return 100000.0
-    if "1" in text and "3" in text:
-        return 300000.0
-    if "3" in text and "5" in text:
-        return 500000.0
-    if "5" in text and "10" in text:
-        return 1000000.0
-    if "10" in text and "25" in text:
-        return 2500000.0
-    if "above" in text or "more" in text or "crore" in text:
-        return 3000000.0
+    text = str(val).lower().replace(",", "")
+    numbers = re.findall(r"\d+(?:\.\d+)?", text)
+    if not numbers:
+        raise ValueError("Enter an annual income amount")
+    parsed = float(numbers[-1])
+    if "crore" in text:
+        parsed *= 10000000
+    elif "lakh" in text or "lac" in text:
+        parsed *= 100000
+    if "above" in text or "more" in text:
+        # An open-ended band cannot prove compliance with an income ceiling.
+        return float("inf")
+    return parsed
 
-    numbers = re.findall(r"\d+", text.replace(",", ""))
-    if numbers:
-        parsed = float(numbers[0])
-        if "lakh" in text and parsed < 1000:
-            parsed *= 100000
-        return parsed
-
-    return 200000.0
 
 
 def _parse_documents_list(docs_str: Any) -> list[str]:
     """Splits a document requirements string into clean list items."""
     if not docs_str or not isinstance(docs_str, str):
-        return ["Aadhaar Card", "Bank Account Details"]
+        return ["Document requirements are not recorded. Check official guidance."]
 
     cleaned = docs_str.strip()
     if not cleaned or cleaned.lower() in ["nan", "none", "not specified"]:
-        return ["Aadhaar Card", "Bank Account Details"]
+        return ["Document requirements are not recorded. Check official guidance."]
 
     # Split by common delimiters: commas, bullets, numbered lists, newlines
     items = re.split(r"[\n\r;•\-\*]|\d+\.\s*", cleaned)

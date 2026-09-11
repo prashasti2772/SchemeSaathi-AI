@@ -8,7 +8,7 @@ const navItems = [
   { key: "nav_categories", href: "/categories" },
   { key: "nav_resources", href: "/resources" },
   { key: "nav_about", href: "/about" },
-  { key: "nav_search", href: "/ai-assistant" },
+  { key: "nav_search", href: "/categories" },
 ];
 
 export default function Header() {
@@ -234,7 +234,7 @@ export default function Header() {
 
 
           <a
-            href="/ai-assistant"
+            href="/categories"
             className="
               rounded-xl
               px-4

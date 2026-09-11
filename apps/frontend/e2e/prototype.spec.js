@@ -54,6 +54,10 @@ test("citizen signup, wizard, chat, voice status and support work together", asy
   await page.getByLabel("Describe the issue",{exact:true}).fill("Please explain the application document requirements.");
   await page.getByRole("button",{name:"Submit ticket",exact:true}).click();
   await expect(page.getByText("Browser test support",{exact:true})).toBeVisible();
+  await page.getByRole("button",{name:"Opt in to SMS",exact:true}).click();
+  await expect(page.getByText("Subscribed", {exact:true})).toBeVisible();
+  await page.reload();
+  await expect(page.getByText("Subscribed", {exact:true})).toBeVisible();
   await page.getByRole("button",{name:"Opt out",exact:true}).click();
   await expect(page.getByText("You opted out of future SMS outreach.",{exact:true})).toBeVisible();
   await page.setViewportSize({width:390,height:844});
@@ -63,3 +67,23 @@ test("citizen signup, wizard, chat, voice status and support work together", asy
   expect(errors).toEqual([]);
 });
 
+
+
+test("catalogue search, pagination and scheme details work", async ({page}) => {
+  await page.goto("/search");
+  await expect(page.locator("article")).toHaveCount(12);
+  const first = await page.locator("article h2").first().textContent();
+  await page.getByRole("button", {name:"Next", exact:true}).click();
+  await expect(page.getByText("Page 2 of", {exact:false})).toBeVisible();
+  await expect(page.locator("article h2").first()).not.toHaveText(first);
+  await page.getByLabel("Search schemes", {exact:true}).fill("women loan");
+  await expect(page.locator("article").first()).toBeVisible();
+  await page.getByRole("button", {name:"Benefits, eligibility and application details"}).first().click();
+  await expect(page.locator("article dl").first()).toBeVisible();
+  await page.getByLabel("Search schemes", {exact:true}).fill("zzzzqqqqxxxx");
+  await expect(page.getByRole("heading", {name:"No matching schemes"})).toBeVisible();
+  await page.getByRole("button", {name:"Clear search and filters"}).click();
+  await expect(page.locator("article")).toHaveCount(12);
+  await page.setViewportSize({width:390,height:844});
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
+});
