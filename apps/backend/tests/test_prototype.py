@@ -44,6 +44,30 @@ def test_auth_is_real(client):
     assert client.get("/api/v1/users", headers=auth).status_code == 403
     assert client.post("/api/v1/citizen/outreach-send", headers=auth).status_code == 403
 
+def test_password_reset_flow(client):
+    email = "resetter@example.com"
+    password = "a-long-test-password"
+    register = client.post("/api/v1/citizen/register", json={
+        "full_name": "Reset Tester",
+        "email": email,
+        "mobile": "9876543210",
+        "password": password,
+    })
+    assert register.status_code == 201, register.text
+
+    forgot = client.post("/api/v1/citizen/forgot-password", json={"identifier": email})
+    assert forgot.status_code == 200, forgot.text
+    token = forgot.json()["token"]
+    assert token
+
+    expired = client.post("/api/v1/citizen/reset-password", json={"token": token, "password": "new-longer-password"})
+    assert expired.status_code == 200, expired.text
+
+    assert client.post("/api/v1/citizen/login", json={"identifier": email, "password": password}).status_code == 401
+    assert client.post("/api/v1/citizen/login", json={"identifier": email, "password": "new-longer-password"}).status_code == 200
+    assert client.post("/api/v1/citizen/reset-password", json={"token": token, "password": "another-password"}).status_code == 400
+
+
 def test_ticket_isolation_and_consent(client):
     first = new_account(client, 2); second = new_account(client, 3)
     r = client.post("/api/v1/citizen/tickets", headers=first, json={"subject":"Scheme help","message":"Please help with application documents"})

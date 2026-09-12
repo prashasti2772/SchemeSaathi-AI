@@ -5,6 +5,8 @@ import { HomePage } from "./components/home";
 import {
   SignInPage,
   SignUpPage,
+  ForgotPasswordPage,
+  ResetPasswordPage,
 } from "./components/auth";
 
 import {
@@ -68,6 +70,14 @@ export default function App() {
   // Sign Up
   if (path === "/signup") {
     return <SignUpPage />;
+  }
+
+  if (path === "/forgot-password") {
+    return <ForgotPasswordPage />;
+  }
+
+  if (path === "/reset-password") {
+    return <ResetPasswordPage />;
   }
 
   if (

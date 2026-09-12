@@ -24,6 +24,7 @@ export default function AccountForm({ register = false }) {
       {register && <p className="mb-4 text-xs text-slate-600">Use at least 10 characters. Your account stores your name and contact details. Scheme screening does not submit a government application. SMS outreach is optional in Support.</p>}
       {error && <p role="alert" className="mb-4 text-red-700">{error}</p>}
       <button disabled={busy} className="w-full rounded-lg bg-[#0d2b55] p-3 text-white disabled:opacity-50">{busy ? "Please wait..." : register ? "Create Account" : "Sign In"}</button>
+      {!register && <p className="mt-4 text-right text-sm"><a className="underline" href="/forgot-password">Forgot password?</a></p>}
       <p className="mt-5 text-sm"><a className="underline" href={register ? "/signin" : "/signup"}>{register ? "Already registered? Sign in" : "Create an account"}</a></p>
       <a className="mt-4 block text-sm underline" href="/">Back to home</a>
     </form></AuthCard></AuthLayout>;

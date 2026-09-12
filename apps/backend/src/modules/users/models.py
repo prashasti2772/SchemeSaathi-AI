@@ -1,5 +1,6 @@
 import uuid
 import enum
+from datetime import datetime
 from sqlalchemy import String, Boolean, Enum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -25,3 +26,5 @@ class User(Base, TimestampMixin):
     role: Mapped[UserRole] = mapped_column(Enum(UserRole, name="user_role"), default=UserRole.SUPPORT, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False)
+    reset_token: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    reset_token_expires_at: Mapped[datetime | None] = mapped_column(nullable=True)

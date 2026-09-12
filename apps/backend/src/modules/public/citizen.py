@@ -1,7 +1,8 @@
 """Persistent citizen accounts, support tickets and consent-based outreach."""
+import secrets
 import uuid
 from urllib.parse import urlsplit
-from datetime import datetime
+from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import String, Text, select, or_, update
@@ -15,7 +16,7 @@ from src.middlewares.auth_middleware import get_current_user
 from src.middlewares.rbac_middleware import require_any_staff
 from src.middlewares.rate_limiter import limiter
 from src.modules.users.models import User, UserRole
-from src.utils.security import hash_password, verify_password, create_access_token
+from src.utils.security import hash_password, verify_password, create_access_token, hash_token
 
 router = APIRouter(prefix="/citizen", tags=["Citizen"])
 
@@ -45,6 +46,18 @@ class Login(BaseModel):
     identifier: str = Field(min_length=3, max_length=255)
     password: str = Field(min_length=1, max_length=128)
 
+class ForgotPasswordRequest(BaseModel):
+    identifier: str = Field(min_length=3, max_length=255)
+
+class ResetPasswordRequest(BaseModel):
+    token: str = Field(min_length=10, max_length=512)
+    password: str = Field(min_length=10, max_length=128)
+
+async def find_user_by_identifier(db: AsyncSession, identifier: str):
+    key = identifier.strip().lower()
+    return (await db.execute(select(User).where(or_(User.email == key, User.mobile == key)))).scalar_one_or_none()
+
+
 def account(user):
     return {"id": str(user.id), "fullName": user.full_name, "email": user.email,
             "mobile": user.mobile, "role": user.role.value}
@@ -69,11 +82,38 @@ async def register(request: Request, payload: Register, db: AsyncSession = Depen
 @router.post("/login")
 @limiter.limit("5/minute")
 async def login(request: Request, payload: Login, db: AsyncSession = Depends(get_db)):
-    key = payload.identifier.strip().lower()
-    user = (await db.execute(select(User).where(or_(User.email == key, User.mobile == key)))).scalar_one_or_none()
+    user = await find_user_by_identifier(db, payload.identifier)
     if not user or not verify_password(payload.password, user.hashed_password) or not user.is_active:
         raise HTTPException(401, "Invalid credentials")
     return session(user)
+
+@router.post("/forgot-password")
+@limiter.limit("5/minute")
+async def forgot_password(request: Request, payload: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)):
+    user = await find_user_by_identifier(db, payload.identifier)
+    if user and user.is_active:
+        raw_token = secrets.token_urlsafe(32)
+        user.reset_token = hash_token(raw_token)
+        user.reset_token_expires_at = datetime.utcnow() + timedelta(minutes=30)
+        await db.commit()
+        return {"message": "Password reset token created. Use it to set a new password.", "token": raw_token}
+    return {"message": "If this account exists, a password reset token was created."}
+
+@router.post("/reset-password")
+@limiter.limit("5/minute")
+async def reset_password(request: Request, payload: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
+    token = payload.token.strip()
+    if not token:
+        raise HTTPException(400, "Reset token is required")
+    hashed_token = hash_token(token)
+    user = (await db.execute(select(User).where(User.reset_token == hashed_token))).scalar_one_or_none()
+    if not user or not user.reset_token_expires_at or user.reset_token_expires_at < datetime.utcnow():
+        raise HTTPException(400, "Invalid or expired reset token")
+    user.hashed_password = hash_password(payload.password)
+    user.reset_token = None
+    user.reset_token_expires_at = None
+    await db.commit()
+    return {"message": "Password updated successfully."}
 
 @router.get("/me")
 async def me(user: User = Depends(get_current_user)):
