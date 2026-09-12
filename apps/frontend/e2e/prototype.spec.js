@@ -46,7 +46,7 @@ test("citizen signup, wizard, chat, voice status and support work together", asy
   await page.goto("/ai-assistant");
   await page.getByRole("textbox").fill("tailoring loan");
   await page.getByRole("textbox").press("Enter");
-  await expect(page.getByText("These are catalogue search results", {exact:false})).toBeVisible({timeout:30000});
+  await expect(page.getByText("These catalogue entries may be relevant", {exact:false})).toBeVisible({timeout:30000});
   await page.goto("/voice-assistant");
   await expect(page.getByText("Bhashini: not configured", {exact:false})).toBeVisible();
   await page.goto("/support");

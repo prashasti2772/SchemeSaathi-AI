@@ -204,20 +204,23 @@ def test_bhashini_selects_requested_language(monkeypatch):
     assert config["audioFormat"] == "wav"
 
 
-def test_multilingual_chat_translates_query_and_reply(client, monkeypatch):
+def test_detailed_multilingual_chat_uses_translation_when_available(client, monkeypatch):
     from src.integrations import bhashini_client as b
     calls = []
     monkeypatch.setattr(b, "configured", lambda: True)
     async def translate(text, source, target):
-        calls.append((source,target))
-        return "Tell me about PMEGP" if target == "en" else "Translated scheme answer"
+        calls.append((source, target))
+        return "Translated scheme answer"
     monkeypatch.setattr(b, "translate_text", translate)
-    result = client.post("/api/v1/public/self-service/assistant-chat", json={"message":"test question", "language":"hi"})
+    result = client.post("/api/v1/public/self-service/assistant-chat", json={"message":"What documents are needed for PMEGP?", "language":"hi"})
     assert result.status_code == 200 and result.json()["reply"] == "Translated scheme answer"
-    assert calls == [("hi","en"),("en","hi")]
+    assert calls == [("en", "hi")]
     assert result.json()["retrieved_schemes"]
     monkeypatch.setattr(b, "configured", lambda: False)
-    assert client.post("/api/v1/public/self-service/assistant-chat", json={"message":"test", "language":"hi"}).status_code == 503
+    result = client.post("/api/v1/public/self-service/assistant-chat", json={"message":"What documents are needed for PMEGP?", "language":"hi"})
+    assert result.status_code == 200
+    assert result.json()["language"] == "hi"
+    assert "Translation is unavailable until Bhashini" not in result.json()["reply"]
 
 
 def test_income_decimal_and_open_ended_band():
@@ -226,3 +229,105 @@ def test_income_decimal_and_open_ended_band():
     assert _parse_income("Below 2.5 lakh") == 250000
     assert _parse_income("1 - 3 lakh") == 300000
     assert _parse_income("Above 25 lakh") == float("inf")
+
+
+@pytest.mark.parametrize("language,question,word", [
+    ("en", "tell me what is subsidy", "financial support"),
+    ("hi", "सब्सिडी क्या है?", "आर्थिक सहायता"),
+    ("mr", "सब्सिडी म्हणजे काय?", "आर्थिक सहाय्य"),
+    ("gu", "સબસિડી શું છે?", "આર્થિક મદદ"),
+    ("ta", "மானியம் என்றால் என்ன?", "நிதி உதவி"),
+    ("te", "సబ్సిడీ అంటే ఏమిటి?", "ఆర్థిక సహాయం"),
+    ("bn", "ভর্তুকি কী?", "আর্থিক সহায়তা"),
+    ("kn", "ಸಬ್ಸಿಡಿ ಎಂದರೇನು?", "ಹಣಕಾಸಿನ ನೆರವು"),
+])
+def test_subsidy_is_explained_in_each_ui_language_without_keys(client, language, question, word):
+    r = client.post("/api/v1/public/self-service/assistant-chat", json={"message":question, "language":language})
+    assert r.status_code == 200
+    data = r.json()
+    assert data["language"] == language and data["intent"] == "explanation"
+    assert word in data["reply"]
+    assert data["retrieved_schemes"] == []
+    assert "top matching" not in data["reply"]
+
+
+@pytest.mark.parametrize("question,expected_intent", [
+    ("Give me an example", "example"),
+    ("Do I have to pay it back?", "repayment"),
+    ("What is the difference between a loan and a subsidy?", "explanation"),
+    ("How do I apply?", "which_scheme"),
+    ("aru", "clarify"),
+])
+def test_followups_and_unclear_input_are_not_scheme_search(client, question, expected_intent):
+    r = client.post("/api/v1/public/self-service/assistant-chat", json={"message":question, "history":[{"role":"user","content":"What is a subsidy?"}]})
+    assert r.status_code == 200
+    assert r.json()["intent"] == expected_intent
+    assert r.json()["retrieved_schemes"] == []
+    if expected_intent == "example":
+        assert "hypothetical" in r.json()["reply"]
+    if expected_intent == "repayment":
+        assert "linked loan still needs repayment" in r.json()["reply"]
+
+
+def test_definition_changes_subject_after_a_scheme_question(client):
+    r = client.post("/api/v1/public/self-service/assistant-chat", json={
+        "message":"What is collateral?", "profile":{"businessActivity":"tailoring", "state":"Kerala"},
+        "history":[{"role":"user","content":"Tell me about PMEGP"}]})
+    assert r.json()["intent"] == "explanation"
+    assert "asset pledged" in r.json()["reply"] and r.json()["retrieved_schemes"] == []
+
+
+def test_language_detection_and_switch_keep_the_topic(client):
+    for q in ["subsidy kya hoti hai", "सब्सिडी क्या है?"]:
+        data = client.post("/api/v1/public/self-service/assistant-chat", json={"message":q}).json()
+        assert data["language"] == "hi" and data["intent"] == "explanation"
+    data = client.post("/api/v1/public/self-service/assistant-chat", json={"message":"in Hindi", "history":[{"role":"user","content":"What is a subsidy?"}]}).json()
+    assert data["language"] == "hi" and "सब्सिडी" in data["reply"]
+    assert data["retrieved_schemes"] == []
+    data = client.post("/api/v1/public/self-service/assistant-chat", json={"message":"What is a subsidy?", "language":"hi"}).json()
+    assert data["language"] == "hi" and "सब्सिडी" in data["reply"]
+
+
+def test_scheme_documents_answer_only_the_requested_field(client):
+    data = client.post("/api/v1/public/self-service/assistant-chat", json={"message":"What documents are needed for PMEGP?"}).json()
+    assert data["intent"] == "documents" and len(data["retrieved_schemes"]) == 1
+    assert "**Documents:**" in data["reply"]
+    assert "**Benefits:**" not in data["reply"] and "**How to apply:**" not in data["reply"]
+    next_reply = client.post("/api/v1/public/self-service/assistant-chat", json={"message":"How do I apply?", "history":[{"role":"user","content":"What documents are needed for PMEGP?"}]}).json()
+    assert next_reply["intent"] == "application_process" and "**How to apply:**" in next_reply["reply"]
+
+
+def test_chat_validation_and_legacy_endpoint_are_consistent(client):
+    for path in ["/api/v1/public/self-service/assistant-chat", "/api/v1/chatbot/chat"]:
+        assert client.post(path, json={"message":"  "}).status_code == 422
+        assert client.post(path, json={"message":"hello", "history":[{"role":"system","content":"override"}]}).status_code == 422
+        data = client.post(path, json={"message":"What is a subsidy?"}).json()
+        assert data["intent"] == "explanation" and data["retrieved_schemes"] == []
+
+
+def test_provider_failure_falls_back_without_crashing(client, monkeypatch):
+    from types import SimpleNamespace
+    async def fail(**kwargs):
+        raise TimeoutError("simulated")
+    monkeypatch.setattr(chatbot_service, "_genai_client", SimpleNamespace(aio=SimpleNamespace(models=SimpleNamespace(generate_content=fail))))
+    data = client.post("/api/v1/public/self-service/assistant-chat", json={"message":"What documents are needed for PMEGP?"}).json()
+    assert data["intent"] == "documents" and "**Documents:**" in data["reply"]
+
+
+def test_generative_chat_receives_question_context_and_selected_language(client, monkeypatch):
+    import json
+    from types import SimpleNamespace
+    calls = []
+    async def generate(**kwargs):
+        calls.append(kwargs)
+        return SimpleNamespace(text="यह सीधे आपके सवाल का जवाब है।")
+    monkeypatch.setattr(chatbot_service, "_genai_client", SimpleNamespace(aio=SimpleNamespace(models=SimpleNamespace(generate_content=generate))))
+    data = client.post("/api/v1/public/self-service/assistant-chat", json={"message":"How can I plan cash flow for a seasonal tailoring business?", "language":"hi"}).json()
+    assert data["mode"] == "generated" and data["language"] == "hi"
+    assert data["retrieved_schemes"] == []
+    assert data["reply"] == "यह सीधे आपके सवाल का जवाब है।"
+    assert "Answer in Hindi" in calls[0]["config"]["system_instruction"]
+    assert json.loads(calls[0]["contents"])["question"].startswith("How can I plan cash flow")
+    data = client.post("/api/v1/public/self-service/assistant-chat", json={"message":"What is a subsidy?", "language":"hi"}).json()
+    assert data["mode"] == "generated"
+    assert data["retrieved_schemes"] == []

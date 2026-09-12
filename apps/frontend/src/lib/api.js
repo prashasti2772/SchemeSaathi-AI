@@ -42,14 +42,14 @@ export async function fetchMatchingSchemes(profilePayload) {
 
 /* Sends message and history to the SchemeSathi AI Chatbot (FAISS RAG + Gemini)
    and returns { reply: string, retrieved_schemes: array }. */
-export async function sendAssistantMessage(message, history = [], phoneNumber = null, profile = null, language = "en") {
+export async function sendAssistantMessage(message, history = [], phoneNumber = null, profile = null, language = "en", signal) {
   const response = await api.post("/public/self-service/assistant-chat", {
     message,
     language,
     history: history.slice(-20),
     phone_number: phoneNumber || null,
     profile: profile || null,
-  }, { timeout: language === "en" ? 45000 : 150000 });
+  }, { timeout: 60000, signal });
   return response.data;
 }
 

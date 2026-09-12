@@ -1,29 +1,19 @@
 from typing import Any, Optional
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Request
 from pydantic import BaseModel
 
 from src.modules.chatbot.service import chatbot_service
+from src.modules.chatbot.schemas import AssistantChatRequest
+from src.middlewares.rate_limiter import limiter
 
 router = APIRouter(prefix="/chatbot", tags=["Chatbot"])
 
 
-class ChatMessageRequest(BaseModel):
-    message: str
-    history: list[dict[str, Any]] = []
-    phone_number: Optional[str] = None
-    profile: Optional[dict[str, Any]] = None
-
-
 @router.post("/chat")
-async def chat_with_assistant(payload: ChatMessageRequest):
-    """Answers user queries regarding Indian government schemes using FAISS RAG and Gemini."""
-    result = await chatbot_service.chat(
-        message=payload.message,
-        history=payload.history,
-        phone_number=payload.phone_number,
-        profile=payload.profile,
-    )
-    return result
+@limiter.limit("20/minute")
+async def chat_with_assistant(request: Request, payload: AssistantChatRequest):
+    """Use the same conversational behavior as the citizen chatbot."""
+    return await chatbot_service.chat(**payload.model_dump())
 
 
 @router.get("/search")
