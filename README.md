@@ -178,4 +178,8 @@ Do not commit `.env`, databases, provider keys, user records or test screenshots
 
 ### Password recovery
 
-Signup uses CAPTCHA. Password recovery offers email (Gmail SMTP) or mobile (MSG91 SMS) verification with a six-digit OTP before allowing a new password. Configure both following [Password recovery setup](docs/PASSWORD_RECOVERY.md). Existing accounts are preserved by the automatic additive schema upgrade.
+Signup uses CAPTCHA. Password recovery offers email (Gmail SMTP or Resend HTTPS) or mobile (MSG91 SMS Flow) verification with a six-digit OTP before allowing a new password. Configure both following [Password recovery setup](docs/PASSWORD_RECOVERY.md). Existing accounts are preserved by the automatic additive schema upgrade.
+
+Render Free blocks SMTP ports 25/465/587, so use the HTTPS email adapter for that deployment. Both SMS template IDs come from **SMS > Templates**: `MSG91_OTP_TEMPLATE_ID` uses `##otp##` for recovery, and `MSG91_TEMPLATE_ID` uses `##website##` for outreach. See [Provider setup](docs/PROVIDER_SETUP.md) for the exact settings and template drafts.
+
+Run `.venv/Scripts/python.exe scripts/check_providers.py` from the project root to report missing configuration without displaying secrets. Add `--check-smtp` to verify TLS login to the configured email server without sending mail. Presence or authentication checks do not prove inbox/SMS delivery.

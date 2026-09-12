@@ -42,6 +42,12 @@ Cold starts on a sleeping free service can take time. If the first request times
 
 In Render **Environment**, add Bhashini credentials or MSG91 credentials from your own provider account, then redeploy. See the root README for exact keys and the approved SMS template configuration. Hosting being free does not make third-party SMS delivery free.
 
+- **Bhashini:** `BHASHINI_USER_ID`, `BHASHINI_API_KEY`, and the account-authorized `BHASHINI_PIPELINE_ID`.
+- **SMS:** `MSG91_AUTH_KEY` and approved `MSG91_SENDER_ID`; a reset SMS Flow ID in `MSG91_OTP_TEMPLATE_ID` with the `otp` variable; a separate outreach Flow ID in `MSG91_TEMPLATE_ID` with the `website` variable. The separate MSG91 **OTP Templates** screen is not the SMS Flow setup used by this project. Keep `SMS_LIVE_ENABLED=false` until outreach is ready; recovery SMS uses its own configuration.
+- **Recovery email:** `EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, and `EMAIL_FROM_ADDRESS` on a domain you own and have verified in Resend. Gmail SMTP cannot work on Render Free: it [blocks outbound ports 25, 465 and 587](https://render.com/docs/free). Resend's test sender can mail only the account owner; other recipients require a [verified sending domain](https://resend.com/docs/knowledge-base/403-error-resend-dev-domain). Domain ownership is a separate prerequisite, not included with the free Render URL.
+
+Use [provider setup](PROVIDER_SETUP.md) for draft SMS texts and required approvals, and [password recovery setup](PASSWORD_RECOVERY.md) for email/SMS configuration. Local `.env` changes do not update Render automatically: enter the corresponding settings in its Environment screen. Do not share secret values in chat.
+
 For a staff helpdesk account, run the local `scripts/create_staff.py` command from `apps/backend` with the **same Neon DATABASE_URL** configured in your private local backend `.env`. The script prompts for a password, creates a staff account, and does not print it. Sign in to the deployed site and open Support.
 
 ## Limits and costs

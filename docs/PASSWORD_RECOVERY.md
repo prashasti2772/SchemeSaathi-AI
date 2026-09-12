@@ -1,8 +1,22 @@
 # Password recovery and Gmail OTP setup
 
-The forgot-password page offers **Reset via Email** and **Reset via Mobile Number**. Email OTPs use Gmail SMTP; mobile OTPs use the existing MSG91 connection. Only the selected registered contact receives the code. Unregistered and inactive contacts receive the same public response and never receive messages.
+The forgot-password page offers **Reset via Email** and **Reset via Mobile Number**. Email OTPs use SMTP or the Resend HTTPS API; mobile OTPs use an MSG91 SMS Flow. Only the selected registered contact is eligible to receive the code. Unregistered and inactive contacts receive the same public response and never receive messages.
 
-## Configure Gmail
+## Choose email delivery for your host
+
+**Render Free blocks outbound SMTP ports 25, 465 and 587**, so Gmail SMTP will fail there even with a valid app password. Use the existing Resend HTTPS adapter for that deployment. [Render Free limitations](https://render.com/docs/free).
+
+In **Render → Environment**, set:
+
+```dotenv
+EMAIL_PROVIDER=resend
+EMAIL_FROM_ADDRESS=SchemeSaathi <support@your-verified-domain.example>
+RESEND_API_KEY=replace-with-resend-api-key
+```
+
+Replace the example sender with an address on a domain you own and have verified in Resend. The `resend.dev` test sender can send only to your Resend account's own email address; public-user recovery requires a verified domain. An ordinary Gmail address cannot be used as your verified Resend domain. Do not buy a domain or upgrade hosting unless you choose to do so. [Resend sender requirements](https://resend.com/docs/knowledge-base/403-error-resend-dev-domain), [email API](https://resend.com/docs/api-reference/emails/send-email).
+
+## Configure Gmail for local use or a host that permits SMTP
 
 1. Enable 2-Step Verification on the Gmail account that will send SchemeSaathi emails.
 2. Create a Google app password at https://myaccount.google.com/apppasswords. Use the label SchemeSaathi. Google instructions: https://support.google.com/accounts/answer/185833.
@@ -18,14 +32,18 @@ SMTP_PASSWORD=replace-with-google-app-password
 SMTP_USE_SSL=false
 ```
 
-4. Keep credentials only in `apps/backend/.env` and restart the backend after saving. Port 587 uses authenticated STARTTLS; port 465 can be used with `SMTP_USE_SSL=true` if your host permits outbound SMTP.
+4. Keep local credentials in the ignored `apps/backend/.env` and restart the backend after saving. On a host that permits SMTP, enter them in its private environment settings. Port 587 uses authenticated STARTTLS; port 465 can be used with `SMTP_USE_SSL=true`. Neither port works on Render Free. Never send app passwords in chat or put them in frontend environment variables.
 5. On `/forgot-password`, choose **Reset via Email**, enter the registered email address, solve the CAPTCHA, then enter the six-digit code from the email. Check Spam if needed. After verification, set and confirm a password of 10 to 128 characters, and sign in again.
 
-If the Google app-password option is absent, check Google's linked eligibility instructions. Some managed accounts cannot use app passwords. The app also supports Resend: set `EMAIL_PROVIDER=resend`, a verified `EMAIL_FROM_ADDRESS`, and `RESEND_API_KEY`. Its API contract is documented at https://resend.com/docs/api-reference/emails/send-email.
+If the Google app-password option is absent, check Google's linked eligibility instructions. Some managed accounts cannot use app passwords. The customer-care email and telephone links need no Gmail password; these credentials are specifically for automated recovery email.
 
 ## Configure MSG91 mobile OTP
 
-Keep the existing `MSG91_AUTH_KEY` and `MSG91_SENDER_ID` in `apps/backend/.env`. Add `MSG91_OTP_TEMPLATE_ID` for an approved SMS Flow template whose text contains the variable `##otp##` and states that the code expires in five minutes. This is a separate template from website outreach (`MSG91_TEMPLATE_ID`). Use an approved sender in your MSG91 account. The sender ID and flow ID are taken from the backend environment; no provider credentials are sent to the browser.
+Configure `MSG91_AUTH_KEY`, `MSG91_SENDER_ID` and `MSG91_OTP_TEMPLATE_ID` in the private local backend `.env`, or in **Render → Environment** for live hosting. `MSG91_OTP_TEMPLATE_ID` must identify an approved **SMS Flow** whose variable is named `otp`. The application generates and verifies its own codes; it does not use MSG91's separate OTP product. An empty **OTP Templates** screen is therefore not the SMS Flow setup page, and an OTP-product template ID will not work in this adapter.
+
+Draft reset text: `Your SchemeSaathi password reset code is ##otp##. It expires in 5 minutes. Do not share this code.` Submit this for the provider's sender/DLT approval and map the approved text and `otp` variable to a Flow. This draft is not an approval. Enter the resulting **Flow ID**, not the DLT registration ID, as `MSG91_OTP_TEMPLATE_ID`.
+
+Website outreach uses a separate Flow: `MSG91_TEMPLATE_ID`, with the `website` variable. Its draft is `Discover government schemes for your business with SchemeSaathi: ##website##`. Complete its own approval/mapping. The sender and Flow IDs stay on the backend.
 
 ```dotenv
 MSG91_AUTH_KEY=replace-with-msg91-auth-key
@@ -35,7 +53,7 @@ MSG91_OTP_TEMPLATE_ID=replace-with-approved-otp-flow-id
 
 The adapter posts to `https://api.msg91.com/api/v5/flow/` with the auth key in a header and the `otp` variable in the JSON recipient object. Registered Indian numbers are converted to the provider's `91` country-code format. See [MSG91 Flow API](https://api.msg91.com/apidoc/textsms/send-sms-flow.php) and [template requirements](https://msg91.com/help/dlt-registration-in-india/dlt-debugging-checklist).
 
-Choose **Reset via Mobile Number**, enter the registered 10-digit Indian mobile number, solve the CAPTCHA, then verify the six-digit SMS code before setting a new password. OTP requests do not depend on the separate outreach opt-in switch.
+Restart/redeploy after saving. Choose **Reset via Mobile Number**, enter the registered 10-digit Indian mobile number, solve the CAPTCHA, then verify the six-digit SMS code before setting a new password. OTP requests do not depend on `SMS_LIVE_ENABLED`, which controls outreach only. Provider credentials, an approved Flow and delivery credit/access are required for real SMS; acceptance alone does not confirm delivery.
 
 ## Behavior and verification
 
