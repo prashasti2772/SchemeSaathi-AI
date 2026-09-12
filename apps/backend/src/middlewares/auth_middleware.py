@@ -23,6 +23,8 @@ async def get_current_user(token: str | None = Depends(oauth2_scheme), db: Async
     user = await get_user_by_id(db, user_id)
     if not user or not user.is_active:
         raise UnauthorizedException("User account is inactive or does not exist")
+    if payload.get("auth_version", 0) != user.auth_version:
+        raise UnauthorizedException("Your session has expired. Please sign in again.")
     return user
 
 

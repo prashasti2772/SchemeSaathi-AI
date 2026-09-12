@@ -40,7 +40,7 @@ class Settings(BaseSettings):
     # Chatbot & Gemini Configuration
     CHATBOT_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
-    CHATBOT_MODEL: str = "gemini-2.5-flash"
+    CHATBOT_MODEL: str = "gemini-3.6-flash"
 
     TELEPHONY_PROVIDER: str = "exotel"
     TELEPHONY_API_KEY: str = ""
@@ -66,6 +66,7 @@ class Settings(BaseSettings):
     MSG91_AUTH_KEY: str = ""
     MSG91_SENDER_ID: str = "SCHMAT"
     MSG91_TEMPLATE_ID: str = ""
+    MSG91_OTP_TEMPLATE_ID: str = ""
 
     OCR_PROVIDER: str = "google_vision"
     OCR_API_KEY: str = ""
@@ -85,8 +86,15 @@ class Settings(BaseSettings):
     AWS_SECRET_ACCESS_KEY: str = ""
     AWS_REGION: str = "ap-south-1"
 
-    EMAIL_PROVIDER: str = "ses"
-    EMAIL_FROM_ADDRESS: str = "no-reply@scheme-matching.gov.in"
+    # Recovery emails are enabled only when a real sender is configured.
+    EMAIL_PROVIDER: str = "smtp"
+    EMAIL_FROM_ADDRESS: str = ""
+    RESEND_API_KEY: str = ""
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USERNAME: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_USE_SSL: bool = False
 
 
 @lru_cache

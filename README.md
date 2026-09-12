@@ -139,7 +139,7 @@ npm.cmd --prefix apps/frontend run lint
 npm.cmd --prefix apps/frontend run build
 ```
 
-For the browser test, build the frontend and run the backend on port 8000, then:
+For browser tests, build the frontend first, then run the following command. Playwright starts an isolated backend on port 8001 using a temporary database and fake email delivery; it does not change accounts in your running website:
 
 ```powershell
 cd apps/frontend
@@ -175,3 +175,7 @@ Free hosting may sleep after inactivity and has usage limits. A live internet UR
 
 Do not commit `.env`, databases, provider keys, user records or test screenshots containing personal information.
 
+
+### Password recovery
+
+Signup uses CAPTCHA. Password recovery offers email (Gmail SMTP) or mobile (MSG91 SMS) verification with a six-digit OTP before allowing a new password. Configure both following [Password recovery setup](docs/PASSWORD_RECOVERY.md). Existing accounts are preserved by the automatic additive schema upgrade.

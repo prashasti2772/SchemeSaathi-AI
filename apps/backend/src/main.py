@@ -43,8 +43,13 @@ async def lifespan(app: FastAPI):
     if settings.ENV == "production" and (settings.JWT_SECRET_KEY == "change-this-secret-in-production" or len(settings.JWT_SECRET_KEY) < 32):
         raise RuntimeError("Set JWT_SECRET_KEY to a random secret of at least 32 characters")
     from src.config.database import Base
+    from src.config.schema import upgrade_user_schema
     async with engine.begin() as connection:
+        if connection.dialect.name == "postgresql":
+            from sqlalchemy import text
+            await connection.execute(text("SELECT pg_advisory_xact_lock(724930128)"))
         await connection.run_sync(Base.metadata.create_all)
+        await connection.run_sync(upgrade_user_schema)
     
     # Pre-warm AI & ML services asynchronously at startup so first requests are instantaneous
     try:

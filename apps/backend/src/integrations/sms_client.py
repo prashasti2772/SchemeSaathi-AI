@@ -52,3 +52,31 @@ async def _send_msg91_sms(phone_number: str, message: str) -> str | None:
     except httpx.HTTPError as exc:
         logger.error("msg91_sms_failed", phone_number=phone_number, error=str(exc))
         return None
+
+
+def otp_sms_ready() -> bool:
+    return bool(settings.MSG91_AUTH_KEY and settings.MSG91_OTP_TEMPLATE_ID and settings.MSG91_SENDER_ID)
+
+
+async def send_reset_otp(phone_number: str, code: str) -> bool:
+    """Send our generated OTP using the configured MSG91 OTP Flow template.
+
+    The approved Flow template must contain ##otp##. Secrets and codes are
+    confined to headers/body, never URLs or application logs.
+    """
+    import re
+    if not otp_sms_ready() or not re.fullmatch(r"[6-9][0-9]{9}", phone_number) or not re.fullmatch(r"[0-9]{6}", code):
+        return False
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            response = await client.post(
+                "https://api.msg91.com/api/v5/flow/",
+                headers={"authkey": settings.MSG91_AUTH_KEY},
+                json={"flow_id": settings.MSG91_OTP_TEMPLATE_ID, "sender": settings.MSG91_SENDER_ID,
+                      "recipients": [{"mobiles": "91" + phone_number, "otp": code}]},
+            )
+            response.raise_for_status()
+            return response.json().get("type") == "success"
+    except (httpx.HTTPError, ValueError):
+        logger.warning("password_reset_sms_delivery_failed")
+        return False

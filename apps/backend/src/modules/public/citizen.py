@@ -1,10 +1,11 @@
 """Persistent citizen accounts, support tickets and consent-based outreach."""
-import secrets
 import uuid
+import re
+from typing import Literal
 from urllib.parse import urlsplit
-from datetime import datetime, timedelta
-from fastapi import APIRouter, Depends, HTTPException, Request
-from pydantic import BaseModel, EmailStr, Field
+from datetime import datetime
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, BackgroundTasks
+from pydantic import BaseModel, EmailStr, Field, TypeAdapter, model_validator
 from sqlalchemy import String, Text, select, or_, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Mapped, mapped_column
@@ -16,7 +17,8 @@ from src.middlewares.auth_middleware import get_current_user
 from src.middlewares.rbac_middleware import require_any_staff
 from src.middlewares.rate_limiter import limiter
 from src.modules.users.models import User, UserRole
-from src.utils.security import hash_password, verify_password, create_access_token, hash_token
+from src.modules.auth import recovery
+from src.utils.security import hash_password, verify_password, create_access_token
 
 router = APIRouter(prefix="/citizen", tags=["Citizen"])
 
@@ -36,7 +38,11 @@ class Subscription(Base, TimestampMixin):
     consent: Mapped[bool] = mapped_column(default=False)
     last_sent: Mapped[datetime | None] = mapped_column(nullable=True)
 
-class Register(BaseModel):
+class CaptchaInput(BaseModel):
+    captcha_id: str = Field(min_length=16, max_length=100)
+    captcha_answer: str = Field(min_length=1, max_length=16)
+
+class Register(CaptchaInput):
     full_name: str = Field(min_length=2, max_length=100)
     email: EmailStr
     mobile: str = Field(pattern=r"^[6-9]\d{9}$")
@@ -46,8 +52,22 @@ class Login(BaseModel):
     identifier: str = Field(min_length=3, max_length=255)
     password: str = Field(min_length=1, max_length=128)
 
-class ForgotPasswordRequest(BaseModel):
+class ForgotPasswordRequest(CaptchaInput):
+    channel: Literal["email", "mobile"] = "email"
     identifier: str = Field(min_length=3, max_length=255)
+
+    @model_validator(mode="after")
+    def validate_contact(self):
+        self.identifier = self.identifier.strip()
+        if self.channel == "email":
+            self.identifier = str(TypeAdapter(EmailStr).validate_python(self.identifier)).lower()
+        elif not re.fullmatch(r"[6-9][0-9]{9}", self.identifier):
+            raise ValueError("Enter a valid 10-digit Indian mobile number")
+        return self
+
+class VerifyResetOtpRequest(BaseModel):
+    challenge_id: str = Field(min_length=16, max_length=100)
+    otp: str = Field(pattern=r"^[0-9]{6}$")
 
 class ResetPasswordRequest(BaseModel):
     token: str = Field(min_length=10, max_length=512)
@@ -63,11 +83,21 @@ def account(user):
             "mobile": user.mobile, "role": user.role.value}
 
 def session(user):
-    return {"access_token": create_access_token(str(user.id), user.role.value), "user": account(user)}
+    return {"access_token": create_access_token(str(user.id), user.role.value, user.auth_version), "user": account(user)}
+
+@router.get("/captcha")
+@limiter.limit("20/minute")
+async def captcha(request: Request, response: Response, db: AsyncSession = Depends(get_db)):
+    response.headers["Cache-Control"] = "no-store"
+    return await recovery.issue_captcha(db)
 
 @router.post("/register", status_code=201)
 @limiter.limit("5/minute")
 async def register(request: Request, payload: Register, db: AsyncSession = Depends(get_db)):
+    await recovery.verify_captcha(db, payload.captcha_id, payload.captcha_answer)
+    existing = (await db.execute(select(User.id).where(or_(User.email == str(payload.email).lower(), User.mobile == payload.mobile)).limit(1))).scalar_one_or_none()
+    if existing:
+        raise HTTPException(409, "Already registered. An account with this email or mobile number exists. Sign in or reset your password.")
     user = User(full_name=payload.full_name.strip(), email=str(payload.email).lower(), mobile=payload.mobile,
                 hashed_password=hash_password(payload.password), role=UserRole.CITIZEN)
     db.add(user)
@@ -75,7 +105,7 @@ async def register(request: Request, payload: Register, db: AsyncSession = Depen
         await db.commit()
     except IntegrityError:
         await db.rollback()
-        raise HTTPException(409, "An account already uses this email or mobile number")
+        raise HTTPException(409, "Already registered. An account with this email or mobile number exists. Sign in or reset your password.")
     await db.refresh(user)
     return session(user)
 
@@ -89,31 +119,22 @@ async def login(request: Request, payload: Login, db: AsyncSession = Depends(get
 
 @router.post("/forgot-password")
 @limiter.limit("5/minute")
-async def forgot_password(request: Request, payload: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)):
-    user = await find_user_by_identifier(db, payload.identifier)
-    if user and user.is_active:
-        raw_token = secrets.token_urlsafe(32)
-        user.reset_token = hash_token(raw_token)
-        user.reset_token_expires_at = datetime.utcnow() + timedelta(minutes=30)
-        await db.commit()
-        return {"message": "Password reset token created. Use it to set a new password.", "token": raw_token}
-    return {"message": "If this account exists, a password reset token was created."}
+async def forgot_password(request: Request, payload: ForgotPasswordRequest, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
+    await recovery.verify_captcha(db, payload.captcha_id, payload.captcha_answer)
+    # Never fall back to the other channel or accept a separate delivery address.
+    contact_column = User.email if payload.channel == "email" else User.mobile
+    user = (await db.execute(select(User).where(contact_column == payload.identifier))).scalar_one_or_none()
+    return await recovery.request_recovery(db, user, payload.identifier, payload.channel, background_tasks)
+
+@router.post("/verify-reset-otp")
+@limiter.limit("15/minute")
+async def verify_reset_otp(request: Request, payload: VerifyResetOtpRequest, db: AsyncSession = Depends(get_db)):
+    return await recovery.verify_otp(db, payload.challenge_id, payload.otp)
 
 @router.post("/reset-password")
 @limiter.limit("5/minute")
 async def reset_password(request: Request, payload: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
-    token = payload.token.strip()
-    if not token:
-        raise HTTPException(400, "Reset token is required")
-    hashed_token = hash_token(token)
-    user = (await db.execute(select(User).where(User.reset_token == hashed_token))).scalar_one_or_none()
-    if not user or not user.reset_token_expires_at or user.reset_token_expires_at < datetime.utcnow():
-        raise HTTPException(400, "Invalid or expired reset token")
-    user.hashed_password = hash_password(payload.password)
-    user.reset_token = None
-    user.reset_token_expires_at = None
-    await db.commit()
-    return {"message": "Password updated successfully."}
+    return await recovery.reset_password(db, payload.token, payload.password)
 
 @router.get("/me")
 async def me(user: User = Depends(get_current_user)):

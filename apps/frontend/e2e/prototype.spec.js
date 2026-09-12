@@ -12,8 +12,9 @@ test("citizen signup, wizard, chat, voice status and support work together", asy
   await page.getByLabel("Mobile number", {exact:true}).fill("987"+suffix);
   await page.getByLabel("Email", {exact:true}).fill("browser"+suffix+"@example.com");
   await page.getByLabel("Password", {exact:true}).fill("long-browser-test-password");
+  await page.getByLabel("Enter the characters shown above").fill("ABC234");
   await page.getByRole("button",{name:"Create Account",exact:true}).click();
-  await expect(page).toHaveURL("http://127.0.0.1:8000/");
+  await expect(page).toHaveURL("http://127.0.0.1:8001/");
   await page.goto("/find-schemes/personal-info");
   await page.getByLabel("Age",{exact:true}).fill("28");
   await page.getByRole("combobox",{name:"Gender",exact:true}).selectOption("Female");

@@ -16,16 +16,16 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
 
-def create_access_token(subject: str, role: str) -> str:
+def create_access_token(subject: str, role: str, auth_version: int = 0) -> str:
     expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    payload = {"sub": subject, "role": role, "type": "access", "exp": expire}
+    payload = {"sub": subject, "role": role, "type": "access", "exp": expire, "auth_version": auth_version}
     return jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
 
-def create_refresh_token(subject: str) -> tuple[str, str, datetime]:
+def create_refresh_token(subject: str, auth_version: int = 0) -> tuple[str, str, datetime]:
     raw_token = secrets.token_urlsafe(48)
     expire = datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
-    payload = {"sub": subject, "jti": raw_token, "type": "refresh", "exp": expire}
+    payload = {"sub": subject, "jti": raw_token, "type": "refresh", "exp": expire, "auth_version": auth_version}
     signed_token = jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
     return signed_token, hash_token(raw_token), expire
 

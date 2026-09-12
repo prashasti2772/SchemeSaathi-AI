@@ -16,7 +16,7 @@
 
 ## Configure the optional model
 
-In `apps/backend/.env`, set `GEMINI_API_KEY` and, if necessary, `CHATBOT_MODEL` to a model your account can use. Restart the backend after changing the environment. No API key belongs in frontend code or Git. The optional provider uses the official Google GenAI async client, a separate system instruction, bounded history, a 15-second generation timeout and local fallback on provider failure.
+In `apps/backend/.env`, set `GEMINI_API_KEY` and, if necessary, `CHATBOT_MODEL` to a model your account can use. Restart the backend after changing the environment. No API key belongs in frontend code or Git. The optional provider uses the official Google GenAI async client, a separate system instruction, bounded history, a 35-second generation timeout and local fallback on provider failure.
 
 Official API reference: https://ai.google.dev/api/generate-content
 
@@ -25,3 +25,7 @@ Official API reference: https://ai.google.dev/api/generate-content
 Backend tests cover the exact reported question, native language answers, English-to-Hindi reply selection, transliterated Hindi, follow-up context, topic changes, examples, repayment, document-only answers, API validation, legacy endpoint consistency and provider failure. Browser tests exercise real local responses in all eight languages, mobile layout, history reset, cancellation and retry isolation. Native-language wording has not been independently reviewed by professional translators. Live model behavior requires the user's working Gemini credential and is verified separately from mocked provider tests.
 
 The scope of this update is the text chatbot. Scheme data, SMS, hosting and the voice page were not changed.
+
+## Provider configuration follow-up
+
+The default model is now `gemini-3.6-flash`; Google returned a model-unavailable error for the previous default on the supplied account. The key is stored only in the ignored backend `.env`. Direct provider and generated chatbot responses succeeded, but later provider calls also timed out. A 35-second bound and authored local-language fallback keep the assistant usable; these checks do not establish continuous provider availability. Gemini 3.6 Flash uses minimal thinking for short conversational answers. See [Google generation settings](https://ai.google.dev/gemini-api/docs/generate-content/thinking).

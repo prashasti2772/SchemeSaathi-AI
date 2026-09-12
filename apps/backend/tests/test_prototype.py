@@ -11,6 +11,7 @@ os.environ["BHASHINI_USER_ID"] = ""
 os.environ["GEMINI_API_KEY"] = ""
 os.environ["CHATBOT_API_KEY"] = ""
 import pytest
+from unittest.mock import patch
 from fastapi.testclient import TestClient
 from src.main import app
 from src.modules.eligibility.service import eligibility_service
@@ -23,10 +24,18 @@ def client():
         app.state.limiter.enabled = False
         yield c
 
+def captcha_fields(client):
+    from src.modules.auth import recovery
+    with patch.object(recovery, "captcha_text", return_value="ABC234"):
+        response = client.get("/api/v1/citizen/captcha")
+    assert response.status_code == 200, response.text
+    return {"captcha_id": response.json()["captcha_id"], "captcha_answer": "ABC234"}
+
+
 def new_account(client, suffix):
     response = client.post("/api/v1/citizen/register", json={
         "full_name": "Prototype Tester", "email": f"tester{suffix}@example.com",
-        "mobile": f"98765432{suffix:02}", "password": "a-long-test-password"})
+        "mobile": f"98765432{suffix:02}", "password": "a-long-test-password", **captcha_fields(client)})
     assert response.status_code == 201, response.text
     return {"Authorization": "Bearer " + response.json()["access_token"]}
 
@@ -44,28 +53,37 @@ def test_auth_is_real(client):
     assert client.get("/api/v1/users", headers=auth).status_code == 403
     assert client.post("/api/v1/citizen/outreach-send", headers=auth).status_code == 403
 
-def test_password_reset_flow(client):
+def test_password_reset_flow(client, monkeypatch):
+    from src.modules.auth import recovery
+    sent = []
+    monkeypatch.setattr(recovery.email_client, "email_ready", lambda: True)
+    monkeypatch.setattr(recovery, "otp_text", lambda: "123456")
+    async def send_email(address, subject, body):
+        sent.append((address, body))
+        return True
+    monkeypatch.setattr(recovery.email_client, "send_email", send_email)
     email = "resetter@example.com"
     password = "a-long-test-password"
     register = client.post("/api/v1/citizen/register", json={
-        "full_name": "Reset Tester",
-        "email": email,
-        "mobile": "9876543210",
-        "password": password,
+        "full_name": "Reset Tester", "email": email, "mobile": "9876543210",
+        "password": password, **captcha_fields(client),
     })
     assert register.status_code == 201, register.text
-
-    forgot = client.post("/api/v1/citizen/forgot-password", json={"identifier": email})
+    old_auth = {"Authorization": "Bearer " + register.json()["access_token"]}
+    forgot = client.post("/api/v1/citizen/forgot-password", json={"identifier": email, **captcha_fields(client)})
     assert forgot.status_code == 200, forgot.text
-    token = forgot.json()["token"]
-    assert token
-
-    expired = client.post("/api/v1/citizen/reset-password", json={"token": token, "password": "new-longer-password"})
-    assert expired.status_code == 200, expired.text
-
+    assert "token" not in forgot.json() and "otp" not in forgot.json()
+    assert sent[0][0] == email and "123456" in sent[0][1]
+    verified = client.post("/api/v1/citizen/verify-reset-otp", json={"challenge_id": forgot.json()["challenge_id"], "otp": "123456"})
+    assert verified.status_code == 200, verified.text
+    token = verified.json()["token"]
+    changed = client.post("/api/v1/citizen/reset-password", json={"token": token, "password": " new-longer-password "})
+    assert changed.status_code == 200, changed.text
     assert client.post("/api/v1/citizen/login", json={"identifier": email, "password": password}).status_code == 401
-    assert client.post("/api/v1/citizen/login", json={"identifier": email, "password": "new-longer-password"}).status_code == 200
-    assert client.post("/api/v1/citizen/reset-password", json={"token": token, "password": "another-password"}).status_code == 400
+    assert client.post("/api/v1/citizen/login", json={"identifier": email, "password": " new-longer-password "}).status_code == 200
+    assert client.post("/api/v1/citizen/login", json={"identifier": email, "password": "new-longer-password"}).status_code == 401
+    assert client.get("/api/v1/citizen/me", headers=old_auth).status_code == 401
+    assert client.post("/api/v1/citizen/reset-password", json={"token": token, "password": "another-password"}).status_code == 410
 
 
 def test_ticket_isolation_and_consent(client):

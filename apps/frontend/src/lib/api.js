@@ -10,29 +10,6 @@ export const api = axios.create({
   timeout: 15000,
 });
 
-// Automatic fallback between http://localhost:8000 and http://127.0.0.1:8000 if network fails
-api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const config = error.config;
-    if (
-      error.code === "ERR_NETWORK" &&
-      config &&
-      !config._retry &&
-      typeof config.baseURL === "string"
-    ) {
-      config._retry = true;
-      if (config.baseURL.includes("localhost")) {
-        config.baseURL = config.baseURL.replace("localhost", "127.0.0.1");
-      } else if (config.baseURL.includes("127.0.0.1")) {
-        config.baseURL = config.baseURL.replace("127.0.0.1", "localhost");
-      }
-      return api.request(config);
-    }
-    return Promise.reject(error);
-  }
-);
-
 /* Submits the wizard's collected profile and returns explainable scheme
    matches from the real Eligibility Engine. */
 export async function fetchMatchingSchemes(profilePayload) {
@@ -92,8 +69,19 @@ export function saveSession(data) {
   sessionStorage.setItem("schemeSaathiLoggedIn", "true");
 }
 export function apiError(error) {
-  const detail = error.response?.data?.detail;
-  return typeof detail === "string" ? detail : error.response?.data?.message || "Request failed. Check your inputs and that the server is running.";
+  if (!error.response) {
+    return error.code === "ECONNABORTED" || error.code === "ETIMEDOUT"
+      ? "The service took too long to respond. Please try again."
+      : "Unable to connect to the website service. Please try again in a moment.";
+  }
+  const detail = error.response.data?.detail;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail) && detail.length) {
+    const issue = detail[0];
+    const field = String(issue.loc?.at(-1) || "Input").replaceAll("_", " ");
+    return `${field}: ${issue.msg || "Please check this field."}`;
+  }
+  return error.response.data?.message || "We could not complete your request. Please try again.";
 }
 
 // Remove the legacy demo account, which could include a plaintext password.
