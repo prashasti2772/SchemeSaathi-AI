@@ -7,8 +7,8 @@
     envVars:
       - key: JWT_SECRET_KEY
         generateValue: true
-      - key: DATABASE_URL
-        sync: false
+      - - key: DATABASE_URL
+        ite+aiosqlite:///./schemesathi.db
       - key: PUBLIC_SITE_URL
         sync: false
       - key: CORS_ORIGINS
