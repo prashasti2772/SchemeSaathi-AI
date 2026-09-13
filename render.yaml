@@ -1,19 +1,36 @@
-# Deploy the React site and Python API together.
-# Supply a persistent PostgreSQL URL in Render's private environment settings.
+# Free SIH demo deployment. Render's free PostgreSQL database expires after 30 days.
+# Both React and the Python API are served by this one web service.
 services:
   - type: web
     name: schemesathi-ai
     runtime: docker
     plan: free
+    region: singapore
     healthCheckPath: /health
     envVars:
       - key: JWT_SECRET_KEY
         generateValue: true
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: schemesathi-db
+          property: connectionString
       - key: PUBLIC_SITE_URL
-        sync: false
+        fromService:
+          type: web
+          name: schemesathi-ai
+          envVarKey: RENDER_EXTERNAL_URL
       - key: CORS_ORIGINS
         value: '[]'
       - key: ENV
         value: production
+      - key: SUPPORT_EMAIL
+        value: customercareprashasti@gmail.com
+      - key: SMS_PROVIDER
+        value: firebase
+
+databases:
+  - name: schemesathi-db
+    plan: free
+    region: singapore
+    databaseName: schemesathi
+    ipAllowList: []
