@@ -24,10 +24,10 @@ Replace the example sender with an address on a domain you own and have verified
 
 ```dotenv
 EMAIL_PROVIDER=smtp
-EMAIL_FROM_ADDRESS=your-sender@gmail.com
+EMAIL_FROM_ADDRESS=customercareprashasti@gmail.com
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
-SMTP_USERNAME=your-sender@gmail.com
+SMTP_USERNAME=customercareprashasti@gmail.com
 SMTP_PASSWORD=replace-with-google-app-password
 SMTP_USE_SSL=false
 ```

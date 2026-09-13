@@ -127,13 +127,11 @@ export default function BusinessDetailsPage() {
         <div className="mx-auto max-w-287.5 px-5 sm:px-8">
           <div className="mt-9">
             <h1 className="text-[27px] font-extrabold tracking-[-0.02em] text-[#172b49]">
-              Tell us about your business
-            </h1>
+              {t("Tell us about your business")}</h1>
 
             {isEditMode && (
               <p className="mt-2 text-[13px] text-slate-500">
-                Update your business information below.
-              </p>
+                {t("Update your business information below.")}</p>
             )}
           </div>
 
@@ -145,53 +143,53 @@ export default function BusinessDetailsPage() {
               >
                 <div className="grid gap-x-5 gap-y-5 sm:grid-cols-2">
                   <FormSelect
-                    label="Business Type"
+                    label={t("Business Type")}
                     name="businessType"
-                    placeholder="Select Business Type"
+                    placeholder={t("Select Business Type")}
                     value={form.businessType}
                     onChange={handleChange}
                     options={businessTypes}
                   />
 
                   <FormInput
-                    label="Business Activity"
+                    label={t("Business Activity")}
                     name="businessActivity"
-                    placeholder="Describe your business"
+                    placeholder={t("Describe your business")}
                     value={form.businessActivity}
                     onChange={handleChange}
                   />
 
                   <FormSelect
-                    label="Business Stage"
+                    label={t("Business Stage")}
                     name="businessStage"
-                    placeholder="Select Stage"
+                    placeholder={t("Select Stage")}
                     value={form.businessStage}
                     onChange={handleChange}
                     options={businessStages}
                   />
 
                   <FormSelect
-                    label="Years in Business"
+                    label={t("Years in Business")}
                     name="yearsInBusiness"
-                    placeholder="Select"
+                    placeholder={t("Select")}
                     value={form.yearsInBusiness}
                     onChange={handleChange}
                     options={yearsOptions}
                   />
 
                   <FormSelect
-                    label="Annual Turnover"
+                    label={t("Annual Turnover")}
                     name="annualTurnover"
-                    placeholder="Select Range"
+                    placeholder={t("Select Range")}
                     value={form.annualTurnover}
                     onChange={handleChange}
                     options={turnoverOptions}
                   />
 
                   <FormSelect
-                    label="Number of Employees"
+                    label={t("Number of Employees")}
                     name="numberOfEmployees"
-                    placeholder="Select Range"
+                    placeholder={t("Select Range")}
                     value={form.numberOfEmployees}
                     onChange={handleChange}
                     options={employeeOptions}
@@ -259,6 +257,7 @@ function FormSelect({
   onChange,
   options,
 }) {
+  const { t } = useLanguage();
   return (
     <label className="block">
       <span className="mb-2 block text-[13px] font-medium text-slate-700">
@@ -279,7 +278,7 @@ function FormSelect({
 
         {options.map((option) => (
           <option key={option} value={option}>
-            {option}
+            {t(option)}
           </option>
         ))}
       </select>

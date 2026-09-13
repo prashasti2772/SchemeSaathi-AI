@@ -9,7 +9,7 @@ from src.modules.auth.schemas import LoginRequest, RefreshRequest, TokenResponse
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
-@router.post("/login", response_model=TokenResponse)
+@router.post("/login")
 @limiter.limit(settings.RATE_LIMIT_LOGIN)
 async def login(request: Request, payload: LoginRequest, db: AsyncSession = Depends(get_db)):
     return await service.authenticate_user(db, payload)

@@ -41,6 +41,7 @@ class Settings(BaseSettings):
     CHATBOT_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
     CHATBOT_MODEL: str = "gemini-3.6-flash"
+    TRANSLATION_MODEL: str = "gemini-3.5-flash-lite"
 
     TELEPHONY_PROVIDER: str = "exotel"
     TELEPHONY_API_KEY: str = ""
@@ -61,12 +62,16 @@ class Settings(BaseSettings):
 
     WEBHOOK_SHARED_SECRET: str = ""
 
-    SMS_PROVIDER: str = "msg91"
-    SMS_API_KEY: str = ""
+    SMS_PROVIDER: str = "firebase"
     MSG91_AUTH_KEY: str = ""
-    MSG91_SENDER_ID: str = "SCHMAT"
+    MSG91_SENDER_ID: str = ""
     MSG91_TEMPLATE_ID: str = ""
     MSG91_OTP_TEMPLATE_ID: str = ""
+    SMS_API_KEY: str = ""
+    FIREBASE_API_KEY: str = ""
+    FIREBASE_PROJECT_ID: str = ""
+    FIREBASE_AUTH_DOMAIN: str = ""
+    FIREBASE_APP_ID: str = ""
 
     OCR_PROVIDER: str = "google_vision"
     OCR_API_KEY: str = ""
@@ -87,9 +92,12 @@ class Settings(BaseSettings):
     AWS_REGION: str = "ap-south-1"
 
     # Recovery emails are enabled only when a real sender is configured.
+    SUPPORT_EMAIL: str = "customercareprashasti@gmail.com"
     EMAIL_PROVIDER: str = "smtp"
     EMAIL_FROM_ADDRESS: str = ""
     RESEND_API_KEY: str = ""
+    APPS_SCRIPT_URL: str = ""
+    APPS_SCRIPT_SECRET: str = ""
     SMTP_HOST: str = ""
     SMTP_PORT: int = 587
     SMTP_USERNAME: str = ""

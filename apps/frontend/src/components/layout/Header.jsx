@@ -8,7 +8,6 @@ const navItems = [
   { key: "nav_categories", href: "/categories" },
   { key: "nav_resources", href: "/resources" },
   { key: "nav_about", href: "/about" },
-  { key: "nav_search", href: "/categories" },
 ];
 
 export default function Header() {
@@ -66,7 +65,7 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white">
+    <header className="sticky top-0 z-50 border-b border-[#1d3e6b] bg-[#081d3d] text-white shadow-[0_10px_30px_rgba(8,29,61,0.18)]">
 
       <div className="mx-auto flex h-17.5 max-w-7xl items-center px-4 sm:px-6 lg:px-10">
 
@@ -81,7 +80,7 @@ export default function Header() {
             <button
               type="button"
               onClick={() => setMenuOpen(!menuOpen)}
-              aria-label="Open navigation menu"
+              aria-label={t("Open navigation menu")}
               aria-expanded={menuOpen}
               className="
                 flex
@@ -91,11 +90,11 @@ export default function Header() {
                 justify-center
                 rounded-lg
                 border
-                border-slate-200
-                bg-white
-                text-[#0d2b55]
+                border-white/20
+                bg-white/5
+                text-[#f4d780]
                 transition
-                hover:bg-slate-50
+                hover:bg-white/10
               "
             >
 
@@ -105,9 +104,9 @@ export default function Header() {
                 </span>
               ) : (
                 <div className="flex flex-col gap-1">
-                  <span className="block h-0.5 w-5 bg-[#0d2b55]" />
-                  <span className="block h-0.5 w-5 bg-[#0d2b55]" />
-                  <span className="block h-0.5 w-5 bg-[#0d2b55]" />
+                  <span className="block h-0.5 w-5 bg-[#f4d780]" />
+                  <span className="block h-0.5 w-5 bg-[#f4d780]" />
+                  <span className="block h-0.5 w-5 bg-[#f4d780]" />
                 </div>
               )}
 
@@ -118,7 +117,7 @@ export default function Header() {
 
           {/* ================= LOGO ================= */}
 
-          <img src={logo} alt="Logo" className="h-10 w-auto" />
+          <img src={logo} alt={t("Logo")} className="h-10 w-auto" />
 
         </div>
 
@@ -143,8 +142,8 @@ export default function Header() {
 
                   ${
                     active
-                      ? "text-[#d8aa2d]"
-                      : "text-slate-700 hover:text-[#0d2b55]"
+                      ? "text-[#f4d780]"
+                      : "text-slate-200 hover:text-white"
                   }
                 `}
               >
@@ -169,17 +168,17 @@ export default function Header() {
               type="button"
               onClick={() => setLanguageMenuOpen((open) => !open)}
               className="
-                rounded-xl
+                rounded-full
                 border
-                border-slate-200
-                bg-slate-50
-                px-4
-                py-2.5
+                border-transparent
+                bg-transparent
+                px-2.5
+                py-2
                 text-sm
                 font-medium
-                text-slate-700
+                text-slate-200
                 transition
-                hover:bg-slate-100
+                hover:text-white
               "
             >
               {currentLanguageLabel}
@@ -219,8 +218,8 @@ export default function Header() {
 
                       ${
                         lang.code === language
-                          ? "bg-[#fff4c7] font-semibold text-[#0d2b55]"
-                          : "text-slate-700 hover:bg-slate-50"
+                          ? "bg-[#f4d780] font-semibold text-[#081d3d]"
+                          : "text-slate-700 hover:bg-slate-100"
                       }
                     `}
                   >
@@ -232,21 +231,6 @@ export default function Header() {
 
           </div>
 
-
-          <a
-            href="/categories"
-            className="
-              rounded-xl
-              px-4
-              py-2.5
-              text-sm
-              font-medium
-              text-white
-            "
-          >
-            {t("nav_search")}
-          </a>
-
           {/* ================= SIGN IN / PROFILE ================= */}
 
           {isLoggedIn ? (
@@ -255,7 +239,7 @@ export default function Header() {
               <button
                 type="button"
                 onClick={() => setProfileMenuOpen((open) => !open)}
-                aria-label="Open profile menu"
+                aria-label={t("Open profile menu")}
                 className="
                   flex
                   h-10
@@ -263,12 +247,12 @@ export default function Header() {
                   items-center
                   justify-center
                   rounded-full
-                  bg-[#0d2b55]
+                  bg-[#d8aa2d]
                   text-sm
                   font-semibold
-                  text-white
+                  text-[#081d3d]
                   transition
-                  hover:bg-[#173b70]
+                  hover:bg-[#e5bb4d]
                 "
               >
                 {initials}
@@ -322,15 +306,15 @@ export default function Header() {
             <a
               href="/signin"
               className="
-                rounded-xl
-                bg-[#0d2b55]
+                rounded-full
+                bg-[#d8aa2d]
                 px-4
                 py-2.5
                 text-sm
                 font-medium
-                text-white
+                text-[#081d3d]
                 transition
-                hover:bg-[#173b70]
+                hover:bg-[#e5bb4d]
                 sm:px-5
               "
             >
@@ -349,8 +333,8 @@ export default function Header() {
         <div
           className="
             border-t
-            border-slate-200
-            bg-white
+            border-white/10
+            bg-[#0a1f3c]
             shadow-md
             lg:hidden
           "
@@ -379,8 +363,8 @@ export default function Header() {
 
                       ${
                         active
-                          ? "bg-[#f7f8fc] text-[#d8aa2d]"
-                          : "text-slate-700 hover:bg-slate-50 hover:text-[#0d2b55]"
+                          ? "bg-white/10 text-[#f4d780]"
+                          : "text-slate-200 hover:bg-white/5 hover:text-white"
                       }
                     `}
                   >
@@ -393,7 +377,7 @@ export default function Header() {
               {/* Language picker, mobile */}
 
               <div className="mt-2 border-t border-slate-100 pt-3">
-                <p className="px-4 pb-2 text-xs font-medium uppercase tracking-wide text-slate-400">Language</p>
+                <p className="px-4 pb-2 text-xs font-medium uppercase tracking-wide text-slate-400">{t("Language")}</p>
 
                 <div className="flex flex-wrap gap-2 px-4">
                   {LANGUAGES.map((lang) => (
@@ -411,8 +395,8 @@ export default function Header() {
 
                         ${
                           lang.code === language
-                            ? "border-[#0d2b55] bg-[#0d2b55] text-white"
-                            : "border-slate-200 text-slate-600"
+                            ? "border-[#d8aa2d] bg-[#d8aa2d] text-[#081d3d]"
+                            : "border-white/15 bg-white/5 text-slate-200"
                         }
                       `}
                     >

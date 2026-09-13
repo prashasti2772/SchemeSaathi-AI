@@ -1,3 +1,4 @@
+import { useLanguage } from "../../lib/i18n.jsx";
 import React from "react";
 
 const reasons = [
@@ -8,11 +9,11 @@ const reasons = [
 ];
 
 export default function WhyAskCard() {
+  const { t } = useLanguage();
   return (
     <aside className="rounded-xl bg-[#edf3ff] px-7 py-8 sm:px-8">
       <h2 className="text-[19px] font-extrabold text-[#172b49]">
-        Why we ask this?
-      </h2>
+        {t("Why we ask this?")}</h2>
 
       <div className="mt-7 space-y-7">
         {reasons.map((reason) => (

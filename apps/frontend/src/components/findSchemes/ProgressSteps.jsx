@@ -1,3 +1,4 @@
+import { useLanguage } from "../../lib/i18n.jsx";
 import React, { useState } from "react";
 import AIHelpModal from "./AIHelpModal";
 
@@ -10,6 +11,7 @@ const steps = [
 ];
 
 export default function ProgressSteps({ currentStep = 1 }) {
+  const { t } = useLanguage();
   const [isAiHelpOpen, setIsAiHelpOpen] = useState(false);
 
   const openAIAssistant = () => {
@@ -102,7 +104,7 @@ export default function ProgressSteps({ currentStep = 1 }) {
         <button
           type="button"
           onClick={openAIAssistant}
-          title="Open AI Scheme Assistant"
+          title={t("Open AI Scheme Assistant")}
           className="
              rounded-lg
               border
@@ -122,8 +124,7 @@ export default function ProgressSteps({ currentStep = 1 }) {
             active:scale-95
           "
         >
-          AI Help
-        </button>
+          {t("AI Help")}</button>
 
       </div>
 

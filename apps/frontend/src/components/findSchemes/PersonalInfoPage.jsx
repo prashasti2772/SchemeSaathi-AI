@@ -205,8 +205,8 @@ export default function PersonalInfoPage() {
 
             <p className="mt-2 text-[13px] text-slate-500">
               {isEditMode
-                ? "Update your information and continue."
-                : "Please provide your basic information to find suitable government schemes."}
+                ? t("Update your information and continue.")
+                : t("Please provide your basic information to find suitable government schemes.")}
             </p>
           </div>
 
@@ -228,10 +228,10 @@ export default function PersonalInfoPage() {
                   {/* FULL NAME */}
 
                   <FormInput
-                    label="Full Name"
+                    label={t("Full Name")}
                     name="fullName"
                     type="text"
-                    placeholder="Enter your full name"
+                    placeholder={t("Enter your full name")}
                     value={form.fullName}
                     onChange={handleChange}
                   />
@@ -239,10 +239,10 @@ export default function PersonalInfoPage() {
                   {/* MOBILE NUMBER */}
 
                   <FormInput
-                    label="Mobile Number"
+                    label={t("Mobile Number")}
                     name="phoneNumber"
                     type="tel"
-                    placeholder="10-digit mobile number"
+                    placeholder={t("10-digit mobile number")}
                     value={form.phoneNumber}
                     onChange={handleChange}
                   />
@@ -250,10 +250,10 @@ export default function PersonalInfoPage() {
                   {/* AGE */}
 
                   <FormInput
-                    label="Age"
+                    label={t("Age")}
                     name="age"
                     type="number"
-                    placeholder="Enter age"
+                    placeholder={t("Enter age")}
                     value={form.age}
                     onChange={handleChange}
                     min="1"
@@ -263,9 +263,9 @@ export default function PersonalInfoPage() {
                   {/* GENDER */}
 
                   <FormSelect
-                    label="Gender"
+                    label={t("Gender")}
                     name="gender"
-                    placeholder="Select Gender"
+                    placeholder={t("Select Gender")}
                     value={form.gender}
                     onChange={handleChange}
                     options={genders}
@@ -274,22 +274,22 @@ export default function PersonalInfoPage() {
                   {/* CATEGORY */}
 
                   <FormSelect
-                    label="Social Category"
+                    label={t("Social Category")}
                     name="category"
-                    placeholder="Select Category"
+                    placeholder={t("Select Category")}
                     value={form.category}
                     onChange={handleChange}
                     options={categories}
                   />
 
-                  <FormSelect label="Disability" name="disability" value={form.disability} onChange={handleChange} options={["No", "Yes"]} />
-                  <FormSelect label="Residence" name="residence" value={form.residence} onChange={handleChange} options={["Urban", "Rural"]} />
+                  <FormSelect label={t("Disability")} name="disability" value={form.disability} onChange={handleChange} options={["No", "Yes"]} />
+                  <FormSelect label={t("Residence")} name="residence" value={form.residence} onChange={handleChange} options={["Urban", "Rural"]} />
                   {/* STATE */}
 
                   <FormSelect
-                    label="State"
+                    label={t("State")}
                     name="state"
-                    placeholder="Select State"
+                    placeholder={t("Select State")}
                     value={form.state}
                     onChange={handleChange}
                     options={states}
@@ -298,9 +298,9 @@ export default function PersonalInfoPage() {
                   {/* DISTRICT / CITY */}
 
                   <FormSelect
-                    label="District"
+                    label={t("District")}
                     name="district"
-                    placeholder={form.state ? "Select your district" : "Select a state first"}
+                    placeholder={form.state ? t("Select your district") : t("Select a state first")}
                     value={form.district}
                     onChange={handleChange}
                     options={getDistrictsForState(form.state)}
@@ -394,6 +394,7 @@ function FormSelect({
   onChange,
   options,
 }) {
+  const { t } = useLanguage();
   return (
     <label className="block">
 
@@ -422,7 +423,7 @@ function FormSelect({
             key={option}
             value={option}
           >
-            {option}
+            {t(option)}
           </option>
         ))}
 

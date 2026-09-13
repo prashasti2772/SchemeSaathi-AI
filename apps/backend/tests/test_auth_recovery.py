@@ -77,13 +77,14 @@ def recovery_app(tmp_path, monkeypatch):
     from src.config.settings import settings
     from src.middlewares.error_handler import register_exception_handlers
     from src.middlewares.rate_limiter import limiter
-    from src.modules.auth import recovery, router as auth_router
+    from src.modules.auth import recovery, login_otp, router as auth_router
     from src.modules.public import citizen
 
     monkeypatch.setattr(settings, "JWT_SECRET_KEY", "recovery-tests-only-secret-not-for-production")
     monkeypatch.setattr(limiter, "enabled", False)
     monkeypatch.setattr(recovery, "captcha_text", lambda: CAPTCHA)
     monkeypatch.setattr(recovery, "otp_text", lambda: OTP)
+    monkeypatch.setattr(login_otp, "otp_text", lambda: OTP)
     monkeypatch.setattr(recovery.email_client, "email_ready", lambda: True)
     monkeypatch.setattr(recovery.sms_client, "otp_sms_ready", lambda: True)
     engine = create_async_engine("sqlite+aiosqlite:///" + str(database), poolclass=NullPool)
@@ -217,10 +218,21 @@ def test_reset_requires_valid_otp_preserves_spaces_and_revokes_old_sessions(reco
     app = recovery_app
     registered = app.register()
     assert registered.status_code == 201, registered.text
-    old_headers = {"Authorization": "Bearer " + registered.json()["access_token"]}
     login = app.client.post("/api/v1/auth/login", json={"email": EMAIL, "password": PASSWORD})
     assert login.status_code == 200, login.text
-    old_pair = login.json()
+    assert "access_token" not in login.json()
+    verified_login = app.client.post(PREFIX + "/verify-login-otp", json={"challenge_id": login.json()["challenge_id"], "otp": OTP})
+    old_pair = verified_login.json()
+    old_headers = {"Authorization": "Bearer " + old_pair["access_token"]}
+    # Seed a legacy refresh session to prove reset still revokes existing sessions.
+    from src.utils.security import create_refresh_token
+    from datetime import datetime
+    import uuid
+    user_id = app.sql("SELECT id FROM users")[0][0]
+    raw, digest, expires = create_refresh_token(str(uuid.UUID(user_id)))
+    old_pair["refresh_token"] = raw
+    app.sql("INSERT INTO refresh_tokens (id,user_id,token_hash,expires_at,revoked,created_at,updated_at) VALUES (?,?,?,?,?,?,?)", (uuid.uuid4().hex,user_id,digest,expires.isoformat(),0,datetime.utcnow().isoformat(),datetime.utcnow().isoformat()))
+    app.mail.clear()
     assert app.client.get(PREFIX + "/me", headers=old_headers).status_code == 200
 
     forgot = app.forgot()
@@ -256,9 +268,11 @@ def test_reset_requires_valid_otp_preserves_spaces_and_revokes_old_sessions(reco
     assert app.sql("SELECT auth_version FROM users")[0][0] == 1
     for invalid_password in (PASSWORD, password.strip()):
         assert app.client.post(PREFIX + "/login", json={"identifier": EMAIL, "password": invalid_password}).status_code == 401
+    app.sql("UPDATE login_otp_state SET next_send_at = '2000-01-01'")
     current = app.client.post(PREFIX + "/login", json={"identifier": MOBILE, "password": password})
     assert current.status_code == 200, current.text
-    assert app.client.get(PREFIX + "/me", headers={"Authorization": "Bearer " + current.json()["access_token"]}).status_code == 200
+    verified_login = app.client.post(PREFIX + "/verify-login-otp", json={"challenge_id": current.json()["challenge_id"], "otp": OTP})
+    assert app.client.get(PREFIX + "/me", headers={"Authorization": "Bearer " + verified_login.json()["access_token"]}).status_code == 200
 
 
 def test_otp_attempt_limit_cannot_be_bypassed_with_correct_code(recovery_app):

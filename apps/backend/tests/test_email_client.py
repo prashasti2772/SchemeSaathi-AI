@@ -26,6 +26,15 @@ def test_missing_mail_configuration_makes_no_network_request(mail, monkeypatch):
     assert not asyncio.run(mail.send_email("tester@example.com", "Verification", "test message"))
 
 
+def test_gmail_app_password_configuration_is_supported(mail, monkeypatch):
+    monkeypatch.setattr(mail.settings, "EMAIL_PROVIDER", "smtp")
+    monkeypatch.setattr(mail.settings, "EMAIL_FROM_ADDRESS", "customercareprashasti@gmail.com")
+    monkeypatch.setattr(mail.settings, "SMTP_USERNAME", "customercareprashasti@gmail.com")
+    monkeypatch.setattr(mail.settings, "SMTP_PASSWORD", "app-password")
+    monkeypatch.setattr(mail.smtplib, "SMTP", lambda *a, **kw: pytest.fail("unexpected network request"))
+    assert mail.email_ready()
+
+
 @pytest.mark.parametrize("use_ssl", [False, True])
 def test_smtp_uses_tls_before_login_and_sends_plain_text(mail, monkeypatch, use_ssl):
     calls = []

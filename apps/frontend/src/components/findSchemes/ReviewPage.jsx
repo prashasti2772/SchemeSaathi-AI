@@ -127,9 +127,7 @@ export default function ReviewPage() {
                 text-slate-500
               "
             >
-              Please verify your details before
-              finding matching schemes.
-            </p>
+              {t("Please verify your details before finding matching schemes.")}</p>
 
           </div>
 
@@ -140,7 +138,7 @@ export default function ReviewPage() {
             {/* ====== PERSONAL INFORMATION ====== */}
 
             <ReviewCard
-              title="Personal Information"
+              title={t("Personal Information")}
               onEdit={handleEditPersonal}
             >
 
@@ -189,7 +187,7 @@ export default function ReviewPage() {
             {/* ====== BUSINESS DETAILS ====== */}
 
             <ReviewCard
-              title="Business Details"
+              title={t("Business Details")}
               onEdit={handleEditBusiness}
             >
 
@@ -233,7 +231,7 @@ export default function ReviewPage() {
             {/* ====== OTHER DETAILS ====== */}
 
             <ReviewCard
-              title="Other Details"
+              title={t("Other Details")}
               onEdit={handleEditOther}
             >
 

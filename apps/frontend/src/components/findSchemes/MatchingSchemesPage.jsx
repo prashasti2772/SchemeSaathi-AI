@@ -150,8 +150,7 @@ export default function MatchingSchemesPage() {
             <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
               <div>
                 <div className="mb-2 inline-flex items-center rounded-full bg-[#fff4c7] px-3 py-1 text-[11px] font-semibold text-[#9b7815]">
-                  Step 5 • Results
-                </div>
+                  {t("Step 5 • Results")}</div>
 
                 <h1 className="text-[28px] font-extrabold tracking-[-0.02em] text-[#172b49]">
                   {t("results_title")}
@@ -163,7 +162,7 @@ export default function MatchingSchemesPage() {
               </div>
 
               <div className="rounded-xl border border-slate-200 bg-white px-5 py-3 shadow-sm">
-                <p className="text-[11px] font-medium text-slate-400">MATCHED SCHEMES</p>
+                <p className="text-[11px] font-medium text-slate-400">{t("MATCHED SCHEMES")}</p>
                 <p className="mt-1 text-2xl font-extrabold text-[#0d2b55]">
                   {status === "ready" ? filteredSchemes.length : "–"}
                 </p>
@@ -177,7 +176,7 @@ export default function MatchingSchemesPage() {
             <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                  <h2 className="text-[15px] font-bold text-[#172b49]">Your application profile</h2>
+                  <h2 className="text-[15px] font-bold text-[#172b49]">{t("Your application profile")}</h2>
 
                   <div className="mt-3 flex flex-wrap gap-2">
                     {personalDetails?.state && <ProfileTag>{personalDetails.state}</ProfileTag>}
@@ -197,24 +196,21 @@ export default function MatchingSchemesPage() {
                     onClick={() => handleEdit("personal")}
                     className="rounded-lg border border-slate-200 px-4 py-2 text-[12px] font-medium text-[#0d2b55] transition hover:bg-slate-50"
                   >
-                    Personal
-                  </button>
+                    {t("Personal")}</button>
 
                   <button
                     type="button"
                     onClick={() => handleEdit("business")}
                     className="rounded-lg border border-slate-200 px-4 py-2 text-[12px] font-medium text-[#0d2b55] transition hover:bg-slate-50"
                   >
-                    Business
-                  </button>
+                    {t("Business")}</button>
 
                   <button
                     type="button"
                     onClick={() => handleEdit("other")}
                     className="rounded-lg border border-slate-200 px-4 py-2 text-[12px] font-medium text-[#0d2b55] transition hover:bg-slate-50"
                   >
-                    Other
-                  </button>
+                    {t("Other")}</button>
                 </div>
               </div>
             </section>
@@ -231,7 +227,7 @@ export default function MatchingSchemesPage() {
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search schemes..."
+                  placeholder={t("Search schemes...")}
                   className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-[13px] text-slate-700 outline-none transition focus:border-[#0d2b55] focus:ring-2 focus:ring-[#0d2b55]/10"
                 />
               </div>
@@ -243,18 +239,18 @@ export default function MatchingSchemesPage() {
           <div className="mt-6">
             {status === "needs-profile" && (
               <StatusMessage
-                title="Let's get a few details first"
-                body="To find schemes matched to you, we need your basic profile. It only takes a couple of minutes."
+                title={t("Let's get a few details first")}
+                body={t("To find schemes matched to you, we need your basic profile. It only takes a couple of minutes.")}
                 action={{ label: "Start Profile", href: "/find-schemes/personal-info" }}
               />
             )}
 
-            {status === "loading" && <StatusMessage title="Checking your eligibility..." body="This takes a few seconds while we run every scheme's rules against your profile." />}
+            {status === "loading" && <StatusMessage title={t("Checking your eligibility...")} body={t("This takes a few seconds while we run every scheme's rules against your profile.")} />}
 
             {status === "error" && (
               <StatusMessage
-                title="We couldn't fetch your matches"
-                body="Please check your internet connection and try again. If the problem continues, please try again in a few minutes."
+                title={t("We couldn't fetch your matches")}
+                body={t("Please check your internet connection and try again. If the problem continues, please try again in a few minutes.")}
                 onRetry={loadMatches}
               />
             )}
@@ -280,6 +276,7 @@ export default function MatchingSchemesPage() {
 /* ====== SCHEME CARD ====== */
 
 function SchemeCard({ scheme, onView }) {
+  const { t } = useLanguage();
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
       {/* TOP */}
@@ -298,12 +295,10 @@ function SchemeCard({ scheme, onView }) {
 
         <div className="flex flex-col items-end gap-1.5">
           <span className="rounded-full bg-[#fff5c9] px-2.5 py-1 text-[10px] font-semibold text-[#8c6b00]">
-            {Math.round(scheme.score * 100)}% recorded checks
-          </span>
+            {Math.round(scheme.score * 100)}{t("% recorded checks")}</span>
           {scheme.confidence && (
             <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-medium text-slate-600">
-              Preliminary screening
-            </span>
+              {t("Preliminary screening")}</span>
           )}
         </div>
       </div>
@@ -319,7 +314,7 @@ function SchemeCard({ scheme, onView }) {
         </div>
       )}
 
-      <p className="mt-3 text-xs text-amber-800">Preliminary screening only. Verify all conditions and current availability on the official portal.</p>
+      <p className="mt-3 text-xs text-amber-800">{t("Preliminary screening only. Verify all conditions and current availability on the official portal.")}</p>
       {/* DESCRIPTION */}
 
       <p className="mt-4 text-[12px] leading-5 text-slate-500">{scheme.description}</p>
@@ -327,7 +322,7 @@ function SchemeCard({ scheme, onView }) {
       {/* BENEFITS */}
 
       <div className="mt-4 rounded-xl bg-slate-50 p-3">
-        <p className="text-[10px] font-medium uppercase tracking-wide text-slate-400">Benefits</p>
+        <p className="text-[10px] font-medium uppercase tracking-wide text-slate-400">{t("Benefits")}</p>
         <p className="mt-1 text-[14px] font-bold text-[#172b49]">{scheme.benefits}</p>
       </div>
 
@@ -346,14 +341,14 @@ function SchemeCard({ scheme, onView }) {
       {/* WHY THIS MATCHED -- the explainability the SIH brief asks for */}
 
       <div className="mt-4 rounded-lg bg-emerald-50 px-3 py-2">
-        <p className="text-[11px] font-semibold text-emerald-700">✓ Why this was suggested</p>
+        <p className="text-[11px] font-semibold text-emerald-700">{t("✓ Why this was suggested")}</p>
         <p className="mt-1 text-[11px] leading-5 text-emerald-800">{scheme.explanation}</p>
       </div>
 
       {/* APPLICATION ROUTE */}
 
       <div className="mt-4 border-t border-slate-100 pt-4">
-        <p className="text-[11px] font-semibold text-[#172b49]">How to apply</p>
+        <p className="text-[11px] font-semibold text-[#172b49]">{t("How to apply")}</p>
         <p className="mt-1 text-[11px] leading-5 text-slate-500">{scheme.application_route}</p>
       </div>
 
@@ -364,8 +359,7 @@ function SchemeCard({ scheme, onView }) {
         onClick={onView}
         className="mt-5 h-10 w-full rounded-lg bg-[#0d2b55] text-[12px] font-semibold text-white transition hover:bg-[#173b70] active:scale-[0.99]"
       >
-        Visit Official Scheme Page ↗
-      </button>
+        {t("Visit Official Scheme Page ↗")}</button>
     </article>
   );
 }
@@ -379,6 +373,7 @@ function ProfileTag({ children }) {
 /* ====== STATUS MESSAGE (loading / error / needs-profile) ====== */
 
 function StatusMessage({ title, body, action, onRetry }) {
+  const { t } = useLanguage();
   return (
     <div className="rounded-2xl border border-slate-200 bg-white px-6 py-16 text-center shadow-sm">
       <h2 className="mt-4 text-lg font-bold text-[#172b49]">{title}</h2>
@@ -390,8 +385,7 @@ function StatusMessage({ title, body, action, onRetry }) {
           onClick={onRetry}
           className="mt-5 inline-block rounded-lg bg-[#0d2b55] px-5 py-2.5 text-[12px] font-medium text-white hover:bg-[#173b70] active:scale-95 transition"
         >
-          🔄 Retry Fetching Matches
-        </button>
+          {t("🔄 Retry Fetching Matches")}</button>
       )}
 
       {action && (
@@ -409,23 +403,22 @@ function StatusMessage({ title, body, action, onRetry }) {
 /* ====== EMPTY RESULTS ====== */
 
 function EmptyResults({ onReset }) {
+  const { t } = useLanguage();
   return (
     <div className="rounded-2xl border border-slate-200 bg-white px-6 py-16 text-center shadow-sm">
       <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-2xl">🔎</div>
 
-      <h2 className="mt-4 text-lg font-bold text-[#172b49]">No schemes found</h2>
+      <h2 className="mt-4 text-lg font-bold text-[#172b49]">{t("No schemes found")}</h2>
 
       <p className="mx-auto mt-2 max-w-md text-[13px] leading-5 text-slate-500">
-        We couldn't find schemes matching your search. Try another keyword, or none of the current schemes may fit your profile yet.
-      </p>
+        {t("We couldn't find schemes matching your search. Try another keyword, or none of the current schemes may fit your profile yet.")}</p>
 
       <button
         type="button"
         onClick={onReset}
         className="mt-5 rounded-lg bg-[#0d2b55] px-5 py-2.5 text-[12px] font-medium text-white hover:bg-[#173b70]"
       >
-        Clear Search
-      </button>
+        {t("Clear Search")}</button>
     </div>
   );
 }

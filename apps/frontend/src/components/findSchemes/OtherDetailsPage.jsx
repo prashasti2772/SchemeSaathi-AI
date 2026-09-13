@@ -113,13 +113,11 @@ export default function OtherDetailsPage() {
         <div className="mx-auto max-w-287.5 px-5 sm:px-8">
           <div className="mt-9">
             <h1 className="text-[27px] font-extrabold tracking-[-0.02em] text-[#172b49]">
-              Almost there! A few more details
-            </h1>
+              {t("Almost there! A few more details")}</h1>
 
             {isEditMode && (
               <p className="mt-2 text-[13px] text-slate-500">
-                Update your information below.
-              </p>
+                {t("Update your information below.")}</p>
             )}
           </div>
 
@@ -131,54 +129,54 @@ export default function OtherDetailsPage() {
               >
                 <div className="grid gap-x-5 gap-y-5 sm:grid-cols-2">
                   <FormSelect
-                    label="Annual Income"
+                    label={t("Annual Income")}
                     name="annualIncome"
-                    placeholder="Select Income Range"
+                    placeholder={t("Select Income Range")}
                     value={form.annualIncome}
                     onChange={handleChange}
                     options={incomeOptions}
                   />
 
                   <FormSelect
-                    label="Registered Business?"
+                    label={t("Registered Business?")}
                     name="registeredBusiness"
-                    placeholder="Yes / No"
+                    placeholder={t("Yes / No")}
                     value={form.registeredBusiness}
                     onChange={handleChange}
                     options={["Yes", "No"]}
                   />
 
                   <FormSelect
-                    label="Funding Required"
+                    label={t("Funding Required")}
                     name="fundingRequired"
-                    placeholder="Select Amount Range"
+                    placeholder={t("Select Amount Range")}
                     value={form.fundingRequired}
                     onChange={handleChange}
                     options={fundingOptions}
                   />
 
                   <FormSelect
-                    label="Preferred Support"
+                    label={t("Preferred Support")}
                     name="preferredSupport"
-                    placeholder="Loan / Subsidy / Grant"
+                    placeholder={t("Loan / Subsidy / Grant")}
                     value={form.preferredSupport}
                     onChange={handleChange}
                     options={supportOptions}
                   />
 
                   <FormSelect
-                    label="Previous government scheme?"
+                    label={t("Previous government scheme?")}
                     name="previousScheme"
-                    placeholder="Yes / No"
+                    placeholder={t("Yes / No")}
                     value={form.previousScheme}
                     onChange={handleChange}
                     options={["Yes", "No"]}
                   />
 
                   <FormSelect
-                    label="Interested Scheme Type"
+                    label={t("Interested Scheme Type")}
                     name="interestedSchemeType"
-                    placeholder="Select Type"
+                    placeholder={t("Select Type")}
                     value={form.interestedSchemeType}
                     onChange={handleChange}
                     options={schemeTypeOptions}
@@ -221,6 +219,7 @@ function FormSelect({
   onChange,
   options,
 }) {
+  const { t } = useLanguage();
   return (
     <label className="block">
       <span className="mb-2 block text-[13px] font-medium text-slate-700">
@@ -241,7 +240,7 @@ function FormSelect({
 
         {options.map((option) => (
           <option key={option} value={option}>
-            {option}
+            {t(option)}
           </option>
         ))}
       </select>

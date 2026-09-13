@@ -1,4 +1,4 @@
-# Free SIH demo deployment. Render's free PostgreSQL database expires after 30 days.
+# Free Render web service; supply a Neon Free PostgreSQL URL when prompted.
 # Both React and the Python API are served by this one web service.
 services:
   - type: web
@@ -11,9 +11,7 @@ services:
       - key: JWT_SECRET_KEY
         generateValue: true
       - key: DATABASE_URL
-        fromDatabase:
-          name: schemesathi-db
-          property: connectionString
+        sync: false
       - key: PUBLIC_SITE_URL
         fromService:
           type: web
@@ -28,9 +26,3 @@ services:
       - key: SMS_PROVIDER
         value: firebase
 
-databases:
-  - name: schemesathi-db
-    plan: free
-    region: singapore
-    databaseName: schemesathi
-    ipAllowList: []

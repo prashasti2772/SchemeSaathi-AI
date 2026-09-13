@@ -3,22 +3,28 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.middlewares.error_handler import UnauthorizedException
 from src.modules.auth.models import RefreshToken
+from src.modules.auth import login_otp
 from src.modules.auth.schemas import LoginRequest, TokenResponse
 from src.modules.users.models import User
 from src.modules.users.repository import get_user_by_email
 from src.utils.security import create_access_token, create_refresh_token, hash_token, verify_password
 
 
-async def authenticate_user(db: AsyncSession, payload: LoginRequest) -> TokenResponse:
+async def authenticate_user(db: AsyncSession, payload: LoginRequest) -> dict:
     user = await get_user_by_email(db, payload.email)
     if not user or not verify_password(payload.password, user.hashed_password):
         raise UnauthorizedException("Invalid email or password")
     if not user.is_active:
         raise UnauthorizedException("This account has been deactivated")
-    return await _issue_token_pair(db, user)
+    return await login_otp.request_login(db, user, payload.channel)
 
 
 async def refresh_access_token(db: AsyncSession, raw_refresh_token: str) -> TokenResponse:
+    # Legacy password-only refresh sessions must reauthenticate with the OTP flow.
+    raise UnauthorizedException("Sign in again with your password and verification code.")
+
+
+async def _legacy_refresh_access_token(db: AsyncSession, raw_refresh_token: str) -> TokenResponse:
     from src.utils.security import decode_token
 
     try:

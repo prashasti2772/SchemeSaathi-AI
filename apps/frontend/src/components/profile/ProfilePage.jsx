@@ -5,7 +5,7 @@ import { getUserItem } from "../../lib/userStorage";
 
 function readJSON(key) {
   try {
-    const raw = localStorage.getItem(key);
+    const raw = sessionStorage.getItem(key);
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
@@ -43,7 +43,7 @@ export default function ProfilePage() {
     return (
       <MainLayout>
         <div className="min-h-[calc(100vh-132px)] bg-[#f7f8fc] py-16 text-center">
-          <p className="text-sm text-slate-500">Loading your profile...</p>
+          <p className="text-sm text-slate-500">{t("Loading your profile...")}</p>
         </div>
       </MainLayout>
     );
@@ -83,7 +83,7 @@ export default function ProfilePage() {
 
           {/* PERSONAL DETAILS */}
 
-          <ProfileSection title="Personal Details" editHref="/find-schemes/personal-info" editSection="personal">
+          <ProfileSection title={t("Personal Details")} editHref="/find-schemes/personal-info" editSection="personal">
             {personal ? (
               <FieldGrid
                 fields={[
@@ -95,13 +95,13 @@ export default function ProfilePage() {
                 ]}
               />
             ) : (
-              <EmptyNote text="You haven't completed the Find Schemes profile yet." href="/find-schemes/personal-info" cta="Start Now" />
+              <EmptyNote text={t("You haven't completed the Find Schemes profile yet.")} href="/find-schemes/personal-info" cta={t("Start Now")} />
             )}
           </ProfileSection>
 
           {/* BUSINESS DETAILS */}
 
-          <ProfileSection title="Business Details" editHref="/find-schemes/business-details" editSection="business">
+          <ProfileSection title={t("Business Details")} editHref="/find-schemes/business-details" editSection="business">
             {business ? (
               <FieldGrid
                 fields={[
@@ -113,13 +113,13 @@ export default function ProfilePage() {
                 ]}
               />
             ) : (
-              <EmptyNote text="No business details saved yet." href="/find-schemes/business-details" cta="Add Details" />
+              <EmptyNote text={t("No business details saved yet.")} href="/find-schemes/business-details" cta={t("Add Details")} />
             )}
           </ProfileSection>
 
           {/* OTHER DETAILS */}
 
-          <ProfileSection title="Other Details" editHref="/find-schemes/other-details" editSection="other">
+          <ProfileSection title={t("Other Details")} editHref="/find-schemes/other-details" editSection="other">
             {other ? (
               <FieldGrid
                 fields={[
@@ -131,7 +131,7 @@ export default function ProfilePage() {
                 ]}
               />
             ) : (
-              <EmptyNote text="No additional details saved yet." href="/find-schemes/other-details" cta="Add Details" />
+              <EmptyNote text={t("No additional details saved yet.")} href="/find-schemes/other-details" cta={t("Add Details")} />
             )}
           </ProfileSection>
 
@@ -141,8 +141,7 @@ export default function ProfilePage() {
                 href="/find-schemes/matching-schemes"
                 className="inline-block rounded-lg bg-[#0d2b55] px-6 py-3 text-sm font-medium text-white transition hover:bg-[#173b70]"
               >
-                View My Matched Schemes →
-              </a>
+                {t("View My Matched Schemes →")}</a>
             </div>
           )}
 

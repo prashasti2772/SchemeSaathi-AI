@@ -6,6 +6,7 @@ import ssl
 
 import httpx
 from src.config.settings import settings
+from src.integrations import google_bridge
 from src.config.logging import get_logger
 
 logger = get_logger("email_client")
@@ -14,8 +15,10 @@ logger = get_logger("email_client")
 def email_ready() -> bool:
     if not settings.EMAIL_FROM_ADDRESS:
         return False
+    if settings.EMAIL_PROVIDER == "apps_script":
+        return google_bridge.ready()
     if settings.EMAIL_PROVIDER == "resend":
-        return bool(settings.RESEND_API_KEY)
+        return bool(settings.RESEND_API_KEY and settings.EMAIL_FROM_ADDRESS)
     if settings.EMAIL_PROVIDER == "smtp":
         return bool(settings.SMTP_HOST and settings.SMTP_USERNAME and settings.SMTP_PASSWORD)
     return False
@@ -46,6 +49,9 @@ async def send_email(to_address: str, subject: str, body: str) -> bool:
         logger.warning("email_not_configured")
         return False
     try:
+        if settings.EMAIL_PROVIDER == "apps_script":
+            await google_bridge.call({"kind": "email", "sender": settings.EMAIL_FROM_ADDRESS, "to": to_address, "subject": subject, "body": body})
+            return True
         if settings.EMAIL_PROVIDER == "smtp":
             return await asyncio.to_thread(_send_smtp, to_address, subject, body)
         async with httpx.AsyncClient(timeout=15.0) as client:

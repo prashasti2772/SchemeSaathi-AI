@@ -1,3 +1,4 @@
+import { useLanguage } from "../../lib/i18n.jsx";
 import React, { useEffect, useRef, useState } from "react";
 import FormattedText from "./FormattedText";
 import { sendAssistantMessage } from "../../lib/api";
@@ -40,6 +41,7 @@ const STEP_NAMES = {
 };
 
 export default function AIHelpModal({ isOpen, onClose, currentStep = 1 }) {
+  const { t } = useLanguage();
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [isSending, setIsSending] = useState(false);
@@ -155,12 +157,11 @@ export default function AIHelpModal({ isOpen, onClose, currentStep = 1 }) {
         <div className="flex items-center justify-between border-b border-slate-100 bg-[#0d2b55] px-5 py-3.5 text-white">
           <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#e4b32e] text-sm font-bold text-[#0d2b55]">
-              AI
-            </div>
+              {t("AI")}</div>
             <div>
-              <h3 className="text-[13px] font-bold tracking-tight">SchemeSathi AI Help</h3>
+              <h3 className="text-[13px] font-bold tracking-tight">{t("SchemeSathi AI Help")}</h3>
               <p className="text-[10px] text-slate-300">
-                Context: <span className="font-semibold text-[#e4b32e]">{stepName}</span>
+                {t("Context:")}<span className="font-semibold text-[#e4b32e]">{stepName}</span>
               </p>
             </div>
           </div>
@@ -169,16 +170,15 @@ export default function AIHelpModal({ isOpen, onClose, currentStep = 1 }) {
             <button
               type="button"
               onClick={handleOpenFullPage}
-              title="Open in Full Screen"
+              title={t("Open in Full Screen")}
               className="rounded-lg border border-white/20 bg-white/10 px-2.5 py-1 text-[10px] font-medium text-white transition hover:bg-white/20"
             >
-              Full Page ↗
-            </button>
+              {t("Full Page ↗")}</button>
             <button
               type="button"
               onClick={onClose}
               className="flex h-7 w-7 items-center justify-center rounded-lg text-white/80 transition hover:bg-white/10 hover:text-white"
-              aria-label="Close"
+              aria-label={t("Close")}
             >
               ✕
             </button>
@@ -187,7 +187,7 @@ export default function AIHelpModal({ isOpen, onClose, currentStep = 1 }) {
 
         {/* SUGGESTION CHIPS */}
         <div className="border-b border-slate-100 bg-slate-50 px-4 py-2">
-          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Suggested for {stepName}:</p>
+          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">{t("Suggested for")}{stepName}:</p>
           <div className="mt-1.5 flex flex-wrap gap-1.5">
             {suggestions.map((q, idx) => (
               <button
@@ -220,7 +220,7 @@ export default function AIHelpModal({ isOpen, onClose, currentStep = 1 }) {
                   {entry.schemes?.length > 0 && (
                     <div className="mt-3 border-t border-slate-100 pt-2.5">
                       <p className="text-[9px] font-bold uppercase tracking-wider text-[#0d2b55]">
-                        Matched Schemes ({entry.schemes.length}):
+                        {t("Matched Schemes (")}{entry.schemes.length}):
                       </p>
                       <div className="mt-2 space-y-2">
                         {entry.schemes.slice(0, 3).map((s, sIdx) => (
@@ -241,8 +241,7 @@ export default function AIHelpModal({ isOpen, onClose, currentStep = 1 }) {
                                 rel="noopener noreferrer"
                                 className="mt-1.5 inline-block font-semibold text-[#0d2b55] hover:underline"
                               >
-                                View Official Portal ↗
-                              </a>
+                                {t("View Official Portal ↗")}</a>
                             )}
                           </div>
                         ))}
@@ -257,7 +256,7 @@ export default function AIHelpModal({ isOpen, onClose, currentStep = 1 }) {
           {isSending && (
             <div className="flex justify-start">
               <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-xs">
-                <p className="text-[11px] text-slate-400">Thinking...</p>
+                <p className="text-[11px] text-slate-400">{t("Thinking...")}</p>
               </div>
             </div>
           )}
@@ -282,7 +281,7 @@ export default function AIHelpModal({ isOpen, onClose, currentStep = 1 }) {
               onClick={() => handleSend()}
               disabled={isSending || !message.trim()}
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#e4b32e] text-[#0d2b55] shadow-xs transition hover:bg-[#d7aa2d] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-              aria-label="Send"
+              aria-label={t("Send")}
             >
               ➤
             </button>

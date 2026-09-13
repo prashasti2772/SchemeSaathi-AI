@@ -29,7 +29,7 @@ async def _send_twilio_sms(phone_number: str, message: str) -> str | None:
             response.raise_for_status()
             return response.json().get("sid")
     except httpx.HTTPError as exc:
-        logger.error("twilio_sms_failed", phone_number=phone_number, error=str(exc))
+        logger.error("twilio_sms_failed")
         return None
 
 
@@ -50,12 +50,12 @@ async def _send_msg91_sms(phone_number: str, message: str) -> str | None:
             response.raise_for_status()
             return response.json().get("requestId")
     except httpx.HTTPError as exc:
-        logger.error("msg91_sms_failed", phone_number=phone_number, error=str(exc))
+        logger.error("msg91_sms_failed")
         return None
 
 
 def otp_sms_ready() -> bool:
-    return bool(settings.MSG91_AUTH_KEY and settings.MSG91_OTP_TEMPLATE_ID and settings.MSG91_SENDER_ID)
+    return bool(settings.SMS_PROVIDER == "msg91" and settings.MSG91_AUTH_KEY and settings.MSG91_OTP_TEMPLATE_ID and settings.MSG91_SENDER_ID)
 
 
 async def send_reset_otp(phone_number: str, code: str) -> bool:

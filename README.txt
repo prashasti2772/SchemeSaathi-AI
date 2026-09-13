@@ -82,7 +82,7 @@ The inherited staff/telephony/OCR/outreach scaffolding is disabled by default vi
 
 ## Customer care
 
-- Email: [srivastava2722@gmail.com](mailto:srivastava2722@gmail.com)
+- Email: [customercareprashasti@gmail.com](mailto:customercareprashasti@gmail.com)
 - Phone: [+91 96530 31393](tel:+919653031393)
 - Website: **Help & support** → open a ticket and track the team's response.
 

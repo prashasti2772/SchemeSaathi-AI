@@ -78,13 +78,9 @@ def main():
         print("Public-recipient email requires a verified sending domain; test sender access is limited.")
     else:
         print("Email: select EMAIL_PROVIDER=smtp or resend.")
-    report(values, "SMS password recovery (SMS Flow)",
-           ("MSG91_AUTH_KEY", "MSG91_SENDER_ID", "MSG91_OTP_TEMPLATE_ID"))
-    report(values, "SMS website outreach (SMS Flow)",
-           ("MSG91_AUTH_KEY", "MSG91_SENDER_ID", "MSG91_TEMPLATE_ID", "PUBLIC_SITE_URL"))
-    if str(values.get("SMS_LIVE_ENABLED", "false")).lower() not in {"true", "1", "yes"}:
-        print("Website outreach is disabled by SMS_LIVE_ENABLED (password-reset SMS is separate).")
-    print("SMS template IDs must come from SMS > Templates, not OTP > Templates.")
+    report(values, "Phone OTP / Firebase Auth",
+           ("FIREBASE_API_KEY", "FIREBASE_PROJECT_ID"))
+    print("Phone OTP is handled by Firebase Auth in the client app, not by the legacy MSG91 flow.")
     report(values, "Bhashini", ("BHASHINI_USER_ID", "BHASHINI_API_KEY", "BHASHINI_PIPELINE_ID"))
     report(values, "Hosting", ("DATABASE_URL", "JWT_SECRET_KEY", "PUBLIC_SITE_URL"))
     print("Presence checks do not establish provider approval, account balance, delivery or deployment.")

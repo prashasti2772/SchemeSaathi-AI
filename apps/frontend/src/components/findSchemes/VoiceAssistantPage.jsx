@@ -1,9 +1,11 @@
+import { useLanguage } from "../../lib/i18n.jsx";
 import { useEffect, useRef, useState } from "react";
 import { MainLayout } from "../layout";
 import { api, apiError, sendAssistantMessage } from "../../lib/api";
 import { recordWav } from "../../lib/recordWav";
 import FormattedText from "./FormattedText";
 export default function VoiceAssistantPage() {
+  const { t } = useLanguage();
   const [configured, setConfigured] = useState(false);
   const [mode, setMode] = useState("browser");
   const [language, setLanguage] = useState("en");
@@ -59,21 +61,21 @@ export default function VoiceAssistantPage() {
     catch { setError("Allow microphone access and use HTTPS or localhost."); }
   }
   return <MainLayout><section className="mx-auto max-w-3xl px-5 py-12">
-    <h1 className="text-3xl font-bold">Voice assistant</h1>
-    <p className="mt-3 text-slate-600">Ask about business loans, subsidies, eligibility and application documents.</p>
-    <p className="my-4 rounded-lg bg-amber-50 p-3 text-sm">Bhashini: {configured ? "credentials configured; provider access checked when you ask" : "not configured"}. Browser microphone support varies by language. Indian-language answers require Bhashini translation.</p>
-    <label className="block">Voice provider<select disabled={recording || busy} className="m-3 rounded border p-2" value={mode} onChange={e => setMode(e.target.value)}>
-      <option value="browser">Browser microphone</option><option value="bhashini" disabled={!configured}>Bhashini (Indian languages)</option></select></label>
-    {<label>Language<select className="m-3 rounded border p-2" value={language} onChange={e => setLanguage(e.target.value)} disabled={recording || busy}>
+    <h1 className="text-3xl font-bold">{t("Voice assistant")}</h1>
+    <p className="mt-3 text-slate-600">{t("Ask about business loans, subsidies, eligibility and application documents.")}</p>
+    <p className="my-4 rounded-lg bg-amber-50 p-3 text-sm">{t("Bhashini:")}{configured ? t("credentials configured; provider access checked when you ask") : t("not configured")}{t(". Browser microphone support varies by language. Indian-language answers require Bhashini translation.")}</p>
+    <label className="block">{t("Voice provider")}<select disabled={recording || busy} className="m-3 rounded border p-2" value={mode} onChange={e => setMode(e.target.value)}>
+      <option value="browser">{t("Browser microphone")}</option><option value="bhashini" disabled={!configured}>{t("Bhashini (Indian languages)")}</option></select></label>
+    {<label>{t("Language")}<select className="m-3 rounded border p-2" value={language} onChange={e => setLanguage(e.target.value)} disabled={recording || busy}>
       {Object.entries({en:"English",hi:"Hindi",bn:"Bengali",ta:"Tamil",te:"Telugu",mr:"Marathi",gu:"Gujarati",kn:"Kannada",ml:"Malayalam",pa:"Punjabi",or:"Odia",ur:"Urdu"}).map(([code,name]) => <option key={code} value={code}>{name}</option>)}</select></label>}
-    <div className="my-4 flex gap-3"><button disabled={busy} className="rounded-lg bg-[#0d2b55] p-3 text-white disabled:opacity-50" onClick={recording ? (mode === "browser" ? () => recognition.current?.stop() : stop) : start}>{recording ? "Stop recording" : "Use microphone"}</button>
-    <button className="rounded border p-3" onClick={() => { window.speechSynthesis?.cancel(); audioRef.current?.pause(); }}>Stop audio</button></div>
-    <label className="block">Your question<textarea className="mt-2 min-h-28 w-full rounded-lg border p-3" value={text} maxLength={2000} onChange={e => setText(e.target.value)} /></label>
-    <button className="my-4 rounded-lg bg-[#0d2b55] p-3 text-white disabled:opacity-50" disabled={busy || recording || !text.trim()} onClick={() => ask()}>{busy ? "Getting answer..." : "Ask assistant"}</button>
-    {audioRef.current && <button className="m-3 rounded border p-3" onClick={() => audioRef.current.play().catch(() => setError("Audio playback is unavailable."))}>Play answer</button>}
+    <div className="my-4 flex gap-3"><button disabled={busy} className="rounded-lg bg-[#0d2b55] p-3 text-white disabled:opacity-50" onClick={recording ? (mode === "browser" ? () => recognition.current?.stop() : stop) : start}>{recording ? t("Stop recording") : t("Use microphone")}</button>
+    <button className="rounded border p-3" onClick={() => { window.speechSynthesis?.cancel(); audioRef.current?.pause(); }}>{t("Stop audio")}</button></div>
+    <label className="block">{t("Your question")}<textarea className="mt-2 min-h-28 w-full rounded-lg border p-3" value={text} maxLength={2000} onChange={e => setText(e.target.value)} /></label>
+    <button className="my-4 rounded-lg bg-[#0d2b55] p-3 text-white disabled:opacity-50" disabled={busy || recording || !text.trim()} onClick={() => ask()}>{busy ? t("Getting answer...") : t("Ask assistant")}</button>
+    {audioRef.current && <button className="m-3 rounded border p-3" onClick={() => audioRef.current.play().catch(() => setError("Audio playback is unavailable."))}>{t("Play answer")}</button>}
     {error && <p role="alert" className="my-3 text-red-700">{error}</p>}
     {reply && <div aria-live="polite" className="rounded-xl border bg-white p-6"><FormattedText content={reply} /></div>}
-    <a href="/support" className="mt-6 block underline">Need human help? Open a support ticket</a>
+    <a href="/support" className="mt-6 block underline">{t("Need human help? Open a support ticket")}</a>
   </section></MainLayout>;
 }
 

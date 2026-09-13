@@ -70,3 +70,16 @@ async def text_to_speech(text: str, target_language: str) -> str:
         return result["audio"][0]["audioContent"]
     except (KeyError, IndexError, TypeError):
         raise HTTPException(503, "Bhashini returned no audio.")
+
+
+async def translate_texts(texts: list[str], source_language: str, target_language: str) -> list[str]:
+    if source_language == target_language:
+        return texts
+    result = await _compute("translation", {"sourceLanguage": source_language, "targetLanguage": target_language}, {"input": [{"source": text} for text in texts]})
+    try:
+        translated = [item["target"] for item in result["output"]]
+        if len(translated) != len(texts) or not all(isinstance(text, str) and text.strip() for text in translated):
+            raise ValueError()
+        return translated
+    except (KeyError, IndexError, TypeError, ValueError):
+        raise HTTPException(503, "Bhashini returned incomplete translations. Try again.")

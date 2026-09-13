@@ -9,6 +9,7 @@ import pytest
 @pytest.fixture
 def sms(monkeypatch):
     from src.integrations import sms_client
+    monkeypatch.setattr(sms_client.settings, "SMS_PROVIDER", "msg91")
     monkeypatch.setattr(sms_client.settings, "MSG91_AUTH_KEY", "test-only-key")
     monkeypatch.setattr(sms_client.settings, "MSG91_OTP_TEMPLATE_ID", "test-otp-flow")
     monkeypatch.setattr(sms_client.settings, "MSG91_SENDER_ID", "TESTER")

@@ -11,12 +11,12 @@ from fastapi import HTTPException, BackgroundTasks
 from PIL import Image, ImageDraw, ImageFont
 from sqlalchemy import DateTime, ForeignKey, Integer, String, delete, select, update
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.config.database import Base
 from src.config.settings import settings
-from src.integrations import email_client, sms_client
+from src.integrations import email_client, sms_client, firebase_phone
 from src.config.logging import get_logger
 from src.modules.auth.models import RefreshToken
 from src.modules.users.models import User
@@ -119,10 +119,13 @@ async def deliver_code(channel: str, recipient: str, code: str) -> None:
         logger.warning("password_reset_delivery_failed", channel=channel)
 
 
-async def request_recovery(db: AsyncSession, user: User | None, identifier: str, channel: str, background_tasks: BackgroundTasks) -> dict:
-    ready = email_client.email_ready() if channel == "email" else sms_client.otp_sms_ready()
+async def request_recovery(db: AsyncSession, user: User | None, identifier: str, channel: str, background_tasks: BackgroundTasks, recaptcha_token: str | None = None, language: str = "en") -> dict:
+    ready = email_client.email_ready() if channel == "email" else (firebase_phone.ready() or sms_client.otp_sms_ready())
     if not ready:
         raise HTTPException(503, "Password recovery for this contact method is temporarily unavailable. Please choose the other method or try again later.")
+    firebase = channel == "mobile" and firebase_phone.ready()
+    if firebase and not recaptcha_token:
+        raise HTTPException(400, "Complete the phone verification CAPTCHA and try again.")
     now = datetime.utcnow()
     active_user = user if user and user.is_active else None
     contact_key = secret_hash("contact", channel, identifier.strip().lower())
@@ -141,12 +144,16 @@ async def request_recovery(db: AsyncSession, user: User | None, identifier: str,
     await db.execute(delete(RecoveryChallenge).where(RecoveryChallenge.expires_at < now - timedelta(days=1)))
     await db.execute(delete(RecoveryState).where(RecoveryState.next_send_at < now - timedelta(days=1)))
     await db.execute(update(RecoveryChallenge).where(RecoveryChallenge.account_key == account_key, RecoveryChallenge.consumed_at.is_(None)).values(consumed_at=now))
-    db.add(RecoveryChallenge(id=challenge_id, account_key=account_key, user_id=active_user.id if active_user else None, otp_hash=secret_hash("otp", challenge_id, code), expires_at=now + timedelta(seconds=OTP_TTL)))
+    db.add(RecoveryChallenge(id=challenge_id, account_key=account_key, user_id=active_user.id if active_user else None, otp_hash=("firebase" if firebase else secret_hash("otp", challenge_id, code)), expires_at=now + timedelta(seconds=OTP_TTL)))
     await db.commit()
     if active_user:
         recipient = active_user.email if channel == "email" else active_user.mobile
-        background_tasks.add_task(deliver_code, channel, recipient, code)
-    return {"challenge_id": challenge_id, "message": "Check the contact you entered for a verification code. If no code arrives, wait 60 seconds and try again.", "expires_in": OTP_TTL, "resend_after": RESEND_DELAY}
+        if firebase:
+            background_tasks.add_task(firebase_phone.deliver_recovery, async_sessionmaker(db.bind, expire_on_commit=False), challenge_id, recipient, recaptcha_token, language)
+        else:
+            background_tasks.add_task(deliver_code, channel, recipient, code)
+    payload = {"challenge_id": challenge_id, "message": "Check the contact you entered for a verification code. If no code arrives, wait 60 seconds and try again.", "expires_in": OTP_TTL, "resend_after": RESEND_DELAY}
+    return payload
 
 
 async def verify_otp(db: AsyncSession, challenge_id: str, code: str) -> dict:
@@ -155,7 +162,9 @@ async def verify_otp(db: AsyncSession, challenge_id: str, code: str) -> dict:
     if not row:
         await db.rollback()
         raise HTTPException(410, "This code has expired or is no longer available. Request a new code.")
-    if not hmac.compare_digest(row.otp_hash, secret_hash("otp", challenge_id, code)) or not row.user_id:
+    owner = await db.get(User, row.user_id) if row.user_id else None
+    valid = (await firebase_phone.verify_code(db, challenge_id, owner.mobile, code) if owner else False) if row.otp_hash == "firebase" else hmac.compare_digest(row.otp_hash, secret_hash("otp", challenge_id, code))
+    if not valid or not row.user_id:
         await db.commit()
         if row.attempts >= MAX_ATTEMPTS:
             raise HTTPException(410, "Too many incorrect attempts. Request a new code.")

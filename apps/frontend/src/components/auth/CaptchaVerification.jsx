@@ -1,7 +1,9 @@
+import { useLanguage } from "../../lib/i18n.jsx";
 import { useEffect, useState } from "react";
 import { api, apiError } from "../../lib/api";
 
 export default function CaptchaVerification({ disabled = false, onReadyChange }) {
+  const { t } = useLanguage();
   const [challenge, setChallenge] = useState(null);
   const [answer, setAnswer] = useState("");
   const [error, setError] = useState("");
@@ -38,18 +40,17 @@ export default function CaptchaVerification({ disabled = false, onReadyChange })
   }, [refresh, onReadyChange]);
 
   return <fieldset disabled={disabled} className="mb-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
-    <legend className="px-1 text-sm font-semibold text-[#172b49]">CAPTCHA verification</legend>
+    <legend className="px-1 text-sm font-semibold text-[#172b49]">{t("CAPTCHA verification")}</legend>
     <div className="flex flex-wrap items-center gap-3">
-      {challenge && <img src={challenge.image} alt="CAPTCHA verification code" width="220" height="80" className="max-w-full rounded border border-slate-200 bg-white" />}
-      {loading && <p role="status" className="text-sm text-slate-600">Loading verification…</p>}
-      <button type="button" onClick={() => setRefresh((value) => value + 1)} disabled={loading || disabled} className="text-sm font-medium text-[#0d2b55] underline disabled:opacity-50">Refresh CAPTCHA</button>
+      {challenge && <img src={challenge.image} alt={t("CAPTCHA verification code")} width="220" height="80" className="max-w-full rounded border border-slate-200 bg-white" />}
+      {loading && <p role="status" className="text-sm text-slate-600">{t("Loading verification…")}</p>}
+      <button type="button" onClick={() => setRefresh((value) => value + 1)} disabled={loading || disabled} className="text-sm font-medium text-[#0d2b55] underline disabled:opacity-50">{t("Refresh CAPTCHA")}</button>
     </div>
-    {error && <p role="alert" className="mt-2 text-sm text-red-700">{error} Use Refresh CAPTCHA to try again.</p>}
-    {expired && <p role="status" className="mt-2 text-sm text-amber-800">This CAPTCHA has expired. Refresh it to continue.</p>}
+    {error && <p role="alert" className="mt-2 text-sm text-red-700">{error} {t("Use Refresh CAPTCHA to try again.")}</p>}
+    {expired && <p role="status" className="mt-2 text-sm text-amber-800">{t("This CAPTCHA has expired. Refresh it to continue.")}</p>}
     <input type="hidden" name="captcha_id" value={challenge?.captcha_id || ""} />
-    <label className="mt-3 block text-sm">Enter the characters shown above
-      <input name="captcha_answer" value={answer} onChange={(event) => setAnswer(event.target.value)} required disabled={loading || expired || !challenge || disabled} autoComplete="off" autoCapitalize="characters" spellCheck={false} maxLength={6} className="mt-1 h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-base tracking-widest disabled:bg-slate-100" />
+    <label className="mt-3 block text-sm">{t("Enter the characters shown above")}<input name="captcha_answer" value={answer} onChange={(event) => setAnswer(event.target.value)} required disabled={loading || expired || !challenge || disabled} autoComplete="off" autoCapitalize="characters" spellCheck={false} maxLength={6} className="mt-1 h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-base tracking-widest disabled:bg-slate-100" />
     </label>
-    <p className="mt-2 text-xs text-slate-600">Letters are not case-sensitive.</p>
+    <p className="mt-2 text-xs text-slate-600">{t("Letters are not case-sensitive.")}</p>
   </fieldset>;
 }

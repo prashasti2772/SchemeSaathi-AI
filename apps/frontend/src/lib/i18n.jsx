@@ -1,3 +1,4 @@
+import additionalText from "./locales/additional.tsv?raw";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 /* Dependency-free i18n layer. Every string below is keyed once, with a
@@ -61,24 +62,232 @@ const STRINGS = {
   profile_signed_out_note: { en: "Not provided", hi: "उपलब्ध नहीं", mr: "उपलब्ध नाही", gu: "ઉપલબ્ધ નથી", ta: "வழங்கப்படவில்லை", te: "అందించలేదు", bn: "প্রদান করা হয়নি", kn: "ಒದಗಿಸಿಲ್ಲ" },
 
   // AI Assistant
-  assistant_title: { en: "AI Scheme Assistant", hi: "एआई योजना सहायक", mr: "एआय योजना सहाय्यक", gu: "AI યોજના સહાયક", ta: "AI திட்ட உதவியாளர்", te: "AI పథక సహాయకుడు", bn: "এআই স্কিম সহায়ক", kn: "AI ಯೋಜನಾ ಸಹಾಯಕ" },
+  assistant_title: { en: "AI Scheme Assistant", hi: "एआई योजना सहायक", mr: "एआय योजना सहाय्यक", gu: "AI योजना સહાયક", ta: "AI திட்ட உதவியாளர்", te: "AI పథక సహాయకుడు", bn: "এআই স্কিম সহায়ক", kn: "AI ಯೋಜನಾ ಸಹಾಯಕ" },
   assistant_placeholder: { en: "Type your message...", hi: "अपना संदेश लिखें...", mr: "तुमचा संदेश टाइप करा...", gu: "તમારો સંદેશ ટાઇપ કરો...", ta: "உங்கள் செய்தியை தட்டச்சு செய்யவும்...", te: "మీ సందేశాన్ని టైప్ చేయండి...", bn: "আপনার বার্তা টাইপ করুন...", kn: "ನಿಮ್ಮ ಸಂದೇಶವನ್ನು ಟೈಪ್ ಮಾಡಿ..." },
+
+  // Homepage / public pages
+  homepage_badge: { en: "AI-POWERED DISCOVERY", hi: "एआई-संचालित खोज", mr: "एआय-संचालित शोध", gu: "AI-સંચालित શોધ", ta: "AI-இயங்கும் கண்டுபிடிப்பு", te: "AI-ఆధారిత అన్వేషణ", bn: "AI-চালিত আবিষ্কার", kn: "AI-ಚಾಲಿತ ಅನ್ವೇಷಣೆ" },
+  homepage_title_line1: { en: "Find Government", hi: "सरकारी योजनाएं", mr: "सरकारी योजना", gu: "સરકારી યોજનાઓ", ta: "அரசு திட்டங்களை", te: "ప్రభుత్వ పథకాలను", bn: "সরকারি প্রকল্প খুঁজুন", kn: "ಸರ್ಕಾರಿ ಯೋಜನೆಗಳನ್ನು" },
+  homepage_title_line2: { en: "Schemes You", hi: "खोजें जो", mr: "शोधा ज्यांची", gu: "ખોજો જે", ta: "கண்டறியவும்", te: "కనుగొనండి", bn: "খুঁজুন যেগুলি", kn: "ಹುಡುಕಿ" },
+  homepage_highlight: { en: "Actually Qualify For", hi: "आप वास्तव में पात्र हैं", mr: "खरंच पात्र आहात", gu: "તમે વાસ્તવમાં પાત્ર છો", ta: "நீங்கள் உண்மையில் தகுதியுள்ளீர்கள்", te: "మీరు వాస్తవంగా అర్హులు", bn: "আপনি প্রকৃতপক্ষে যোগ্য", kn: "ನೀವು ನಿಜವಾಗಿಯೂ ಅರ್ಹರಾಗಿರುವ" },
+  homepage_subtitle: { en: "AI-driven scheme matching that helps marginalized entrepreneurs discover financial assistance, subsidies, loans, grants and training.", hi: "एआई-संचालित योजना मिलान जो हाशिए के उद्यमियों को वित्तीय सहायता, सब्सिडी, ऋण, अनुदान और प्रशिक्षण खोजने में मदद करता है।", mr: "एआय-आधारित योजना जुळणी जी हाशिएवरील उद्योगधंद्यांना वित्तीय सहाय्य, अनुदान, कर्ज, ग्रांट आणि प्रशिक्षण शोधण्यात मदत करते.", gu: "એઆઈ-આધારિત યોજનાના મેળ ખાતા જે હાશિયાવાળા উদ্যোক્તાઓને.financial assistance, સબસિડી, લોન, გრાન્ટ અને ટ્રેનિંગ શોધવામાં મદદ કરે છે.", ta: "AI-அடிப்படையிலான திட்டப் பொருத்தம், பின் தங்கிய தொழில்முனைவோருக்கு நிதி உதவி, மானியங்கள், கடன்கள், மானியங்கள் மற்றும் பயிற்சியைக் கண்டறிய உதவுகிறது.", te: "AI ఆధారిత పథక సరిపోలిక, అట్టుకునే వ్యాపారవేత్తలకు ఆర్థిక సహాయం, సబ్సిడీలు, రుణాలు, గ్రాంట్లు మరియు శిక్షణను కనుగొనడంలో సహాయపడుతుంది.", bn: "AI-চালিত প্রকল্প মিলন, সুবিধাবঞ্চিত উদ্যোক্তাদের আর্থিক সহায়তা, ভর্তুকি, ঋণ, অনুদান ও প্রশিক্ষণ খুঁজে পেতে সাহায্য করে।", kn: "AI-ಆಧಾರಿತ ಯೋಜನೆ ಹೊಂದಾಣಿಕೆ, ನಿಷ್ಪ್ರಭವಾಗಿರುವ ಉದ್ಯಮಿಗಳಿಗೆ ಹಣಕಾಸಿನ ಸಹಾಯ, ಸಬ್ಸಿಡಿಗಳು, ಸಾಲಗಳು, ಅನುದಾನಗಳು ಮತ್ತು ತರಬೇತಿಯನ್ನು ಹುಡುಕಲು ಸಹಾಯ ಮಾಡುತ್ತದೆ." },
+  homepage_cta_find: { en: "Find Schemes Now", hi: "अभी योजनाएं खोजें", mr: "आता योजना शोधा", gu: "હમણાં યોજનાઓ શોધો", ta: "இப்போது திட்டங்களைக் கண்டறியவும்", te: "ఇప్పుడే పథకాలను కనుగొనండి", bn: "এখনই প্রকল্প খুঁজুন", kn: "ಈಗ ಯೋಜನೆಗಳನ್ನು ಹುಡುಕಿ" },
+  homepage_cta_explore: { en: "Explore Categories", hi: "श्रेणियाँ देखें", mr: "श्रेणी पाहा", gu: "શ્રેણીઓ જુઓ", ta: "வகைகளை ஆராயுங்கள்", te: "వర్గాలను అన్వేషించండి", bn: "বিভাগ দেখুন", kn: "ವರ್ಗಗಳನ್ನು ಅನ್ವೇಷಿಸಿ" },
+  homepage_stats_schemes: { en: "Government Schemes", hi: "सरकारी योजनाएं", mr: "सरकारी योजना", gu: "સરકારી યોજનાઓ", ta: "அரசு திட்டங்கள்", te: "ప్రభుత్వ పథకాలు", bn: "সরকারি প্রকল্প", kn: "ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು" },
+  homepage_stats_categories: { en: "Sector Categories", hi: "क्षेत्र श्रेणियाँ", mr: "क्षेत्र श्रेणी", gu: "સેક્ટર શ્રેણીઓ", ta: "துறை வகைகள்", te: "సెక్టార్ వర్గాలు", bn: "সেক্টর বিভাগ", kn: "ವಲಯ ವರ್ಗಗಳು" },
+  home_support: { en: "Support", hi: "सहायता", mr: "सहाय्य", gu: "સહાય", ta: "உதவி", te: "మద్దతు", bn: "সহায়তা", kn: "ಬೆಂಬಲ" },
+  home_training: { en: "Training", hi: "प्रशिक्षण", mr: "प्रशिक्षण", gu: "તાલીમ", ta: "பயிற்சி", te: "శిక్షణ", bn: "প্রशिक्षণ", kn: "ತರಬೇತಿ" },
+  homepage_stats_states: { en: "States & UTs Covered", hi: "आच्छादित राज्य और केंद्र शासित प्रदेश", mr: "कवरेत राज्य आणि केंद्रशासित प्रदेश", gu: "આવરીત રાજ્યો અને કેન્દ્ર-શાસित પ્રદેશો", ta: "கவர் செய்யப்பட்ட மாநிலங்கள் மற்றும் ஒன்றியப் பகுதிகள்", te: "మొత్తం రాష్ట్రాలు మరియు కేంద్రపాలిత ప్రాంతాలు", bn: "আচ্ছাদিত রাজ্য ও কেন্দ্রশাসিত অঞ্চল", kn: "ಕವರಿತ ರಾಜ್ಯಗಳು ಮತ್ತು కేంద్రಾಡಳಿತ ಪ್ರದೇಶಗಳು" },
+  homepage_stats_screening: { en: "Preliminary Screening", hi: "प्रारंभिक स्क्रीनिंग", mr: "प्रारंभिक स्क्रीनिंग", gu: "પ્રારંભિક સ્ક्रीनિંગ", ta: "தொடக்க திரையிடல்", te: "ప్రాథమిక స్క్రీనింగ్", bn: "প্রাথমিক স্ক্রিনিং", kn: "ಪ್ರಾಥಮಿಕ ಸ್ಕ್ರೀನಿಂಗ್" },
+  audience_title: { en: "Built for Marginalized Entrepreneurs", hi: "हाशिए के उद्यमियों के लिए बनाया गया", mr: "हाश्येवरील उद्योजकांसाठी तयार केलेले", gu: "હાર્દીકીגע entrepreneurs માટે બનાવેલ", ta: "பின் தங்கிய தொழில்முனைவோருக்காக வடிவமைக்கப்பட்டது", te: "అట్టడుగు entrepreneuersకు నిర్మించబడింది", bn: "অবহেলিত উদ্যোক্তাদের জন্য তৈরি", kn: "ಹೆಚ್ಚು ಹಿಂದುಳಿದ ಉದ್ಯಮಿಗಳಿಗೆ ನಿರ್ಮಿಸಲಾಗಿದೆ" },
+  audience_women: { en: "Women", hi: "महिलाएं", mr: "महिलां", gu: "સ્ત્રીઓ", ta: "பெண்கள்", te: "మహిళలు", bn: "নারী", kn: "ಮಹಿಳೆಯರು" },
+  audience_scst: { en: "SC/ST", hi: "अनुसूचित जाति/जनजाति", mr: "SC/ST", gu: "SC/ST", ta: "SC/ST", te: "SC/ST", bn: "SC/ST", kn: "SC/ST" },
+  audience_obc: { en: "OBC", hi: "ओबीसी", mr: "ओबीसी", gu: "ઓબીસી", ta: "பிற்படுத்தப்பட்டோருக்கான", te: "OBC", bn: "OBC", kn: "OBC" },
+  audience_minority: { en: "Minorities", hi: "अल्पसंख्यक", mr: "अल्पसंख्यक", gu: "અल्पસંખ્યકો", ta: "சிறுபான்மையினர்", te: "మినారిటీల", bn: "সংখ্যালঘু", kn: "ಸಂಖ್ಯಲಘು" },
+  audience_rural: { en: "Rural", hi: "ग्रामीण", mr: "ग्रामीण", gu: "ગ્રામીણ", ta: "கிராமப்புற", te: "గ్రామీణ", bn: "গ্রামীণ", kn: "ಗ್ರಾಮೀಣ" },
+  audience_first_time: { en: "First-time business owners", hi: "पहली बार व्यवसाय शुरू करने वाले", mr: "पहिल्यांदा व्यवसाय सुरू करणारे", gu: "પ્રથમ વખત વ્યવસાય શરૂ કરનારા", ta: "முதல் முறை தொழில் தொடங்குபவர்கள்", te: "మొద lần వ్యాపారం ప్రారంభించేవారు", bn: "প্রথমবার ব্যবসা চালু করতে চান এমনরা", kn: "ಮೊದಲ ಬಾರಿಗೆ ವ್ಯಾಪಾರ ಆರಂಭಿಸುವವರು" },
+
+  categories_page_badge: { en: "SchemeSaathi - SIH26092", hi: "स्कीमसाथी - SIH26092", mr: "स्कीमसाथी - SIH26092", gu: "સ્કીમસાથી - SIH26092", ta: "ஸ்கீம்சாதி - SIH26092", te: "స్కీమసాధీ - SIH26092", bn: "স্কীমসাথি - SIH26092", kn: "ಸ್ಕೀಮಸಾಥಿ - SIH26092" },
+  categories_page_title: { en: "Explore government schemes", hi: "सरकारी योजनाएं देखें", mr: "सरकारी योजना एक्सप्लोर करा", gu: "સરકારી યોજનાઓ શોધો", ta: "அரசு திட்டங்களை ஆராயுங்கள்", te: "ప్రభుత్వ పథకాలను అన్వేషించండి", bn: "সরকারি প্রকল্প দেখুন", kn: "ಸರ್ಕಾರಿ ಯೋಜನೆಗಳನ್ನು ಅನ್ವೇಷಿಸಿ" },
+  categories_page_subtitle: { en: "Search business finance, self-employment, skills and inclusion support. Use Find Schemes for screening against your profile.", hi: "व्यवसाय वित्त, स्वरोजगार, कौशल और समावेशन सहायता खोजें। अपनी प्रोफ़ाइल के अनुसार स्क्रीनिंग के लिए योजनाएं खोजें।", mr: "व्यवसाय वित्त, स्व-रोजगार, कौशल्य आणि समावेशन मदत शोधा. तुमच्या प्रोफाइलवर स्क्रीनिंगसाठी योजना वापरा.", gu: "વ્યાવસાયિક ફાઇનાન્સ, સ્વ-રોજગારી, કુશળતા અને સમાવેશ સહાય શોધો. તમારી પ્રોફાઇલ સામે સ્ક્રીનિંગ માટે ફાઇન્ડ સ્કીમ્સનો ઉપયોગ કરો.", ta: "வணிக நிதி, சுயதொழில், திறன்கள் மற்றும் உள்ளடக்கம் உதவியைத் தேடுங்கள். உங்கள் சுயவிவரத்துடன் திரையிடுவதற்கு திட்டங்களைக் கண்டறியவும்.", te: "వ్యాపార ఆర్థిక సహాయం, స్వయం ఉపాధి, నైపుణ్యం మరియు చేర్చు సాయం కోసం శోధించండి. మీ ప్రొఫైల్ ఆధారంగా స్క్రీనింగ్ కోసం పథకాలను కనుగొనండి.", bn: "ব্যবসায়িক অর্থ, স্ব-নিয়োগ, দক্ষতা এবং অন্তর্ভুক্তি সহায়তা খুঁজুন। আপনার প্রোফাইলের বিরুদ্ধে স্ক্রিনিংয়ের জন্য প্রকল্প খুঁজুন।", kn: "ವ್ಯವಹಾರದ ಹಣಕಾಸು, ಸ್ವನಿಯೋಗ, ಕೌಶಲ್ಯ ಮತ್ತು ಒಳಗೊಂಡಿರುವ ಸಹಾಯವನ್ನು ಹುಡುಕಿ. ನಿಮ್ಮ ಪ್ರೊಫೈಲ್‌ಗೆ ವಿರುದ್ಧ ಸ್ಕ್ರೀನಿಂಗ್‌ಗಾಗಿ ಯೋಜನೆಗಳ ಹುಡುಕಾಟ ಬಳಸಿ." },
+  categories_notice: { en: "Catalogue records may be incomplete or outdated. A search result does not confirm eligibility or that applications are open. Check the linked official guidance before applying.", hi: "कैटलॉग रिकॉर्ड अधूरे या पुराने हो सकते हैं। खोज परिणाम से पात्रता या आवेदन खुला होना पुष्ट नहीं होता है। आवेदन से पहले आधिकारिक मार्गदर्शन की जाँच करें।", mr: "कॅटलॉग रेकॉर्ड अपूर्ण किंवा outdated असू शकतात. शोध परिणाम पॅटर्नची पुष्टी करत नाही किंवा अर्ज खुला आहे याची पुष्टी करत नाही. अर्ज करण्यापूर्वी अधिकृत मार्गदर्शकांचे तपशील तपासा.", gu: "કેટાલોગ રેકોર્ડ অসমપુર્ણ અથવા હલકા થઈ શકે છે. શોધ પરિણામથી પાત્રતા અથવા અરજી ખુલ્લી છે તેની પુષ્ટિ થતી નથી. અરજી કરતા પહેલાં અધિકૃત માર્ગદર્શન તપાસો.", ta: "கேடலாக் பதிவுகள் முழுமையற்றதாக அல்லது காலாவதியானதாக இருக்கலாம். தேடல் முடிவு தகுதி அல்லது விண்ணப்பம் திறந்துள்ளது என்பதை உறுதிப்படுத்தாது. விண்ணப்பிக்கும் முன் அதிகாரப்பூர்வ வழிகாட்டுதலைச் சரிபார்க்கவும்.", te: "కాటలాగ్ రికార్డులు అసంపూర్ణంగా లేదా పాతవిగా ఉండవచ్చు. శోధన ఫలితం అర్హత లేదా అప్లికేషన్ తెరవబడిందో నిర్ధారించదు. దరఖాస్తు 전에 అధికారిక మార్గదర్శకాన్ని చూడండి.", bn: "ক্যাটালগ রেকর্ড অসম্পূর্ণ বা পুরোনো হতে পারে। অনুসন্ধান ফলাফল যোগ্যতা বা আবেদন খোলা আছে তা নিশ্চিত করে না। আবেদন করার আগে অফিসিয়াল গাইডেন্স দেখুন।", kn: "ಕ್ಯಾಟಲಾಗ್ ದಾಖಲೆಗಳು ಅಪೂರ್ಣ ಅಥವಾ ಹಳೆಯವಾಗಿರಬಹುದು. ಹುಡುಕಾಟ ಫಲಿತಾಂಶವು ಅರ್ಹತೆ ಅಥವಾ ಅರ್ಜಿ ತೆರೆದಿರುವುದನ್ನು ದೃಢೀಕರಿಸುವುದಿಲ್ಲ. ಅರ್ಜಿ ಸಲ್ಲಿಸುವ ಮುನ್ನ ಅಧಿಕೃತ ಮಾರ್ಗದರ್ಶನವನ್ನು ಪರಿಶೀಲಿಸಿ." },
+  categories_search_label: { en: "Search schemes", hi: "योजनाएं खोजें", mr: "योजना शोधा", gu: "યોજનાઓ શોધો", ta: "திட்டங்களைத் தேடு", te: "పథకాలను శోధించండి", bn: "প্রকল্প খুঁজুন", kn: "ಯೋಜನೆಗಳನ್ನು ಹುಡುಕಿ" },
+  categories_search_placeholder: { en: "Scheme name or keywords, e.g. MUDRA, women loan, tailoring", hi: "योजना का नाम या कीवर्ड, उदाहरण: MUDRA, महिला ऋण, कढ़ाई", mr: "योजनेचे नाव किंवा कीवर्ड, उदा. MUDRA, महिला कर्ज, कापडकाम", gu: "યોજના નામ અથવા કીવર્ડ, ઉદાહરણ: MUDRA, મહિલા લોન, ટેલરિંગ", ta: "திட்டத்தின் பெயர் அல்லது முக்கிய சொற்கள், எடுத்துக்காட்டு: MUDRA, பெண்கள் கடன், தையல்", te: "పథకం పేరు లేదా కీవర్డ్, ఉదాహరణ: MUDRA, మహిళా రుణం, టైలరింగ్", bn: "প্রকল্পের নাম বা কীওয়ার্ড, উদাহরণ: MUDRA, মহিলাদের ঋণ, টেইলরিং", kn: "ಯೋಜನೆ ಹೆಸರು ಅಥವಾ ಕೀವರ್ಡ್, ಉದಾಹರಣೆಗೆ: MUDRA, ಮಹಿಳೆಯರ ಸಾಲ, ಟೇಲರಿಂಗ್" },
+  categories_searching: { en: "Searching catalogue...", hi: "कैटलॉग खोजा जा रहा है...", mr: "कॅटलॉग शोधत आहे...", gu: "કેટાલોગ શોધી રહ્યા છીએ...", ta: "கேடலாக் தேடப்படுகிறது...", te: "కేటలాగ్ శోధిస్తున్నాం...", bn: "ক্যাটালগ খুঁজছি...", kn: "ಕ್ಯಾಟಲಾಗ್ ಹುಡುಕಲಾಗುತ್ತಿದೆ..." },
+  categories_retry: { en: "Retry search", hi: "फिर से खोजें", mr: "पुन्हा शोधा", gu: "ફરીથી શોધો", ta: "மீண்டும் தேடவும்", te: "మళ్లీ శోధించండి", bn: "আবার খুঁজুন", kn: "ಮತ್ತೆ ಹುಡುಕಿ" },
+  categories_found: { en: "schemes found", hi: "योजनाएं मिलीं", mr: "योजना सापडल्या", gu: "યોજનાઓ મળી", ta: "திட்டங்கள் கிடைத்தன", te: "పథకాలు దొరికాయి", bn: "প্রকল্প পাওয়া গেছে", kn: "ಯೋಜನೆಗಳು ಸಿಕ್ಕಿವೆ" },
+  categories_all: { en: "All schemes", hi: "सभी योजनाएं", mr: "सर्व योजना", gu: "બધી યોજનાઓ", ta: "அனைத்து திட்டங்கள்", te: "అన్ని పథకాలు", bn: "সব প্রকল্প", kn: "ಎಲ್ಲಾ ಯೋಜನೆಗಳು" },
+  categories_no_match: { en: "No matching schemes", hi: "कोई मेल खाने वाली योजना नहीं", mr: "जुळणारी योजना नाही", gu: "મેળ ખાતી કોઈ યોજનાઓ નથી", ta: "பொருந்தும் திட்டங்கள் இல்லை", te: "సరిపోలే పథకాలు లేవు", bn: "মিলছে এমন প্রকল্প নেই", kn: "ಹೊಂದಾಣಿಕೆಯ ಯೋಜನೆಗಳಿಲ್ಲ" },
+  categories_no_match_hint: { en: "Try fewer keywords or remove the category filter.", hi: "कम कीवर्ड आजमाएं या श्रेणी फ़िल्टर निकालें।", mr: "कमी कीवर्ड वापरून पहा किंवा श्रेणी फिल्टर काढा.", gu: "ઓછા કીવર્ડ્સ અજમાવો અથવા કેટેગરી ફિલ્ટર દૂર કરો.", ta: "குறைந்த முக்கிய சொற்களை முயற்சிக்கவும் அல்லது வகை வடிகட்டியை நீக்கவும்.", te: "తక్కువ కీవర్డ్‌లను ప్రయత్నించండి లేదా వర్గం ఫిల్టర్‌ను తీసివేయండి.", bn: "কম কীওয়ার্ড ব্যবহার করুন বা ক্যাটাগরি ফিল্টার সরিয়ে দিন।", kn: "ಕಡಿಮೆ ಕೀವರ್ಡ್‌ಗಳನ್ನು ಪ್ರಯತ್ನಿಸಿ ಅಥವಾ ವಿಭಾಗ ಫಿಲ್ಟರ್ ಅನ್ನು ತೆಗೆದುಹಾಕಿ." },
+  categories_clear: { en: "Clear search and filters", hi: "खोज और फ़िल्टर साफ़ करें", mr: "शोध आणि फिल्टर साफ करा", gu: "શોધ અને ફિલ્ટર સાફ કરો", ta: "தேடல் மற்றும் வடிகட்டிகளை அழிக்கவும்", te: "శోధన మరియు ఫిల్టర్‌లను క్లియర్ చేయండి", bn: "অনুসন্ধান ও ফিল্টার পরিষ্কার করুন", kn: "ಹುಡುಕಾಟ ಮತ್ತು ಫಿಲ್ಟರ್‌ಗಳನ್ನು ತೆರವುಗೊಳಿಸಿ" },
+  categories_hide_details: { en: "Hide details", hi: "विवरण छुपाएं", mr: "तपशील लपवा", gu: "વિગતો છુપાવો", ta: "விவரங்களை மறைக்கவும்", te: "వివరాలను దాచండి", bn: "বিস্তারিত লুকান", kn: "ವಿವರಗಳನ್ನು ಮರೆಮಾಡಿ" },
+  categories_show_details: { en: "Benefits, eligibility and application details", hi: "लाभ, पात्रता और आवेदन विवरण", mr: "फायदा, पात्रता आणि अर्जाचा तपशील", gu: "લાભ, પાત્રતા અને અરજી વિગતો", ta: "நன்மைகள், தகுதி மற்றும் விண்ணப்ப விவரங்கள்", te: "ప్రయోజనాలు, అర్హత మరియు దరఖాస్తు వివరాలు", bn: "সুবিধা, যোগ্যতা এবং আবেদন বিবরণ", kn: "ಲಾಭಗಳು, ಅರ್ಹತೆ ಮತ್ತು ಅರ್ಜಿ ವಿವರಗಳು" },
+  categories_benefits: { en: "Benefits", hi: "लाभ", mr: "फायदा", gu: "લાભ", ta: "நன்மைகள்", te: "ప్రయోజనాలు", bn: "সুবিধা", kn: "ಲಾಭಗಳು" },
+  categories_eligibility: { en: "Eligibility", hi: "पात्रता", mr: "पात्रता", gu: "પાત્રતા", ta: "தகுதி", te: "అర్హత", bn: "যোগ্যতা", kn: "ಅರ್ಹತೆ" },
+  categories_documents: { en: "Documents", hi: "दस्तावेज़", mr: "कागदपत्रे", gu: "દસ્તાવેજો", ta: "ஆவணங்கள்", te: "పత్రాలు", bn: "নথি", kn: "ದಾಖಲೆಗಳು" },
+  categories_how_to_apply: { en: "How to apply", hi: "कैसे Apply करें", mr: "कसे अर्ज करायचे", gu: "કઈ રીતે અરજી કરવી", ta: "எப்படி விண்ணப்பிப்பது", te: "ఎలా దరఖాస్తు చేయాలి", bn: "কিভাবে আবেদন করবেন", kn: "ಎങ്ങനെ ಅರ್ಜಿ ಸಲ್ಲಿಸುವುದು" },
+  categories_official_guidance: { en: "Official guidance", hi: "अधिकृत मार्गदर्शन", mr: "अधिकृत मार्गदर्शन", gu: "સત્તાવાર માર્ગદર્શન", ta: "அதிகாரப்பூர்வ வழிகாட்டுதல்", te: "అధికారిక మార్గదర్శకత్వం", bn: "অফিসিয়াল গাইডেন্স", kn: "ಅಧಿಕೃತ ಮಾರ್ಗದರ್ಶನ" },
+  categories_ask_assistant: { en: "Ask assistant", hi: "सहायक से पूछें", mr: "सहाय्यकाला विचारा", gu: "સહાયકનો પ્રશ્ન કરો", ta: "உதவியாளரிடம் கேளுங்கள்", te: "సహాయకుడిని అడగండి", bn: "সহায়কের কাছে জিজ্ঞাসা করুন", kn: "ಸಹಾಯಕನನ್ನು ಕೇಳಿ" },
+  categories_previous: { en: "Previous", hi: "पिछला", mr: "मागील", gu: "પહેલાનું", ta: "முந்தையது", te: "మునుపటి", bn: "পূর্ববর্তী", kn: "ಹಿಂದಿನ" },
+  categories_next: { en: "Next", hi: "अगला", mr: "पुढील", gu: "આગળ", ta: "அடுத்தது", te: "తదుపరి", bn: "পরবর্তী", kn: "ಮುಂದಿನ" },
+  categories_page_of: { en: "Page", hi: "पेज", mr: "पेज", gu: "પેજ", ta: "பக்கம்", te: "పేజీ", bn: "পৃষ্ঠা", kn: "ಪುಟ" },
+
+  about_badge: { en: "ABOUT SCHEMESAATHI", hi: "स्कीमसाथी के बारे में", mr: "स्कीमसाथी बद्दल", gu: "સ્કીમસાથી વિશે", ta: "ஸ்கீம்சாதி பற்றி", te: "స్కీమసాధీ గురించి", bn: "স্কীমসাথি সম্পর্কে", kn: "ಸ್ಕೀಮಸಾಥಿ ಬಗ್ಗೆ" },
+  about_title_line1: { en: "Discover the right government schemes,", hi: "सही सरकारी योजनाएं खोजें,", mr: "योग्य सरकारी योजना शोधा,", gu: "સાચી સરકારી યોજનાઓ શોધો,", ta: "சரியான அரசு திட்டங்களைக் கண்டறியவும்,", te: "సరైన ప్రభుత్వ పథకాలను కనుగొనండి,", bn: "সঠিক সরকারি প্রকল্প খুঁজুন,", kn: "ಸರಿಯಾದ ಸರ್ಕಾರಿ ಯೋಜನೆಗಳನ್ನು ಹುಡುಕಿ," },
+  about_title_line2: { en: "made simple.", hi: "सरल बनाएं।", mr: "सोपे करून घ्या.", gu: "સાદું બનાવેલ.", ta: "எளிதாக்கப்பட்டது.", te: "సరళంగా చేసారు.", bn: "সহজ করে।", kn: "ಸರಳವಾಗಿ." },
+  about_intro: { en: "SchemeSaathi is a smart platform designed to help individuals, entrepreneurs and businesses discover government schemes that may match their needs, eligibility and goals.", hi: "SchemeSaathi एक स्मार्ट प्लेटफॉर्म है जो व्यक्तियों, उद्यमियों और व्यवसायों को ऐसी सरकारी योजनाओं को खोजने में मदद करता है जो उनकी आवश्यकताओं, पात्रता और लक्ष्यों से मेल खा सकती हैं।", mr: "SchemeSaathi हे एक स्मार्ट प्लॅटफॉर्म आहे जे व्यक्ती, उद्योजक आणि व्यवसायांना अशा सरकारी योजना शोधण्यात मदत करते जे त्यांच्या गरज, पात्रता आणि उद्देशांशी जुळू शकतात.", gu: "SchemeSaathi એક સ્માર્ટ પ્લેટફોર્મ છે જે વ્યક્તિઓ, ઉદ્યોગપતિઓ અને વ્યવસાયોને એવી સરકારી યોજનાઓ શોધવામાં મદદ કરે છે જે તેમની જરૂરિયાતો, પાત્રતા અને લક્ષ્યો સાથે મેળ ખાઈ શકે.", ta: "SchemeSaathi என்பது தனிநபர்கள், தொழில்முனைவோர்கள் மற்றும் வணிகங்களுக்கு அவர்களின் தேவைகள், தகுதி மற்றும் இலக்குகளுடன் பொருந்தக்கூடிய அரசு திட்டங்களைக் கண்டறிய உதவும் ஒரு ஸ்மார்ட் தளமாகும்.", te: "SchemeSaathi అనేది వ్యక్తులు, వ్యాపారవేత్తలు మరియు వ్యాపారాలకు వారి అవసరాలు, అర్హత మరియు లక్ష్యాలకు సరిపోయే ప్రభుత్వ పథకాలను కనుగొనడంలో సహాయపడే ఒక స్మార్ట్ ప్లాట్ఫారమ్.", bn: "SchemeSaathi এমন একটি স্মার্ট প্ল্যাটফর্ম যা ব্যক্তিদের, উদ্যোক্তাদের এবং ব্যবসায়ীদের এমন সরকারি প্রকল্প খুঁজতে সাহায্য করে যা তাদের চাহিদা, যোগ্যতা এবং লক্ষ্যগুলির সাথে মেলে।", kn: "SchemeSaathi ಒಂದು ಸ್ಮಾರ್ಟ್ ಪ್ಲಾಟ್ಫಾರ್ಮ್ ಆಗಿದ್ದು, ವ್ಯಕ್ತಿಗಳು, ಉದ್ಯಮಿಗಳು ಮತ್ತು ವ್ಯವಹಾರಗಳಿಗೆ ಅವರ ಅಗತ್ಯತೆಗಳು, ಅರ್ಹತೆ ಮತ್ತು ಉದ್ದೇಶಗಳಿಗೆ ಹೊಂದುವ ಸರ್ಕಾರಿ ಯೋಜನೆಗಳನ್ನು ಹುಡುಕಲು ಸಹಾಯ ಮಾಡುತ್ತದೆ." },
+  about_mission: { en: "Our Mission", hi: "हमारा मिशन", mr: "आमचे ध्येय", gu: "અમનું ધ્યેય", ta: "எங்கள் தொலைநோக்கு", te: "మన మిషన్", bn: "আমাদের লক্ষ্য", kn: "ನಮ್ಮ ಗುರಿ" },
+  about_mission_title: { en: "Making government schemes easier to understand", hi: "सरकारी योजनाओं को समझना आसान बनाना", mr: "सरकारी योजना समजणे सोपे करणे", gu: "સરકારી યોજનાઓને સમજવી સરળ બનાવવું", ta: "அரசு திட்டங்களை புரிந்துகொள்வதை எளிதாக்குதல்", te: "ప్రభుత్వ పథకాలను అర్థం చేసుకోవడాన్ని సులభతరం చేయడం", bn: "সরকারি প্রকল্প বুঝতে সহজ করে তোলা", kn: "ಸರ್ಕಾರಿ ಯೋಜನೆಗಳನ್ನು ಅರ್ಥಮಾಡಿಕೊಳ್ಳಲು ಸುಲಭವಾಗಿಸುವುದು" },
+  about_how_it_works: { en: "How It Works", hi: "यह कैसे काम करता है", mr: "हे कसे काम करते", gu: "આ એક રીતે કામ કરે છે", ta: "இது எப்படி செயல்படுகிறது", te: "ఇది ఎలా పని చేస్తుంది", bn: "এটি কীভাবে কাজ করে", kn: "ಇದು ಹೇಗೆ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತದೆ" },
+  about_how_subtitle: { en: "Finding schemes in a few simple steps", hi: "कुछ सरल चरणों में योजनाएं ढूंढें", mr: "काही सोप्या पायऱ्यांमध्ये योजना शोधा", gu: "થોડા સરળ પગલાંમાં યોજનાઓ શોધો", ta: "சில எளிய படிகளில் திட்டங்களைக் கண்டறியவும்", te: "కొన్ని సరళమైన దశలలో పథకాలను కనుగొనండి", bn: "কয়েকটি সহজ ধাপে প্রকল্প খুঁজুন", kn: "ಕೆಲವು ಸರಳ ಹಂತಗಳಲ್ಲಿ ಯೋಜನೆಗಳನ್ನು ಹುಡುಕಿ" },
+  about_why: { en: "Why SchemeSaathi", hi: "SchemeSaathi क्यों", mr: "SchemeSaathi का का कारण", gu: "SchemeSaathi શા માટે", ta: "SchemeSaathi ஏன்", te: "SchemeSaathi ఎందుకు", bn: "SchemeSaathi কেন", kn: "SchemeSaathi ಏಕೆ" },
+  about_why_title: { en: "Built to make scheme discovery easier", hi: "योजना खोज को आसान बनाने के लिए बनाया गया", mr: "योजना शोध सोपा करण्यासाठी तयार केले आहे", gu: "યોજનાનું શોધવું সহজ બનાવવા માટે બનાવવામાં આવ્યું", ta: "திட்ட கண்டுபிடிப்பை எளிதாக்குவதற்காக உருவாக்கப்பட்டது", te: "పథకాలను కనుగొనడాన్ని సులభతరం చేయడానికి నిర్మించబడింది", bn: "প্রকল্প খোঁজাকে সহজ बनाने জন্য তৈরি", kn: "ಯೋಜನೆ ಹುಡುಕಾಟವನ್ನು ಸುಲಭವಾಗಿಸಲು ನಿರ್ಮಿಸಲಾಗಿದೆ" },
+  about_ready: { en: "Ready to find schemes for you?", hi: "आपके लिए योजनाएं खोजने के लिए तैयार हैं?", mr: "तुमच्यासाठी योजना शोधण्यास तयार आहात का?", gu: "તમારા માટે યોજનાઓ શોધવા માટે તૈયાર છો?", ta: "உங்களுக்கான திட்டங்களைக் கண்டறிய தயாரா?", te: "మీ కోసం పథకాలను కనుగొనడానికి సిద్ధంగా ఉన్నారా?", bn: "আপনার জন্য প্রকল্প খুঁজতে প্রস্তুত?", kn: "ನಿಮಗಾಗಿ ಯೋಜನೆಗಳ ಹುಡುಕಾಟಕ್ಕೆ ಸಿದ್ಧರಾಗಿದ್ದೀರಾ?" },
+  about_find_matches: { en: "Find Matching Schemes", hi: "मेल खाती योजनाएं खोजें", mr: "जुळणाऱ्या योजना शोधा", gu: "મેળ खातી યોજનાઓ શોધો", ta: "பொருந்தும் திட்டங்களைக் கண்டறியவும்", te: "సరిపోలే పథకాలను కనుగొనండి", bn: "মিলিত প্রকল্প খুঁজুন", kn: "హೊಂದಾಣಿಕೆಯ ಯೋಜನೆಗಳನ್ನು ಹುಡುಕಿ" },
+  about_step_profile: { en: "Personal Information", hi: "व्यक्तिगत जानकारी" },
+  about_step_business: { en: "Business Details", hi: "व्यावसायिक विवरण" },
+  about_step_other: { en: "Other Details", hi: "अन्य विवरण" },
+  about_step_matches: { en: "Get Matches", hi: "मेल खाते परिणाम" },
+  about_mission_text: { en: "We simplify the process of discovering schemes by turning complex eligibility rules into clear, actionable guidance for every user.", hi: "हम योजना खोज की प्रक्रिया को सरल बनाते हैं, जटिल पात्रता नियमों को साफ़ और उपयोगी मार्गदर्शन में बदलकर।" },
+  about_mission_secondary: { en: "The goal is to make public support easier to understand, faster to compare, and more accessible to the entrepreneurs who need it most.", hi: "उद्देश्य यह है कि सार्वजनिक सहायता को समझना आसान हो, तुलना तेज़ हो, और सबसे अधिक ज़रूरतमंद उद्यमियों के लिए अधिक सुलभ हो।" },
+  about_info_title: { en: "Important Information", hi: "महत्वपूर्ण सूचना" },
+  about_info_1: { en: "Preliminary screening is only a starting point. Verify the current conditions and application window on the official portal.", hi: "प्रारंभिक स्क्रीनिंग केवल शुरुआत है। आधिकारिक पोर्टल पर वर्तमान शर्तें और आवेदन विंडो सत्यापित करें।" },
+  about_info_2: { en: "SchemeSaathi does not submit applications on your behalf. Final decisions rest with the issuing department, lender, or programme portal.", hi: "SchemeSaathi आपके लिए आवेदन नहीं submits करता है। अंतिम निर्णय जारी करने वाली विभाग, लेंडर या कार्यक्रम पोर्टल के पास रहता है।" },
+
+  resources_badge: { en: "📚 SchemeSaathi Knowledge Base & Resource Centre", hi: "📚 SchemeSaathi ज्ञान आधार एवं संसाधन केंद्र", mr: "📚 SchemeSaathi नॉलेज बेस आणि रिसोर्स सेंटर", gu: "📚 SchemeSaathi નॉलेज બેસ અને રિસોર્સ સેન્ટર", ta: "📚 SchemeSaathi அறிவு அடிப்படை & வள மையம்", te: "📚 SchemeSaathi జ్ఞాన స్థావరం & వనరుల కేంద్రం", bn: "📚 SchemeSaathi জ্ঞানভান্ডার ও রিসোর্স সেন্টার", kn: "📚 SchemeSaathi ಜ್ಞಾನ ಮೂಲ & ಸಂಪನ್ಮೂಲ ಕೇಂದ್ರ" },
+  resource_category_all: { en: "All", hi: "सभी" },
+  resource_category_guides: { en: "Guides", hi: "गाइड" },
+  resource_category_application: { en: "Application", hi: "आवेदन" },
+  resource_category_documents: { en: "Documents", hi: "दस्तावेज़" },
+  resource_find_title: { en: "Find government schemes", hi: "सरकारी योजनाएं खोजें" },
+  resource_find_desc: { en: "Compare eligibility, benefits and application steps on the official portal.", hi: "अधिकृत पोर्टल पर पात्रता, लाभ और आवेदन चरणों की तुलना करें।" },
+  resource_apply_title: { en: "Application guide", hi: "आवेदन गाइड" },
+  resource_apply_desc: { en: "Read the official guidelines before submitting an application.", hi: "आवेदन करने से पहले आधिकारिक दिशानिर्देश पढ़ें।" },
+  resource_documents_title: { en: "Document checklist", hi: "दस्तावेज़ सूची" },
+  resource_documents_desc: { en: "Required documents vary by scheme. Prepare only the documents requested in the official guidelines.", hi: "आवश्यक दस्तावेज़ योजना के अनुसार बदलते हैं। केवल आधिकारिक दिशानिर्देशों में बताई गई चीज़ें तैयार करें।" },
+  resource_udyam_title: { en: "Udyam registration", hi: "उद्याम पंजीकरण" },
+  resource_udyam_desc: { en: "Use the official Udyam portal for enterprise registration and current requirements.", hi: "उपयुक्त उद्यम पंजीकरण और वर्तमान आवश्यकताओं के लिए आधिकारिक Udyam पोर्टल का उपयोग करें।" },
+  resource_startup_title: { en: "Startup support", hi: "स्टार्टअप सहायता" },
+  resource_startup_desc: { en: "Check recognition and programme requirements on the official Startup India portal.", hi: "अधिकृत Startup India पोर्टल पर मान्यता और कार्यक्रम आवश्यकताओं की जाँच करें।" },
+  resource_loans_title: { en: "Loans and subsidies", hi: "ऋण और सब्सिडी" },
+  resource_loans_desc: { en: "A loan must be repaid. A subsidy reduces eligible costs subject to scheme conditions.", hi: "ऋण चुकाना पड़ता है। सब्सिडी पात्र लागत को योजना की शर्तों के अनुसार घटा देती है।" },
+  resource_step_1: { en: "Compare eligibility, benefits and application steps on the official portal.", hi: "अधिकृत पोर्टल पर पात्रता, लाभ और आवेदन चरणों की तुलना करें।" },
+  resource_step_2: { en: "Required documents vary by scheme. Prepare only the documents requested in the official guidelines.", hi: "आवश्यक दस्तावेज़ योजना के अनुसार बदलते हैं। केवल आधिकारिक दिशानिर्देशों में बताई गई चीज़ें तैयार करें।" },
+  resource_step_3: { en: "Submit the application through the official channel and save its reference number.", hi: "अधिकृत चैनल के माध्यम से आवेदन जमा करें और संदर्भ नंबर सुरक्षित रखें।" },
+  resource_step_4: { en: "Track progress on the official portal. SchemeSaathi does not submit applications.", hi: "अधिकृत पोर्टल पर प्रगति ट्रैक करें। SchemeSaathi आवेदन नहीं भेजता है।" },
+  doc_identity: { en: "Identity proof", hi: "पहचान प्रमाण" },
+  doc_address: { en: "Address proof", hi: "पता प्रमाण" },
+  doc_social_category: { en: "Social category certificate", hi: "सामाजिक श्रेणी प्रमाणपत्र" },
+  doc_income: { en: "Income proof", hi: "आय प्रमाण" },
+  doc_business_registration: { en: "Business registration", hi: "व्यवसाय पंजीकरण" },
+  doc_bank: { en: "Bank account details", hi: "बैंक खाता विवरण" },
+  doc_business_plan: { en: "Business plan", hi: "व्यवसाय योजना" },
+  resources_title: { en: "Learn Before You Apply", hi: "आवेदन करने से पहले सीखें", mr: "अर्ज करण्यापूर्वी शिकणे", gu: "અરજી કરતા પહેલા શીખો", ta: "விண்ணப்பிக்கும் முன் கற்றுக்கொள்ளுங்கள்", te: "దరఖాస్తు చేయడానికి ముందు తెలుసుకోండి", bn: "আবেদন করার আগে শিখুন", kn: "ಅರ್ಜಿ ಸಲ್ಲಿಸುವ ಮೊದಲು ಕಲಿಯಿರಿ" },
+  resources_desc: { en: "Explore helpful step-by-step guides, document checklists, FAQs, and application tips to maximize your scheme approval success.", hi: "सहायक चरण-दर-चरण गाइड, दस्तावेज़ सूची, FAQ, और आवेदन सुझावों का अध्ययन करें जिससे योजना स्वीकृति की संभावना बढ़े।", mr: "उपयोगी स्टेप-बाय-स्टेप मार्गदर्शक, दस्तऐवज चेकलिस्ट, FAQ आणि अर्ज टिप्स शोधा जेणेकरून योजना मंजुरीची शक्यता वाढू शकेल.", gu: "ઉપયોગી સ્ટેપ-બાય-સ્ટેપ ગાઈડ, દસ્તાવેજ ચેકલિસ્ટ, FAQ અને અરજી ટિપ્સ શોધો જે તમારી યોજનાની મંજૂરીની સફળતા વધારે છે.", ta: "உங்கள் திட்ட ஒப்புதலை அதிகரிக்க உதவும் படிப்படியான வழிகாட்டிகள், ஆவணச் சரிபார்ப்புகள், கேள்விகள் மற்றும் விண்ணப்ப குறிப்புகளை ஆராயுங்கள்.", te: "మీ పథక ఆమోద విజయాన్ని పెంచే సహాయకమైన స్టెప్-బై-స్టెప్ గైడ్లు, పత్రాల జాబితాలు, FAQలు మరియు దరఖాస్తు చిట్కాలను అన్వేషించండి.", bn: "সহায়ক ধাপে ধাপে গাইড, নথি চেকলিস্ট, FAQ এবং আবেদন টিপস অন্বেষণ করুন যাতে আপনার প্রকল্পের অনুমোদন বেশি হয়।", kn: "ನಿಮ್ಮ ಯೋಜನೆ ಅನುಮೋದನೆಯನ್ನು ಹೆಚ್ಚಿಸಲು ಸಹಾಯಕವಾದ ಹಂತ-ವಿಧಾನ ಮಾರ್ಗದರ್ಶಿಗಳು, ದಾಖಲೆ ಚೇಕ್ಲಿಸ್ಟ್‌ಗಳು, FAQಗಳು ಮತ್ತು ಅರ್ಜಿ ಸಲಹೆಗಳನ್ನು ಅನ್ವೇಷಿಸಿ." },
+  resources_search_placeholder: { en: "Search resources (e.g. Udyam, Documents, Checklist, Loan, Tips)...", hi: "संसाधन खोजें (उदा. Udyam, Documents, Checklist, Loan, Tips)...", mr: "संसाधने शोधा (उदा. Udyam, Documents, Checklist, Loan, Tips)...", gu: "સંસાધનો શોધો (ઉદાહરણ: Udyam, Documents, Checklist, Loan, Tips)...", ta: "வளங்களைத் தேடு (எ.கா. Udyam, Documents, Checklist, Loan, Tips)...", te: "వనరులను శోధించండి (ఉదా. Udyam, Documents, Checklist, Loan, Tips)...", bn: "রিসোর্স খুঁজুন (যেমন Udyam, Documents, Checklist, Loan, Tips)...", kn: "ಸಂಪನ್ಮೂಲಗಳನ್ನು ಹುಡುಕಿ (ಉದಾ. Udyam, Documents, Checklist, Loan, Tips)..." },
+  resources_count_label: { en: "Knowledge Resources", hi: "ज्ञान संसाधन", mr: "ज्ञान स्त्रोत", gu: "જ્ઞાનસંસાધનો", ta: "அறிவு வளங்கள்", te: "జ్ఞాన వనరులు", bn: "জ্ঞানীয় সম্পদ", kn: "ಜ್ಞಾನ ಸಂಪನ್ಮೂಲಗಳು" },
+  resources_available: { en: "Verified Guides Available", hi: "सत्यापित गाइड उपलब्ध", mr: "सत्यापित मार्गदर्शक उपलब्ध", gu: "ચકાસેલ ગાઈડ उपलब्ध", ta: "சரிபார்க்கப்பட்ட வழிகாட்டிகள் கிடைக்கின்றன", te: "ధృవీకరించిన గైಡ్లు అందుబాటులో ఉన్నాయి", bn: "যাচাইকৃত গাইড উপলব্ধ", kn: "ಪರಿಶೀಲಿಸಿದ ಮಾರ್ಗದರ್ಶಿಗಳು ಲಭ್ಯವಿದೆ" },
+  resources_need_help: { en: "Need Personalized Scheme Matching?", hi: "व्यक्तिगत योजना मिलान चाहिए?", mr: "वैयक्तिक योजना जुळणी हवी आहे का?", gu: "વ્યક્તિગત યોજનાનું મેચિંગ જોઈએ?", ta: "தனிப்பயன் திட்ட பொருத்தம் வேண்டுமா?", te: "వ్యక్తిగత పథక సరిపోలిక కావాలా?", bn: "ব্যক্তিগত প্রকল্প মিলন দরকার?", kn: "ವೈಯಕ್ತಿಕ ಯೋಜನೆ ಹೊಂದಾಣಿಕೆ ಬೇಕೇ?" },
+  resources_help_text: { en: "Use SchemeSaathi AI to provide your basic profile details (category, state, business type) and instantly discover schemes you qualify for.", hi: "SchemeSaathi AI का उपयोग करके अपनी बुनियादी प्रोफ़ाइल जानकारी (श्रेणी, राज्य, व्यवसाय प्रकार) प्रदान करें और तुरंत उन योजनाओं को खोजें जिनके लिए आप पात्र हैं।", mr: "SchemeSaathi AI वापरून तुमची मूलभूत प्रोफाइल माहिती (श्रेणी, राज्य, व्यवसाय प्रकार) द्या आणि त्वरित तुम्हाला मिळणाऱ्या योजना शोधा.", gu: "SchemeSaathi AIનો ઉપયોગ કરીને તમારી મૂળભૂત પ્રોફાઇલ વિગતો (કેટેગરી, રાજ્ય, વ્યવસાયનો પ્રકાર) આપો અને તરત જ એવી યોજનાઓ શોધો જે માટે તમે પાત્ર છો.", ta: "SchemeSaathi AI ஐப் பயன்படுத்தி உங்கள் அடிப்படை சுயவிவர விவரங்களை (வகை, மாநிலம், வணிக வகை) வழங்கி, நீங்கள் தகுதியான திட்டங்களைக் உடனடியாகக் கண்டறியவும்.", te: "SchemeSaathi AIని ఉపయోగించి మీ ప్రాథమిక ప్రొఫైల్ వివరాలను (వర్గం, రాష్ట్రం, వ్యాపారం రకం) ఇవ్వండి మరియు మీరు అర్హులైన పథకాలను వెంటనే కనుగొనండి.", bn: "SchemeSaathi AI ব্যবহার করে আপনার মৌলিক প্রোফাইলের বিবরণ (ক্যাটাগরি, রাজ্য, ব্যবসার ধরন) দিন এবং আপনি যেসব প্রকল্পের জন্য যোগ্য তা তাৎক্ষণিকভাবে খুঁজুন।", kn: "SchemeSaathi AI ಬಳಸಿ ನಿಮ್ಮ ಮೂಲ ಪ್ರೊಫೈಲ್ ವಿವರಗಳನ್ನು (ವರ್ಗ, ರಾಜ್ಯ, ವ್ಯಾಪಾರ ಪ್ರಕಾರ) ನೀಡಿ ಮತ್ತು ನೀವು ಅರ್ಹರಾಗಿರುವ ಯೋಜನೆಗಳನ್ನು ತಕ್ಷಣ ಹುಡುಕಿ." },
+  resources_find_button: { en: "Find Matching Schemes", hi: "मेल खाती योजनाएं खोजें", mr: "जुळणाऱ्या योजना शोधा", gu: "મેળ ખાતી યોજનાઓ શોધો", ta: "பொருந்தும் திட்டங்களைக் கண்டறியவும்", te: "సరిపోలే పథకాలను కనుగొనండి", bn: "মিলিত প্রকল্প খুঁজুন", kn: "ಹೊಂದಾಣಿಕೆಯ ಯೋಜನೆಗಳನ್ನು ಹುಡುಕಿ" },
+  resources_close: { en: "Close Guide", hi: "गाइड बंद करें", mr: "गाइड बंद करा", gu: "ગાઈડ બંધ કરો", ta: "வழிகாட்டியை மூடு", te: "గైడ్‌ను మూసివేయండి", bn: "গাইড বন্ধ করুন", kn: "ಮಾರ್ಗದರ್ಶನ ಮುಚ್ಚಿರಿ" },
+  resources_open_official: { en: "Open Official Government Portal", hi: "अधिकृत सरकारी पोर्टल खोलें", mr: "अधिकृत सरकारी पोर्टल उघडा", gu: "સત્તાવાર સરકારનો પોર્ટલ ખોલો", ta: "அதிகாரப்பூர்வ அரசாங்க போர்டலைத் திறக்கவும்", te: "అధికారిక ప్రభుత్వ పోర్టల్‌ను తెరవండి", bn: "অফিসিয়াল সরকারি পোর্টাল খুলুন", kn: "ಅಧಿಕೃತ ಸರ್ಕಾರದ ಪೋರ್ಟಲ್‌ ತೆರೆಯಿರಿ" },
+  resources_no_results: { en: "No resources found", hi: "कोई संसाधन नहीं मिला", mr: "कोणताही संसाधन सापडले नाही", gu: "કોઈ સંસાધન મળ્યું નથી", ta: "வளங்கள் எதுவும் கிடைக்கவில்லை", te: "ఎలాంటి వనరులు లేవు", bn: "কোনো সম্পদ পাওয়া যায়নি", kn: "ಯಾವುದೇ ಸಂಪನ್ಮೂಲಗಳು ಸಿಕ್ಕಿಲ್ಲ" },
+  resources_no_results_hint: { en: "We couldn't find any resource matching your search or selected category filter.", hi: "हमारी खोज या चयनित श्रेणी फ़िल्टर से कोई संसाधन नहीं मिला।", mr: "तुमचा शोध किंवा निवडलेली श्रेणी फिल्टरशी जुळणारे कोणतेही संसाधन सापडले नाही.", gu: "તમારા શોધ અથવા પસંદ કરેલ કેટેગરી ફિલ્ટર સાથે કોઈ સંસાધન મળ્યું નથી.", ta: "உங்கள் தேடல் அல்லது தேர்ந்தெடுக்கப்பட்ட வகை வடிகட்டியுடன் பொருந்தும் வளங்கள் எதுவும் கிடைக்கவில்லை.", te: "మీ శోధన లేదా ఎంచుకున్న వర్గం ఫిల్టర్‌కు సరిపోయే వనరులు దొరకలేదు.", bn: "আপনার অনুসন্ধান বা নির্বাচিত ক্যাটাগরি ফিল্টারের সাথে কোনো রিসোর্স খুঁজে পাওয়া যায়নি।", kn: "ನಿಮ್ಮ ಹುಡುಕಾಟ ಅಥವಾ ಆಯ್ಕೆಮಾಡಿದ ವಿಭಾಗ ಫಿಲ್ಟರ್‌ಗೆ ಹೊಂದುವ ಯಾವುದೇ ಸಂಪನ್ಮೂಲಗಳು ಸಿಕ್ಕಿಲ್ಲ." },
+  resources_clear_filters: { en: "Clear Filters & Search", hi: "फ़िल्टर और खोज साफ़ करें", mr: "फिल्टर आणि शोध साफ करा", gu: "ફિલ્ટર અને શોધ સાફ કરો", ta: "வடிகட்டிகள் & தேடலை அழிக்கவும்", te: "ఫిల్టర్‌లు మరియు శోధనను క్లియర్ చేయండి", bn: "ফিল্টার ও অনুসন্ধান পরিষ্কার করুন", kn: "ಫಿಲ್ಟರ್‌ಗಳು ಮತ್ತು ಹುಡುಕಾಟವನ್ನು ತೆರವುಗೊಳಿಸಿ" },
+  resources_summary: { en: "Overview", hi: "अवलोकन", mr: "सारांश", gu: "ઓવરવ્યુ", ta: "கண்ணோட்டம்", te: "అవలోకనం", bn: "সংক্ষিপ্ত বিবরণ", kn: "ಅವಲೋಕನ" },
+  resources_steps: { en: "Step-by-Step Walkthrough", hi: "चरण-दर-चरण मार्गदर्शिका", mr: "स्टेप-बाय-स्टेप वाक्य", gu: "સ્ટેપ-બાય-સ્ટેપ ગાઇડ", ta: "படிப்படியாக வழிகாட்டி", te: "స tep-by-step గైడ్", bn: "ধাপে ধাপে গাইড", kn: "ಹಂತ-ಹಂತ ಮಾರ್ಗದರ್ಶನ" },
+  resources_document_checklist: { en: "Interactive Document Checklist", hi: "इंटरएक्टिव दस्तावेज़ चेकलिस्ट", mr: "इंटरएक्टिव डॉक्युमेंट चेकलिस्ट", gu: "ઇન્ટરેક્ટિવ દસ્તાવેજ ચેકલિસ્ટ", ta: "இயங்குதிறன் கொண்ட ஆவணச் சரிபார்ப்பு", te: "ఇంటరాక్టివ్ డాక్యుమెంట్ చెక్లిస్ట్", bn: "ইন্টারঅ্যাকটিভ নথি চেকলিস্ট", kn: "ಇಂಟರಾಕ್ಟಿವ್ ದಾಖಲೆ ಚೇಕ್ಲಿಸ್ಟ್" },
+  resources_faqs: { en: "Frequently Asked Questions", hi: "अक्सर पूछे जाने वाले प्रश्न", mr: "वारंवार विचारले जाणारे प्रश्न", gu: "વારંવાર પૂછાતા પ્રશ્નો", ta: "அடிக்கடி கேட்கப்படும் கேள்விகள்", te: "తరచుగా అడిగే ప్రశ్నలు", bn: "প্রায়শই জিজ্ঞাসিত প্রশ্ন", kn: "ಅಪೇಕ್ಷಿತ ಪ್ರಶ್ನೆಗಳು" },
+  resources_breakdown: { en: "Detailed Breakdown", hi: "विस्तृत विवरण", mr: "तपशीलवार विघटन", gu: "વિસ્તૃત બ્રેકડાઉન", ta: "விரிவான விவரம்", te: "వివరణాత్మక విచ్ఛেদనం", bn: "বিস্তারিত বর্ণনা", kn: "ವಿವರಾತ್ಮಕ ವಿವರಣೆ" },
+  resources_tips: { en: "Pro Tips & Guidance", hi: "उन्नत सुझाव और मार्गदर्शन", mr: "प्रो टिप्स आणि मार्गदर्शन", gu: "પ્રો ટિપ્સ અને માર્ગદર્શન", ta: "நிபுணர் குறிப்புகள் & வழிகாட்டுதல்", te: "ప్రో టిప్స్ & మార్గదర్శకత్వం", bn: "প্রো টিপস ও গাইডেন্স", kn: "ಪ್ರೋ ಟಿಪ್ಸ್ ಮತ್ತು ಮಾರ್ಗದರ್ಶನ" },
+  support_ticket_created: { en: "Ticket created successfully.", hi: "टिकट सफलतापूर्वक बनाया गया।" },
+  support_sms_opt_in: { en: "You opted in to website awareness SMS. No message has been sent.", hi: "आपने वेबसाइट जागरूकता SMS में हिस्सा लिया। कोई संदेश नहीं भेजा गया है।" },
+  support_sms_opt_out: { en: "You opted out of future SMS outreach.", hi: "आपने भविष्य की SMS आउटरीच से बाहर निकल लिया है।" },
+  support_reply_saved: { en: "Response saved.", hi: "प्रतिक्रिया सहेजी गई।" },
+  support_followup_saved: { en: "Your follow-up was saved. The helpdesk can now review it.", hi: "आपका फॉलो-अप सहेजा गया। हेल्पडेस्क अब इसे देख सकता है।" },
+  support_sms_sent: { en: "The SMS service accepted your request. Delivery to your registered mobile number may take a moment.", hi: "SMS सेवा ने आपका अनुरोध स्वीकार किया। पंजीकृत मोबाइल नंबर पर डिलीवरी में कुछ समय लग सकता है।" },
+  support_campaign_confirm: { en: "Send the website SMS to the opted-in recipients shown in this preview?", hi: "इस प्रीव्यू में दिखाए गए opted-in प्राप्तकर्ताओं को वेबसाइट SMS भेजें?" },
+  support_campaign_sent: { en: "The SMS service accepted the campaign. Check the provider dashboard for delivery results.", hi: "SMS सेवा ने अभियान स्वीकार कर लिया। डिलीवरी परिणाम के लिए प्रदाता डैशबोर्ड देखें।" },
+  support_campaign_empty: { en: "No eligible recipients remain in this campaign.", hi: "इस अभियान में योग्य प्राप्तकर्ता नहीं बचे हैं।" },
+  support_status_open: { en: "Open", hi: "खुला" },
+  support_status_in_progress: { en: "In progress", hi: "प्रगति में" },
+  support_status_resolved: { en: "Resolved", hi: "हल किया गया" },
+  support_email_queued: { en: "Email update is queued. Your ticket is saved.", hi: "ईमेल अपडेट कतार में है। आपका टिकट सेव है।" },
+  support_email_accepted: { en: "Email update accepted by the mail service.", hi: "ईमेल अपडेट को मेल सेवा द्वारा स्वीकार किया गया।" },
+  support_email_failed: { en: "Email update could not be sent. You can read every reply here.", hi: "ईमेल अपडेट भेजा नहीं जा सका। आप यहाँ हर जवाब पढ़ सकते हैं।" },
+  support_email_unavailable: { en: "Email updates are currently unavailable. You can read every reply here.", hi: "ईमेल अपडेट अभी उपलब्ध नहीं हैं। आप यहाँ हर जवाब पढ़ सकते हैं।" },
+  support_email_body: { en: "Dear SchemeSaathi Support Team,\n\nI need assistance with:\nScheme name or page URL:\nIssue and steps tried:\nExpected result:\n\nPlease advise on the next steps.\n\nRegards,\nName:", hi: "प्रिय SchemeSaathi सपोर्ट टीम,\n\nमुझे सहायता चाहिए:\nयोजना का नाम या पेज URL:\nसमस्या और प्रयास किए गए चरण:\nअपेक्षित परिणाम:\n\nकृपया अगले चरणों पर सलाह दें।\n\nसादर,\nनाम:" },
+  support_title: { en: "Support & assistance", hi: "सहायता और सहायता" },
+  support_intro: { en: "Get help with scheme discovery, documents, account access or a website problem. This project helpdesk is managed by the student team and is not a government helpline.", hi: "योजना खोज, दस्तावेज़, अकाउंट एक्सेस या वेबसाइट समस्या में मदद लें। यह हेल्पडेस्क छात्रों की टीम द्वारा संचालित है और यह सरकारी हेल्पलाइन नहीं है।" },
+  support_contact_title: { en: "Contact the SchemeSaathi team", hi: "SchemeSaathi टीम से संपर्क करें" },
+  support_email_subject: { en: "SchemeSaathi Support Request", hi: "SchemeSaathi सहायता अनुरोध" },
+  support_contact_note: { en: "Include the scheme name or page URL and the steps you tried. Sign in to create a ticket and track replies. Response times depend on team availability.", hi: "योजना का नाम या पेज URL और आपके द्वारा किए गए कदम शामिल करें। टिकट बनाने और जवाब ट्रैक करने के लिए साइन इन करें। जवाब समय टीम की उपलब्धता पर निर्भर करता है।" },
+  support_assistant_cta: { en: "Ask the scheme assistant", hi: "योजना सहायक से पूछें" },
+  support_voice_cta: { en: "Use voice assistance", hi: "वॉयस सहायता उपयोग करें" },
+  support_faq_1_q: { en: "Does a match guarantee a loan or benefit?", hi: "क्या मैच से ऋण या लाभ का भरोसा मिलता है?" },
+  support_faq_1_a: { en: "No. Results screen the recorded criteria. The department or lender checks all current requirements and makes the final decision.", hi: "नहीं। परिणाम दर्ज मानदंडों को स्क्रीन करते हैं। विभाग या लेंडर सभी वर्तमान आवश्यकताओं को जांचता है और अंतिम निर्णय लेता है।" },
+  support_faq_2_q: { en: "Where do I apply?", hi: "मैं आवेदन कहाँ करता हूँ?" },
+  support_faq_2_a: { en: "Open the official link on your scheme card and follow the application instructions. Never share an OTP, password or bank PIN here.", hi: "अपने योजना कार्ड पर आधिकारिक लिंक खोलें और आवेदन निर्देशों का पालन करें। यहाँ कभी भी OTP, पासवर्ड या बैंक PIN साझा न करें।" },
+  support_loading: { en: "Loading your support account...", hi: "आपका सपोर्ट अकाउंट लोड हो रहा है..." },
+  support_signin_prompt: { en: "Sign in to contact support", hi: "सपोर्ट से संपर्क करने के लिए साइन इन करें" },
+  support_retry: { en: "Retry connection", hi: "कनेक्शन पुनः प्रयास करें" },
+  support_submit_title: { en: "Submit a support request", hi: "सपोर्ट रिक्वेस्ट जमा करें" },
+  support_submit_note: { en: "Include the affected page, scheme name and steps that caused the issue. Do not include passwords, OTPs, Aadhaar numbers or bank details.", hi: "प्रभावित पेज, योजना का नाम और समस्या उत्पन्न करने वाले चरण शामिल करें। पासवर्ड, OTP, आधार नंबर या बैंक विवरण शामिल न करें।" },
+  support_subject_label: { en: "Subject", hi: "विषय" },
+  support_message_label: { en: "Describe the issue", hi: "समस्या बताएं" },
+  support_submit_button: { en: "Submit ticket", hi: "टिकट जमा करें" },
+  support_saving: { en: "Saving...", hi: "सहेजा जा रहा है..." },
+  support_sms_title: { en: "Website link by SMS", hi: "SMS द्वारा वेबसाइट लिंक" },
+  support_sms_retry: { en: "Retry SMS status", hi: "SMS स्थिति पुनः प्रयास करें" },
+  support_loading_pref: { en: "Loading preference...", hi: "पसंद लोड हो रही है..." },
+  support_sms_desc: { en: "Send the website link to the mobile number registered with your account.", hi: "वेबसाइट लिंक को आपके अकाउंट से जुड़े मोबाइल नंबर पर भेजें।" },
+  support_sms_limit: { en: "You can request up to three messages per day, at least five minutes apart.", hi: "आप दिन में अधिकतम तीन संदेश माँग सकते हैं, कम से कम पाँच मिनट के अंतर पर।" },
+  support_sms_setup_wait: { en: "SMS delivery is awaiting setup. You can continue using the website and support tickets.", hi: "SMS डिलीवरी सेटअप की प्रतीक्षा में है। आप वेबसाइट और सपोर्ट टिकट का उपयोग जारी रख सकते हैं।" },
+  support_sms_send: { en: "Send me the website link", hi: "मुझे वेबसाइट लिंक भेजें" },
+  support_consent_title: { en: "Optional website awareness messages", hi: "ऐच्छिक वेबसाइट जागरूकता संदेश" },
+  support_subscribed: { en: "Subscribed", hi: "सब्सक्राइब किया गया" },
+  support_not_subscribed: { en: "Not subscribed", hi: "सब्सक्राइब नहीं" },
+  support_consent_note: { en: "Choose whether the team may send future website awareness SMS. Saving this preference does not send a message.", hi: "चुनें कि टीम भविष्य में वेबसाइट जागरूकता SMS भेज सकती है या नहीं। यह पसंद सेव करने से कोई संदेश नहीं भेजा जाता है।" },
+  support_opt_in: { en: "Opt in to SMS", hi: "SMS में शामिल हों" },
+  support_opt_out: { en: "Opt out", hi: "बाहर निकलें" },
+  support_queue_title: { en: "Helpdesk queue", hi: "हेल्पडेस्क कतार" },
+  support_tickets_title: { en: "Your tickets", hi: "आपके टिकट" },
+  support_loading_tickets: { en: "Loading...", hi: "लोड हो रहा है..." },
+  support_refresh_tickets: { en: "Refresh tickets", hi: "टिकट रिफ्रेश करें" },
+  support_no_tickets: { en: "No tickets yet.", hi: "अभी तक कोई टिकट नहीं है।" },
+  support_team_response: { en: "Team response:", hi: "टीम की प्रतिक्रिया:" },
+  support_your_followup: { en: "Your follow-up", hi: "आपका फॉलो-अप" },
+  support_response_label: { en: "Response", hi: "प्रतिक्रिया" },
+  support_followup_label: { en: "Add a follow-up", hi: "फॉलो-अप जोड़ें" },
+  support_status_label: { en: "Status", hi: "स्थिति" },
+  support_reopen_note: { en: "Sending a follow-up will reopen this ticket.", hi: "फॉलो-अप भेजने से यह टिकट फिर से खुल जाएगा।" },
+  support_save_response: { en: "Save response", hi: "प्रतिक्रिया सेव करें" },
+  support_send_followup: { en: "Send follow-up", hi: "फॉलो-अप भेजें" },
+  support_outreach_title: { en: "Outreach", hi: "आउटरीच" },
+  support_wait: { en: "Please wait...", hi: "कृपया प्रतीक्षा करें..." },
+  support_preview_campaign: { en: "Preview campaign", hi: "अभियान प्रीव्यू" },
+  support_recipients: { en: "Opted-in recipients:", hi: "सब्सक्राइब किए गए प्राप्तकर्ता:" },
+  support_live_enabled: { en: "Live sending enabled.", hi: "लाइव भेजना सक्षम है।" },
+  support_preview_only: { en: "Preview only; SMS delivery is awaiting setup.", hi: "केवल प्रीव्यू; SMS डिलीवरी सेटअप की प्रतीक्षा में है।" },
+  support_send_campaign: { en: "Send approved campaign", hi: "स्वीकृत अभियान भेजें" },
+  support_sms_requested: { en: "SMS requested", hi: "SMS अनुरोधित" },
+  support_sending: { en: "Sending...", hi: "भेजा जा रहा है..." },
+  support_email_sent: { en: "Email sent", hi: "ईमेल भेजा गया" },
+  common_read_resource: { en: "Read Resource Guide", hi: "संसाधन गाइड पढ़ें", mr: "रिसोर्स गाइड वाचा", gu: "રिसોર્સ ગાઈડ વાંચો", ta: "வள வழிகாட்டியைப் படியுங்கள்", te: "రిసోర్స్ గైడ్‌ను చదవండి", bn: "রিসোর্স গাইড পড়ুন", kn: "ಸಂಪನ್ಮೂಲ ಮಾರ್ಗದರ್ಶನ ಓದಿ" },
+  common_clear: { en: "Clear", hi: "साफ़ करें", mr: "साफ करा", gu: "સાફ કરો", ta: "அழிக்கவும்", te: "క్లియర్ చేయండి", bn: "পরিষ্কার করুন", kn: "ತೆರವುಗೊಳಿಸಿ" },
+  common_close: { en: "Close", hi: "बंद करें", mr: "बंद करा", gu: "બંધ કરો", ta: "மூடு", te: "మూసివేయండి", bn: "বন্ধ করুন", kn: "ಮುಚ್ಚಿರಿ" },
 };
+
+// Include bundled translations and support English source text as a stable key.
+for (const row of additionalText.replace(/^\uFEFF/, "").trim().split(/\r?\n/)) {
+  const values = row.split("|");
+  if (values.length === 8) STRINGS[values[0]] = Object.fromEntries(LANGUAGES.map((language, i) => [language.code, values[i]]));
+}
+const sourceStrings = new Map(Object.entries(STRINGS).flatMap(([key, values]) => [[key.toLowerCase(), values], [values.en.toLowerCase(), values]]));
 
 const LanguageContext = createContext(null);
 
 export function LanguageProvider({ children }) {
-  const [language, setLanguageState] = useState(() => localStorage.getItem(STORAGE_KEY) || "en");
+  const [language, setLanguageState] = useState(() => { const saved = localStorage.getItem(STORAGE_KEY); return LANGUAGES.some(item => item.code === saved) ? saved : "en"; });
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, language);
+    document.documentElement.lang = language;
   }, [language]);
 
   const setLanguage = (code) => {
     if (LANGUAGES.some((l) => l.code === code)) setLanguageState(code);
   };
 
-  const t = (key) => STRINGS[key]?.[language] || STRINGS[key]?.en || key;
+  const t = (key, params = {}) => {
+    const entry = STRINGS[key] || sourceStrings.get(String(key).toLowerCase());
+    const text = entry?.[language] || entry?.en || key;
+    return String(text).replace(/\{(\w+)\}/g, (_, name) => {
+      const value = params[name];
+      return value === undefined || value === null ? `{${name}}` : String(value);
+    });
+  };
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>

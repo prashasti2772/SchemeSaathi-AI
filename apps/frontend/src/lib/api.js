@@ -30,6 +30,25 @@ export async function sendAssistantMessage(message, history = [], phoneNumber = 
   return response.data;
 }
 
+export async function sendAssistantMessageWithAttachment(message, file, history = [], phoneNumber = null, profile = null, language = "en", signal) {
+  const form = new FormData();
+  form.append("message", message || "");
+  form.append("language", language || "en");
+  form.append("history", JSON.stringify(history.slice(-20)));
+  form.append("phone_number", phoneNumber || "");
+  if (profile) form.append("profile", JSON.stringify(profile));
+  if (file) form.append("file", file, file.name || "attachment");
+
+  const response = await api.post("/public/self-service/assistant-chat/upload", form, {
+    timeout: 60000,
+    signal,
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+}
+
 /* Retrieves 100% eligible schemes for the profile */
 export async function fetchEligibleSchemes(profilePayload) {
   const response = await api.post("/eligibility/eligible", profilePayload);

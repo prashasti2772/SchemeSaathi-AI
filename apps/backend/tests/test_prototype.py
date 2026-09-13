@@ -3,13 +3,6 @@ import os
 import tempfile
 import uuid
 from pathlib import Path
-os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///" + str(Path(tempfile.gettempdir()) / ("schemesathi-test-" + uuid.uuid4().hex + ".db"))
-os.environ["JWT_SECRET_KEY"] = "test-only-random-secret-that-is-not-for-production"
-os.environ["SMS_LIVE_ENABLED"] = "false"
-os.environ["BHASHINI_API_KEY"] = ""
-os.environ["BHASHINI_USER_ID"] = ""
-os.environ["GEMINI_API_KEY"] = ""
-os.environ["CHATBOT_API_KEY"] = ""
 import pytest
 from unittest.mock import patch
 from fastapi.testclient import TestClient
@@ -20,7 +13,11 @@ from src.modules.chatbot.service import chatbot_service
 
 @pytest.fixture(scope="module")
 def client():
-    with TestClient(app) as c:
+    from src.integrations import email_client, sms_client
+    from src.modules.auth import login_otp
+    async def fake_delivery(*args, **kwargs):
+        return True
+    with patch.object(email_client, "email_ready", return_value=True), patch.object(email_client, "send_email", fake_delivery), patch.object(sms_client, "otp_sms_ready", return_value=True), patch.object(sms_client, "send_reset_otp", fake_delivery), patch.object(login_otp, "otp_text", return_value="123456"), TestClient(app) as c:
         app.state.limiter.enabled = False
         yield c
 
@@ -37,7 +34,11 @@ def new_account(client, suffix):
         "full_name": "Prototype Tester", "email": f"tester{suffix}@example.com",
         "mobile": f"98765432{suffix:02}", "password": "a-long-test-password", **captcha_fields(client)})
     assert response.status_code == 201, response.text
-    return {"Authorization": "Bearer " + response.json()["access_token"]}
+    login = client.post("/api/v1/citizen/login", json={"identifier": f"tester{suffix}@example.com", "password": "a-long-test-password"})
+    assert login.status_code == 200, login.text
+    verified = client.post("/api/v1/citizen/verify-login-otp", json={"challenge_id": login.json()["challenge_id"], "otp": "123456"})
+    assert verified.status_code == 200, verified.text
+    return {"Authorization": "Bearer " + verified.json()["access_token"]}
 
 def test_health_and_catalog(client):
     assert client.get("/health").status_code == 200
@@ -48,7 +49,7 @@ def test_auth_is_real(client):
     auth = new_account(client, 1)
     assert client.get("/api/v1/citizen/me", headers=auth).json()["role"] == "citizen"
     assert client.post("/api/v1/citizen/login", json={"identifier":"tester1@example.com","password":"wrong"}).status_code == 401
-    assert client.post("/api/v1/citizen/login", json={"identifier":"9876543201","password":"a-long-test-password"}).status_code == 200
+    assert client.post("/api/v1/citizen/login", json={"identifier":"9876543201","password":"a-long-test-password"}).status_code == 429
     assert client.get("/api/v1/citizen/me").status_code == 401
     assert client.get("/api/v1/users", headers=auth).status_code == 403
     assert client.post("/api/v1/citizen/outreach-send", headers=auth).status_code == 403
@@ -69,7 +70,10 @@ def test_password_reset_flow(client, monkeypatch):
         "password": password, **captcha_fields(client),
     })
     assert register.status_code == 201, register.text
-    old_auth = {"Authorization": "Bearer " + register.json()["access_token"]}
+    login = client.post("/api/v1/citizen/login", json={"identifier": email, "password": password})
+    verified_login = client.post("/api/v1/citizen/verify-login-otp", json={"challenge_id": login.json()["challenge_id"], "otp": "123456"})
+    old_auth = {"Authorization": "Bearer " + verified_login.json()["access_token"]}
+    sent.clear()
     forgot = client.post("/api/v1/citizen/forgot-password", json={"identifier": email, **captcha_fields(client)})
     assert forgot.status_code == 200, forgot.text
     assert "token" not in forgot.json() and "otp" not in forgot.json()
@@ -80,7 +84,7 @@ def test_password_reset_flow(client, monkeypatch):
     changed = client.post("/api/v1/citizen/reset-password", json={"token": token, "password": " new-longer-password "})
     assert changed.status_code == 200, changed.text
     assert client.post("/api/v1/citizen/login", json={"identifier": email, "password": password}).status_code == 401
-    assert client.post("/api/v1/citizen/login", json={"identifier": email, "password": " new-longer-password "}).status_code == 200
+    assert client.post("/api/v1/citizen/login", json={"identifier": email, "password": " new-longer-password "}).status_code == 429
     assert client.post("/api/v1/citizen/login", json={"identifier": email, "password": "new-longer-password"}).status_code == 401
     assert client.get("/api/v1/citizen/me", headers=old_auth).status_code == 401
     assert client.post("/api/v1/citizen/reset-password", json={"token": token, "password": "another-password"}).status_code == 410
@@ -128,6 +132,21 @@ def test_chat_without_keys(client):
     assert client.post("/api/v1/public/self-service/assistant-chat",json={"message":""}).status_code == 422
     assert chatbot_service.search("zzzzzzzzxxxxxxxxxx") == []
 
+
+def test_chat_upload_route_uses_ocr_text(client, monkeypatch):
+    async def fake_ocr(file, filename):
+        return "PMEGP requires Aadhaar, income certificate and a project report."
+    monkeypatch.setattr("src.modules.public.router.extract_attachment_text", fake_ocr)
+    response = client.post(
+        "/api/v1/public/self-service/assistant-chat/upload",
+        data={"message": "What documents do I need?", "language": "en"},
+        files={"file": ("document.jpg", b"fake-image", "image/jpeg")},
+    )
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert "document" in body["reply"].lower() or "pmegp" in body["reply"].lower()
+
+
 def test_voice_honest_when_unconfigured(client):
     assert client.get("/api/v1/public/voice/status").json()["configured"] is False
     assert client.post("/api/v1/public/voice/chat",json={"text":"hello"}).status_code == 503
@@ -166,6 +185,7 @@ def test_outreach_batches_are_reserved_and_not_sent_twice(client, monkeypatch):
     monkeypatch.setattr(settings, "SMS_LIVE_ENABLED", True)
     monkeypatch.setattr(settings, "MSG91_AUTH_KEY", "test-only")
     monkeypatch.setattr(settings, "MSG91_TEMPLATE_ID", "test-only")
+    monkeypatch.setattr(settings, "MSG91_SENDER_ID", "TESTER")
     monkeypatch.setattr(settings, "PUBLIC_SITE_URL", "https://schemesaathi.test")
     r = client.post("/api/v1/citizen/outreach-send",headers=staff)
     assert r.status_code == 200, r.text
