@@ -1,4 +1,5 @@
 # ===== Environment & Secrets =====
+apps/backend/firebase-service-account.json
 .env
 .env.local
 .env.*.local
@@ -74,3 +75,7 @@ states-source.html
 
 # Optional local hosting API credentials
 .env.deploy
+
+**/*service-account*.json*
+
+**/*.lnk

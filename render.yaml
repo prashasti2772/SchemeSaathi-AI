@@ -1,4 +1,6 @@
-﻿services:
+# Deploy the React site and Python API together.
+# Supply a persistent PostgreSQL URL in Render's private environment settings.
+services:
   - type: web
     name: schemesathi-ai
     runtime: docker
@@ -7,10 +9,11 @@
     envVars:
       - key: JWT_SECRET_KEY
         generateValue: true
-      - - key: DATABASE_URL
-        ite+aiosqlite:///./schemesathi.db
+      - key: DATABASE_URL
+        sync: false
       - key: PUBLIC_SITE_URL
         sync: false
       - key: CORS_ORIGINS
         value: '[]'
-
+      - key: ENV
+        value: production
