@@ -1,4 +1,3 @@
-import { phoneCaptcha } from "../../lib/firebase";
 import { useEffect, useState } from "react";
 import AuthLayout from "./AuthLayout";
 import AuthCard from "./AuthCard";
@@ -10,10 +9,8 @@ const button = "w-full rounded-lg bg-[#0d2b55] p-3 text-white disabled:opacity-5
 const remaining = (deadline, now) => Math.max(0, Math.ceil((deadline - now) / 1000));
 
 export default function SignInPage() {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const [identifier, setIdentifier] = useState("");
-  const [channel, setChannel] = useState("email");
-  const [methods, setMethods] = useState(null);
   const [challenge, setChallenge] = useState(null);
   const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
@@ -23,15 +20,8 @@ export default function SignInPage() {
   const [registeredNotice] = useState(() => new URLSearchParams(window.location.search).get("registered") === "1");
 
   useEffect(() => {
-    let mounted = true;
-    api.get("/citizen/login-methods").then(({ data }) => {
-      if (mounted) {
-        setMethods(data);
-        if (!data.email && data.mobile) setChannel("mobile");
-      }
-    }).catch(() => { /* The submit request gives an actionable connectivity error. */ });
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => { mounted = false; window.clearInterval(timer); };
+    return () => window.clearInterval(timer);
   }, []);
 
   const resendSeconds = remaining(Math.max(challenge?.resendAt || 0, retryAt), now);
@@ -40,7 +30,7 @@ export default function SignInPage() {
   function rememberChallenge(data) {
     const receivedAt = Date.now();
     setNow(receivedAt);
-    setChallenge({ id: data.challenge_id, channel: data.channel, destination: data.destination,
+    setChallenge({ id: data.challenge_id, destination: data.destination,
       expiresAt: receivedAt + data.expires_in * 1000, resendAt: receivedAt + data.resend_after * 1000 });
     setOtp("");
   }
@@ -63,8 +53,7 @@ export default function SignInPage() {
     const fields = new FormData(event.currentTarget);
     setBusy(true); setError("");
     try {
-      const recaptcha_token = channel === "mobile" ? await phoneCaptcha(language) : null;
-      const { data } = await api.post("/citizen/login", { identifier: identifier.trim(), password: fields.get("password"), channel, recaptcha_token, language }, { timeout: 45000 });
+      const { data } = await api.post("/citizen/login", { identifier: identifier.trim(), password: fields.get("password") }, { timeout: 30000 });
       event.target.reset();
       rememberChallenge(data);
     } catch (failure) { handleFailure(failure); }
@@ -86,8 +75,7 @@ export default function SignInPage() {
     if (busy || !challenge || resendSeconds > 0 || expirySeconds <= 0) return;
     setBusy(true); setError("");
     try {
-      const recaptcha_token = challenge.channel === "mobile" ? await phoneCaptcha(language) : null;
-      const { data } = await api.post("/citizen/resend-login-otp", { challenge_id: challenge.id, recaptcha_token, language }, { timeout: 45000 });
+      const { data } = await api.post("/citizen/resend-login-otp", { challenge_id: challenge.id }, { timeout: 30000 });
       rememberChallenge(data);
     } catch (failure) { handleFailure(failure); }
     finally { setBusy(false); }
@@ -98,25 +86,14 @@ export default function SignInPage() {
   }
 
   return <AuthLayout mode="signin"><AuthCard title={challenge ? t("Verify your sign-in") : t("Sign In")}>
-    <div id="phone-recaptcha" />
     <div className="mx-auto mt-7 max-w-lg">
-      {registeredNotice && <div role="status" className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">Account created successfully. Please sign in with your email or mobile number.</div>}
+      {registeredNotice && <div role="status" className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{t("Account created successfully. Sign in to receive a verification code by email.")}</div>}
       {error && <div role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{t(error)}</div>}
       {!challenge ? <form onSubmit={start}>
-        <p className="mb-5 text-sm leading-relaxed text-slate-600">{t("Sign in with your password, then verify a code sent to your registered email or mobile number.")}</p>
+        <p className="mb-5 text-sm leading-relaxed text-slate-600">{t("Sign in with your password, then verify the code sent to your registered email address.")}</p>
         <label>{t("Email or mobile number")}<input className={input} name="identifier" required autoComplete="username" value={identifier} onChange={(event) => setIdentifier(event.target.value)} disabled={busy} /></label>
         <label>{t("Password")}<input className={input} name="password" type="password" minLength={1} maxLength={128} required autoComplete="current-password" disabled={busy} /></label>
-        <fieldset className="mb-5" disabled={busy}>
-          <legend className="mb-2 font-medium">{t("Receive your sign-in code via")}</legend>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {["email", "mobile"].map((method) => <label key={method} className="flex min-w-0 items-center gap-2 rounded-lg border border-slate-300 p-3 text-sm">
-              <input type="radio" name="channel" value={method} checked={channel === method} onChange={() => setChannel(method)} />
-              {method === "email" ? t("Email") : t("Mobile number")}
-            </label>)}
-          </div>
-          {methods && !methods[channel] && <p role="status" className="mt-2 text-sm text-amber-800">{t("Verification through this method is temporarily unavailable. Choose the other method or try again later.")}</p>}
-        </fieldset>
-        <button className={button} disabled={busy || resendSeconds > 0 || methods?.[channel] === false}>{busy ? t("Please wait...") : resendSeconds > 0 ? t("Try again in {seconds}s", { seconds: resendSeconds }) : t("Sign In")}</button>
+        <button className={button} disabled={busy || resendSeconds > 0}>{busy ? t("Please wait...") : resendSeconds > 0 ? t("Try again in {seconds}s", { seconds: resendSeconds }) : t("Sign In")}</button>
         <p className="mt-4 text-right text-sm"><a className="underline" href="/forgot-password">{t("Forgot password?")}</a></p>
         <p className="mt-5 text-sm"><a className="underline" href="/signup">{t("Create an account")}</a></p>
       </form> : <form onSubmit={verify}>

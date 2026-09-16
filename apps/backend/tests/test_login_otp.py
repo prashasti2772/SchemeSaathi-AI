@@ -6,8 +6,8 @@ import pytest
 from test_auth_recovery import recovery_app, PREFIX, EMAIL, MOBILE, PASSWORD, OTP
 
 
-def login(app, channel="email", identifier=EMAIL, password=PASSWORD):
-    return app.client.post(PREFIX + "/login", json={"identifier": identifier, "password": password, "channel": channel})
+def login(app, identifier=EMAIL, password=PASSWORD):
+    return app.client.post(PREFIX + "/login", json={"identifier": identifier, "password": password})
 
 
 def verify(app, challenge, otp=OTP):
@@ -18,27 +18,24 @@ def resend(app, challenge):
     return app.client.post(PREFIX + "/resend-login-otp", json={"challenge_id": challenge})
 
 
-@pytest.mark.parametrize("channel,contact", [("email", EMAIL), ("mobile", MOBILE)])
-def test_password_and_registered_contact_otp_required_before_session(recovery_app, channel, contact):
+@pytest.mark.parametrize("identifier", [EMAIL, MOBILE])
+def test_password_and_registered_email_otp_required_before_session(recovery_app, identifier):
     app = recovery_app
     registration = app.register()
     assert registration.status_code == 201
     assert registration.json()["requires_login"] is True
     assert "access_token" not in registration.json()
     assert app.client.get(PREFIX + "/me").status_code == 401
-    assert login(app, channel, password="wrong-password").status_code == 401
-    assert login(app, channel, identifier="unknown@example.com").status_code == 401
-    assert not app.mail and not app.sms
-    pending = login(app, channel, identifier=MOBILE)
+    assert login(app, password="wrong-password").status_code == 401
+    assert login(app, identifier="unknown@example.com").status_code == 401
+    assert not app.mail
+    pending = login(app, identifier=identifier)
     assert pending.status_code == 200, pending.text
-    assert pending.json()["channel"] == channel
+    assert pending.json()["channel"] == "email"
     assert pending.json()["expires_in"] == 300 and pending.json()["resend_after"] == 60
-    assert "access_token" not in pending.json() and OTP not in pending.text and contact not in pending.text
-    if channel == "email":
-        assert [m["recipient"] for m in app.mail] == [EMAIL] and not app.sms
-        assert "sign-in" in app.mail[0]["body"]
-    else:
-        assert app.sms == [{"recipient": MOBILE, "code": OTP}] and not app.mail
+    assert "access_token" not in pending.json() and OTP not in pending.text and EMAIL not in pending.text
+    assert [m["recipient"] for m in app.mail] == [EMAIL]
+    assert "sign-in" in app.mail[0]["body"]
     challenge = pending.json()["challenge_id"]
     row = app.sql("SELECT * FROM login_otp_challenges WHERE id=?", (challenge,))[0]
     assert row["otp_hash"] != OTP and row["consumed_at"] is None
@@ -51,20 +48,20 @@ def test_password_and_registered_contact_otp_required_before_session(recovery_ap
     assert resend(app, challenge).status_code == 410
 
 
-def test_resend_rotates_challenge_and_account_cooldown_covers_both_channels(recovery_app, monkeypatch):
+def test_resend_rotates_challenge_and_account_cooldown_covers_all_identifiers(recovery_app, monkeypatch):
     from src.modules.auth import login_otp
     app = recovery_app
     app.register()
     first = login(app).json()["challenge_id"]
     assert resend(app, first).status_code == 429
-    assert login(app, "mobile").status_code == 429
-    assert len(app.mail) == 1 and not app.sms
+    assert login(app, identifier=MOBILE).status_code == 429
+    assert len(app.mail) == 1
     app.sql("UPDATE login_otp_state SET next_send_at='2000-01-01'")
     monkeypatch.setattr(login_otp, "otp_text", lambda: "654321")
     second = resend(app, first)
     assert second.status_code == 200
     assert second.json()["challenge_id"] != first
-    assert len(app.mail) == 2 and not app.sms
+    assert len(app.mail) == 2
     assert verify(app, first).status_code == 410
     assert verify(app, second.json()["challenge_id"]).status_code == 400
     assert verify(app, second.json()["challenge_id"], "654321").status_code == 200
@@ -120,10 +117,11 @@ def test_provider_failures_never_authenticate_or_expose_codes(recovery_app, monk
     from src.modules.auth import login_otp
     app = recovery_app
     app.register()
-    monkeypatch.setattr(login_otp.sms_client, "otp_sms_ready", lambda: False)
-    assert app.client.get(PREFIX + "/login-methods").json() == {"email": True, "mobile": False, "mobile_provider": "msg91"}
-    assert login(app, "mobile").status_code == 503
+    assert app.client.get(PREFIX + "/login-methods").json() == {"email": True, "provider": "brevo"}
+    monkeypatch.setattr(login_otp.email_client, "email_ready", lambda: False)
+    assert login(app).status_code == 503
     assert not app.sql("SELECT * FROM login_otp_challenges")
+    monkeypatch.setattr(login_otp.email_client, "email_ready", lambda: True)
     app.deliver = False
     failure = login(app)
     assert failure.status_code == 503 and "access_token" not in failure.json() and OTP not in failure.text

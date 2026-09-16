@@ -1,10 +1,8 @@
-from typing import Literal
 from pydantic import BaseModel, EmailStr
 from src.modules.users.schemas import UserOut
 
 
 class LoginRequest(BaseModel):
-    channel: Literal["email", "mobile"] = "email"
     email: EmailStr
     password: str
 

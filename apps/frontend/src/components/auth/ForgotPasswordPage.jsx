@@ -1,4 +1,3 @@
-import { phoneCaptcha } from "../../lib/firebase";
 import { useLanguage } from "../../lib/i18n.jsx";
 import { useEffect, useState } from "react";
 import AuthLayout from "./AuthLayout";
@@ -12,10 +11,9 @@ const secondsUntil = (deadline, now) => Math.max(0, Math.ceil((deadline - now) /
 const timeLabel = (seconds) => `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
 
 export default function ForgotPasswordPage() {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const [stage, setStage] = useState("request");
   const [identifier, setIdentifier] = useState("");
-  const [channel, setChannel] = useState("email");
   const [challenge, setChallenge] = useState(null);
   const [resetGrant, setResetGrant] = useState(null);
   const [otp, setOtp] = useState("");
@@ -63,10 +61,8 @@ export default function ForgotPasswordPage() {
     setMessage("");
     setBusy(true);
     try {
-      const recaptcha_token = channel === "mobile" ? await phoneCaptcha(language) : null;
       const { data } = await api.post("/citizen/forgot-password", {
-        ...(recaptcha_token ? { recaptcha_token, language } : {}),
-        channel, identifier: identifier.trim(), captcha_id: fields.captcha_id, captcha_answer: fields.captcha_answer,
+        identifier: identifier.trim(), captcha_id: fields.captcha_id, captcha_answer: fields.captcha_answer,
       }, { timeout: 30000 });
       const receivedAt = Date.now();
       setNow(receivedAt);
@@ -133,30 +129,21 @@ export default function ForgotPasswordPage() {
 
   const step = stage === "request" ? 1 : stage === "verify" ? 2 : 3;
   return <AuthLayout mode="recovery"><AuthCard title={stage === "success" ? t("Password updated") : t("Reset your password")}>
-    <div id="phone-recaptcha" />
     {stage !== "success" && <ol aria-label={t("Password recovery steps")} className="mt-6 grid grid-cols-3 gap-2 text-center text-xs text-slate-600">
       {["Verify identity", "Enter OTP", "New password"].map((label, index) => <li key={label} aria-current={step === index + 1 ? "step" : undefined} className={`border-t-2 pt-2 ${step >= index + 1 ? "border-[#0d2b55] text-[#0d2b55]" : "border-slate-200"}`}>{index + 1}. {label}</li>)}
     </ol>}
 
     {stage === "request" && <form onSubmit={requestOtp} className="mt-7">
-      <fieldset disabled={busy} className="mb-5">
-        <legend className="mb-3 text-sm font-semibold">{t("Choose how to reset your password")}</legend>
-        <div className="grid gap-3 sm:grid-cols-2">
-          {[["email", "Reset via Email"], ["mobile", "Reset via Mobile Number"]].map(([value, label]) => <label key={value} className={`flex cursor-pointer items-center gap-2 rounded-lg border p-3 text-sm ${channel === value ? "border-[#0d2b55] bg-blue-50" : "border-slate-300"}`}>
-            <input type="radio" name="reset_channel" value={value} checked={channel === value} onChange={() => { setChannel(value); setIdentifier(""); setError(""); setRetryAt(0); refreshCaptcha(); }} />{label}
-          </label>)}
-        </div>
-      </fieldset>
-      <p className="mb-5 text-sm leading-6 text-slate-600">{channel === "email" ? t("Enter the email address registered with your account to receive a six-digit code by email.") : t("Enter the mobile number registered with your account to receive a six-digit code by SMS.")}</p>
-      <label>{channel === "email" ? t("Registered email address") : t("Registered mobile number")}<input className={input} name="identifier" type={channel === "email" ? "email" : "tel"} inputMode={channel === "email" ? "email" : "numeric"} pattern={channel === "mobile" ? "[6-9][0-9]{9}" : undefined} value={identifier} onChange={(event) => setIdentifier(event.target.value)} required maxLength={channel === "email" ? 254 : 10} autoComplete={channel === "email" ? "email" : "tel-national"} disabled={busy} /></label>
+      <p className="mb-5 text-sm leading-6 text-slate-600">{t("Enter the email address registered with your account to receive a six-digit verification code.")}</p>
+      <label>{t("Registered email address")}<input className={input} name="identifier" type="email" inputMode="email" value={identifier} onChange={(event) => setIdentifier(event.target.value)} required maxLength={254} autoComplete="email" disabled={busy} /></label>
       <CaptchaVerification key={captchaVersion} disabled={busy} onReadyChange={setCaptchaReady} />
       {error && <p role="alert" className="mb-4 text-sm text-red-700">{error}</p>}
-      <button disabled={busy || !captchaReady || resendSeconds > 0} className={button}>{busy ? t("Sending OTP…") : resendSeconds > 0 ? `Try again in ${resendSeconds}s` : t("Send verification code")}</button>
+      <button disabled={busy || !captchaReady || resendSeconds > 0} className={button}>{busy ? t("Sending OTP…") : resendSeconds > 0 ? t("Try again in {seconds}s", { seconds: resendSeconds }) : t("Send verification code")}</button>
     </form>}
 
     {stage === "verify" && <div className="mt-7">
       {message && <p role="status" className="mb-3 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-[#0d2b55]">{message}</p>}
-      <p className="mb-4 text-sm leading-6 text-slate-600">{channel === "email" ? t("Check the inbox and spam folder of the email address you entered.") : t("Check SMS messages on the mobile number you entered.")} {t("Enter the six-digit OTP below.")}</p>
+      <p className="mb-4 text-sm leading-6 text-slate-600">{t("Check the inbox and spam folder of the email address you entered.")} {t("Enter the six-digit OTP below.")}</p>
       <form onSubmit={verifyOtp}>
         <label>{t("Verification code (OTP)")}<input className={`${input} tracking-[0.3em]`} name="otp" value={otp} onChange={(event) => setOtp(event.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" pattern="[0-9]{6}" minLength={6} maxLength={6} autoComplete="one-time-code" required disabled={busy || !otpSeconds} autoFocus /></label>
         <p className={`mb-4 text-sm ${otpSeconds ? "text-slate-600" : "text-amber-800"}`}>{otpSeconds ? `Code expires in ${timeLabel(otpSeconds)}.` : t("This code has expired or is no longer valid. Request a new code below.")}</p>
@@ -166,16 +153,16 @@ export default function ForgotPasswordPage() {
       <div className="mt-5 border-t border-slate-200 pt-4">
         <button type="button" disabled={busy || resendSeconds > 0} className="text-sm font-medium text-[#0d2b55] underline disabled:text-slate-500 disabled:no-underline" onClick={restart}>{resendSeconds > 0 ? `Request a new code in ${resendSeconds}s` : t("Request a new code")}</button>
         <p className="mt-2 text-xs text-slate-600">{t("Complete a new CAPTCHA before sending another code.")}</p>
-        <button type="button" disabled={busy} onClick={restart} className="mt-4 text-sm underline disabled:opacity-50">{t("Choose another contact or reset method")}</button>
+        <button type="button" disabled={busy} onClick={restart} className="mt-4 text-sm underline disabled:opacity-50">{t("Use another email address")}</button>
       </div>
     </div>}
 
     {stage === "reset" && <form onSubmit={savePassword} className="mt-7">
-      <p role="status" className="mb-5 text-sm text-emerald-800">{channel === "email" ? t("Email verified.") : t("Mobile number verified.")} {t("Choose a new password with at least 10 characters.")}</p>
+      <p role="status" className="mb-5 text-sm text-emerald-800">{t("Email verified.")} {t("Choose a new password with at least 10 characters.")}</p>
       <label>{t("New password")}<input className={input} name="password" type="password" required minLength={10} maxLength={128} autoComplete="new-password" disabled={busy || !resetSeconds} autoFocus /></label>
       <label>{t("Confirm new password")}<input className={input} name="confirm_password" type="password" required minLength={10} maxLength={128} autoComplete="new-password" disabled={busy || !resetSeconds} /></label>
       {error && <p role="alert" className="mb-4 text-sm text-red-700">{error}</p>}
-      {resetSeconds > 0 ? <><p className="mb-4 text-xs text-slate-600">{t("Complete this step within")}{timeLabel(resetSeconds)}.</p><button className={button} disabled={busy}>{busy ? t("Updating password…") : t("Update password")}</button></> : <div className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800"><p>{t("Your verification has expired. Request a new OTP to continue.")}</p><button type="button" onClick={restart} className="mt-2 font-medium underline">{t("Start again")}</button></div>}
+      {resetSeconds > 0 ? <><p className="mb-4 text-xs text-slate-600">{t("Complete this step within")} {timeLabel(resetSeconds)}.</p><button className={button} disabled={busy}>{busy ? t("Updating password…") : t("Update password")}</button></> : <div className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800"><p>{t("Your verification has expired. Request a new OTP to continue.")}</p><button type="button" onClick={restart} className="mt-2 font-medium underline">{t("Start again")}</button></div>}
     </form>}
 
     {stage === "success" && <div className="mt-7"><p role="status" className="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">{t("Your password has been updated. Sign in using your new password.")}</p><a href="/signin" className={`${button} block text-center`}>{t("Sign in")}</a></div>}

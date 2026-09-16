@@ -4,7 +4,7 @@ import logo from "../logo.jpg";
 const copy = {
   register: { title: "Create your account", description: "Find the right support to start and grow your business." },
   signin: { title: "Welcome back", description: "Sign in to continue your journey with SchemeSaathi AI." },
-  recovery: { title: "Recover your account", description: "Verify your email or mobile number and choose a new password to get back to your scheme matches." },
+  recovery: { title: "Recover your account", description: "Verify your email address and choose a new password to get back to your scheme matches." },
 };
 
 export default function AuthLayout({ children, mode = "register" }) {
@@ -23,7 +23,7 @@ export default function AuthLayout({ children, mode = "register" }) {
           <Feature text={t("Free to use")} />
         </div>
       </div>
-      <p className="mt-auto text-xs font-medium text-[#f4c63d]">{t("SchemeSaathi AI · SIH26092 student prototype")}</p>
+      <p className="mt-auto text-xs font-medium text-[#f4c63d]">{t("SchemeSaathi AI")}</p>
     </aside>
     <main className="flex min-h-screen flex-col items-center justify-center px-4 py-8 sm:px-8 lg:px-12">
       <a href="/" className="mb-6 rounded-lg bg-white p-3 lg:hidden"><img src={logo} alt={t("SchemeSaathi AI home")} className="h-auto w-44 object-contain" /></a>

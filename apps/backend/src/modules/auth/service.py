@@ -16,7 +16,7 @@ async def authenticate_user(db: AsyncSession, payload: LoginRequest) -> dict:
         raise UnauthorizedException("Invalid email or password")
     if not user.is_active:
         raise UnauthorizedException("This account has been deactivated")
-    return await login_otp.request_login(db, user, payload.channel)
+    return await login_otp.request_login(db, user)
 
 
 async def refresh_access_token(db: AsyncSession, raw_refresh_token: str) -> TokenResponse:

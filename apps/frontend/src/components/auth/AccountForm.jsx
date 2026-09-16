@@ -32,7 +32,7 @@ export default function AccountForm({ register = false }) {
       <label>{t("Email")}<input className={input} name="email" type="email" required autoComplete="email" /></label></>}
       {!register && <label>{t("Email or mobile number")}<input className={input} name="identifier" required autoComplete="username" /></label>}
       <label>{t("Password")}<input className={input} name="password" type="password" minLength={register ? 10 : 1} maxLength={128} required autoComplete={register ? "new-password" : "current-password"} /></label>
-      {register && <p className="mb-4 text-xs text-slate-600">{t("Use at least 10 characters. Your account stores your name and contact details. Scheme screening does not submit a government application. SMS outreach is optional in Support.")}</p>}
+      {register && <p className="mb-4 text-xs text-slate-600">{t("Use at least 10 characters. Your account stores your name and contact details. Scheme screening does not submit a government application.")}</p>}
       {register && <CaptchaVerification key={captchaVersion} disabled={busy} onReadyChange={setCaptchaReady} />}
       {error && <div role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800"><p>{error}</p>{duplicate && <p className="mt-2"><a href="/signin" className="font-medium underline">{t("Sign in")}</a> {t("or")}<a href="/forgot-password" className="font-medium underline">{t("reset your password")}</a>.</p>}</div>}
       <button disabled={busy || (register && !captchaReady)} className="w-full rounded-lg bg-[#0d2b55] p-3 text-white disabled:opacity-50">{busy ? t("Please wait...") : register ? t("Create Account") : t("Sign In")}</button>

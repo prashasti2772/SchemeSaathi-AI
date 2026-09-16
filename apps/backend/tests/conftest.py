@@ -1,8 +1,22 @@
 """Tests never inherit live delivery credentials from a developer's .env."""
 import os
-for key in ("FIREBASE_API_KEY", "FIREBASE_PROJECT_ID", "SMTP_PASSWORD", "RESEND_API_KEY", "MSG91_AUTH_KEY", "GEMINI_API_KEY", "CHATBOT_API_KEY", "BHASHINI_API_KEY", "BHASHINI_USER_ID"):
+for key in (
+    "FIREBASE_API_KEY",
+    "FIREBASE_PROJECT_ID",
+    "SMTP_PASSWORD",
+    "RESEND_API_KEY",
+    "MSG91_AUTH_KEY",
+    "MSG91_OTP_TEMPLATE_ID",
+    "MSG91_SENDER_ID",
+    "GEMINI_API_KEY",
+    "CHATBOT_API_KEY",
+    "BHASHINI_API_KEY",
+    "BHASHINI_USER_ID",
+    "BREVO_API_KEY",
+):
     os.environ[key] = ""
-os.environ["SMS_PROVIDER"] = "msg91"
+os.environ["EMAIL_PROVIDER"] = "brevo"
+os.environ.pop("SMS_PROVIDER", None)
 
 import tempfile, uuid
 from pathlib import Path

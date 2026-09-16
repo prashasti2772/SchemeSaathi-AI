@@ -22,7 +22,6 @@ from src.modules.eligibility.router import router as eligibility_router
 from src.modules.facilitators.router import router as facilitators_router
 from src.modules.matching.router import router as matching_router
 from src.modules.notifications.router import router as notifications_router
-from src.modules.outreach.router import router as outreach_router
 from src.modules.public.router import router as public_router
 from src.modules.readiness.router import router as readiness_router
 from src.modules.schemes.router import router as schemes_router
@@ -40,6 +39,8 @@ logger = get_logger("main")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("application_startup", env=settings.ENV)
+    from src.integrations import email_client
+    email_client.log_configuration()
     if settings.ENV == "production" and (settings.JWT_SECRET_KEY == "change-this-secret-in-production" or len(settings.JWT_SECRET_KEY) < 32):
         raise RuntimeError("Set JWT_SECRET_KEY to a random secret of at least 32 characters")
     from src.config.database import Base
@@ -110,8 +111,6 @@ if settings.ENABLE_STAFF_API:
     app.include_router(voice_router, prefix=api_router_prefix)
 if settings.ENABLE_STAFF_API:
     app.include_router(voice_webhook_router, prefix=api_router_prefix)
-if settings.ENABLE_STAFF_API:
-    app.include_router(outreach_router, prefix=api_router_prefix)
 if settings.ENABLE_STAFF_API:
     app.include_router(readiness_router, prefix=api_router_prefix)
 if settings.ENABLE_STAFF_API:

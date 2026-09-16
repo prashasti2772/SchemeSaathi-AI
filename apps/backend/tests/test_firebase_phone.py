@@ -1,4 +1,5 @@
 """Firebase flows use mocked HTTPS responses, never real phone numbers/SMS."""
+import asyncio
 import json
 import httpx
 import pytest
@@ -60,3 +61,43 @@ def test_firebase_recovery_sends_only_to_registered_phone_and_requires_verificat
     assert verified.status_code == 200, verified.text
     assert app.reset(verified.json()["token"]).status_code == 200
     assert app.verify(unknown.json()["challenge_id"], "123456").status_code == 400
+
+
+@pytest.mark.parametrize("body, expected", [
+    ({"error": {"message": "BILLING_NOT_ENABLED"}}, "BILLING_NOT_ENABLED"),
+    ({"error": {"message": "SMS_REGION_DENIED : +919876543210"}}, "SMS_REGION_DENIED"),
+    ({"error": {"message": "CAPTCHA_CHECK_FAILED: secret-recaptcha"}}, "CAPTCHA_CHECK_FAILED"),
+    ({"error": {"message": "details about secret-contact@example.com"}}, "PROVIDER_HTTP_ERROR"),
+    ({"error": {"message": "API restrictions", "details": [{"reason": "API_KEY_HTTP_REFERRER_BLOCKED", "metadata": {"key": "secret-key"}}]}}, "API_KEY_HTTP_REFERRER_BLOCKED"),
+    ({"error": ["secret-response"]}, "PROVIDER_HTTP_ERROR"),
+    (["secret-response"], "PROVIDER_HTTP_ERROR"),
+])
+def test_firebase_send_failure_logs_only_allowlisted_codes(monkeypatch, body, expected):
+    from src.integrations import firebase_phone
+    monkeypatch.setattr(firebase_phone, "ready", lambda: True)
+    request = httpx.Request("POST", "https://identitytoolkit.googleapis.com/v1/accounts:sendVerificationCode?key=secret-key")
+    response = httpx.Response(403, request=request, json=body)
+    async def reject(*args, **kwargs):
+        response.raise_for_status()
+    records = []
+    monkeypatch.setattr(firebase_phone, "_request", reject)
+    monkeypatch.setattr(firebase_phone.logger, "warning", lambda event, **fields: records.append({"event": event, **fields}))
+    assert not asyncio.run(firebase_phone.send_code(None, "challenge", MOBILE, "secret-recaptcha"))
+    assert records == [{"event": "firebase_sms_not_sent", "reason": expected, "http_status": 403}]
+
+
+@pytest.mark.parametrize("payload", [[], "unexpected", None])
+def test_firebase_rejects_non_object_success_responses(monkeypatch, payload):
+    from src.integrations import firebase_phone
+    client = httpx.AsyncClient
+    transport = httpx.MockTransport(lambda request: httpx.Response(200, json=payload))
+    monkeypatch.setattr(firebase_phone.httpx, "AsyncClient", lambda **kw: client(transport=transport, **kw))
+    with pytest.raises(ValueError, match="Invalid Firebase response shape"):
+        asyncio.run(firebase_phone._request("sendVerificationCode", {}))
+
+
+def test_firebase_transport_failure_details_exclude_request_urls():
+    from src.integrations.firebase_phone import _failure_details
+    request = httpx.Request("POST", "https://identitytoolkit.googleapis.com/?key=secret-key")
+    assert _failure_details(httpx.ReadTimeout("secret payload", request=request)) == {"reason": "PROVIDER_TIMEOUT"}
+    assert _failure_details(httpx.ConnectError("secret payload", request=request)) == {"reason": "PROVIDER_NETWORK_ERROR"}

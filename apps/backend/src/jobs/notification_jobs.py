@@ -2,7 +2,6 @@ import asyncio
 from src.config.database import AsyncSessionLocal
 from src.config.logging import get_logger
 from src.integrations.email_client import send_email
-from src.integrations.sms_client import send_sms
 from src.jobs.celery_app import celery_app
 from src.modules.notifications.models import NotificationChannel, NotificationStatus
 
@@ -32,14 +31,7 @@ async def _send_notification(notification_log_id: str, context: dict) -> None:
         message = context.get("message", log_entry.template)
         delivered = False
 
-        if log_entry.channel == NotificationChannel.SMS and log_entry.beneficiary_id:
-            beneficiary = (await db.execute(select(Beneficiary).where(Beneficiary.id == log_entry.beneficiary_id))).scalar_one_or_none()
-            if beneficiary:
-                message_id = await send_sms(beneficiary.phone_number, message)
-                log_entry.provider_message_id = message_id
-                delivered = bool(message_id)
-
-        elif log_entry.channel == NotificationChannel.EMAIL and log_entry.user_id:
+        if log_entry.channel == NotificationChannel.EMAIL and log_entry.user_id:
             user = (await db.execute(select(User).where(User.id == log_entry.user_id))).scalar_one_or_none()
             if user:
                 delivered = await send_email(user.email, log_entry.template, message)

@@ -7,9 +7,8 @@ class Settings(BaseSettings):
 
     ENABLE_STAFF_API: bool = False
     PUBLIC_SITE_URL: str = "http://localhost:5173"
-    SMS_LIVE_ENABLED: bool = False
     ENV: str = "development"
-    APP_NAME: str = "SIH26092 Scheme Matching API"
+    APP_NAME: str = "SchemeSaathi Scheme Matching API"
     API_V1_PREFIX: str = "/api/v1"
 
     DATABASE_URL: str = "sqlite+aiosqlite:///./schemesathi.db"
@@ -62,17 +61,6 @@ class Settings(BaseSettings):
 
     WEBHOOK_SHARED_SECRET: str = ""
 
-    SMS_PROVIDER: str = "firebase"
-    MSG91_AUTH_KEY: str = ""
-    MSG91_SENDER_ID: str = ""
-    MSG91_TEMPLATE_ID: str = ""
-    MSG91_OTP_TEMPLATE_ID: str = ""
-    SMS_API_KEY: str = ""
-    FIREBASE_API_KEY: str = ""
-    FIREBASE_PROJECT_ID: str = ""
-    FIREBASE_AUTH_DOMAIN: str = ""
-    FIREBASE_APP_ID: str = ""
-
     OCR_PROVIDER: str = "google_vision"
     OCR_API_KEY: str = ""
     GOOGLE_VISION_API_KEY: str = ""
@@ -91,18 +79,13 @@ class Settings(BaseSettings):
     AWS_SECRET_ACCESS_KEY: str = ""
     AWS_REGION: str = "ap-south-1"
 
-    # Recovery emails are enabled only when a real sender is configured.
+    # Transactional email is delivered over Brevo's HTTPS API. This works on
+    # Render Free without opening mail transport ports.
+    EMAIL_PROVIDER: str = "brevo"
     SUPPORT_EMAIL: str = "customercareprashasti@gmail.com"
-    EMAIL_PROVIDER: str = "smtp"
-    EMAIL_FROM_ADDRESS: str = ""
-    RESEND_API_KEY: str = ""
-    APPS_SCRIPT_URL: str = ""
-    APPS_SCRIPT_SECRET: str = ""
-    SMTP_HOST: str = ""
-    SMTP_PORT: int = 587
-    SMTP_USERNAME: str = ""
-    SMTP_PASSWORD: str = ""
-    SMTP_USE_SSL: bool = False
+    EMAIL_FROM_ADDRESS: str = "customercareprashasti@gmail.com"
+    EMAIL_FROM_NAME: str = "SchemeSaathi Support"
+    BREVO_API_KEY: str = ""
 
 
 @lru_cache

@@ -31,7 +31,6 @@ class RecoveryApp:
     client: TestClient
     database: Path
     mail: list = field(default_factory=list)
-    sms: list = field(default_factory=list)
     deliver: bool = True
 
     def sql(self, statement, parameters=()):
@@ -49,9 +48,9 @@ class RecoveryApp:
                    "password": PASSWORD, **overrides, **self.captcha()}
         return self.client.post(PREFIX + "/register", json=payload)
 
-    def forgot(self, identifier=EMAIL, channel=None):
+    def forgot(self, identifier=EMAIL):
         return self.client.post(PREFIX + "/forgot-password", json={
-            "identifier": identifier, "channel": channel or ("email" if "@" in identifier else "mobile"), **self.captcha()})
+            "identifier": identifier, **self.captcha()})
 
     def challenge(self, identifier=EMAIL):
         response = self.forgot(identifier)
@@ -86,7 +85,6 @@ def recovery_app(tmp_path, monkeypatch):
     monkeypatch.setattr(recovery, "otp_text", lambda: OTP)
     monkeypatch.setattr(login_otp, "otp_text", lambda: OTP)
     monkeypatch.setattr(recovery.email_client, "email_ready", lambda: True)
-    monkeypatch.setattr(recovery.sms_client, "otp_sms_ready", lambda: True)
     engine = create_async_engine("sqlite+aiosqlite:///" + str(database), poolclass=NullPool)
     sessions = async_sessionmaker(engine, expire_on_commit=False)
 
@@ -120,12 +118,7 @@ def recovery_app(tmp_path, monkeypatch):
             harness.mail.append({"recipient": recipient, "subject": subject, "body": body})
             return harness.deliver
 
-        async def capture_sms(recipient, code):
-            harness.sms.append({"recipient": recipient, "code": code})
-            return harness.deliver
-
         monkeypatch.setattr(recovery.email_client, "send_email", capture_mail)
-        monkeypatch.setattr(recovery.sms_client, "send_reset_otp", capture_sms)
         yield harness
 
 
@@ -351,7 +344,7 @@ def test_expired_reset_authorization_cannot_change_password(recovery_app):
 
 
 @pytest.mark.parametrize("verify_before_resend", [False, True])
-def test_resend_cooldown_covers_email_and_mobile_and_invalidates_previous_challenge(recovery_app, monkeypatch, verify_before_resend):
+def test_resend_cooldown_invalidates_previous_challenge(recovery_app, monkeypatch, verify_before_resend):
     from src.modules.auth import recovery
 
     app = recovery_app
@@ -365,8 +358,8 @@ def test_resend_cooldown_covers_email_and_mobile_and_invalidates_previous_challe
     assert len(app.mail) == 1
     app.sql("UPDATE password_recovery_state SET next_send_at = '2000-01-01'")
     monkeypatch.setattr(recovery, "otp_text", lambda: "572830")
-    replacement = app.challenge(MOBILE)
-    assert replacement != original and len(app.mail) == 1 and len(app.sms) == 1
+    replacement = app.challenge()
+    assert replacement != original and len(app.mail) == 2
     assert app.verify(original).status_code == 410
     if grant:
         assert app.reset(grant).status_code == 410
@@ -431,57 +424,50 @@ def test_otp_must_be_exactly_six_digits(recovery_app, otp):
     assert recovery_app.verify("unknown-challenge-identifier", otp).status_code == 422
 
 
-@pytest.mark.parametrize("channel,contact", [("email", EMAIL), ("mobile", MOBILE)])
-def test_both_channels_complete_reset_and_only_deliver_to_selected_registered_contact(recovery_app, channel, contact):
+def test_email_reset_only_delivers_to_registered_email(recovery_app):
     app = recovery_app
     assert app.register().status_code == 201
-    response = app.forgot(contact, channel=channel)
+    response = app.forgot(EMAIL)
     assert response.status_code == 200
     assert response.json()["expires_in"] == 300
-    if channel == "email":
-        assert [mail["recipient"] for mail in app.mail] == [EMAIL]
-        assert not app.sms
-    else:
-        assert app.sms == [{"recipient": MOBILE, "code": OTP}]
-        assert not app.mail
+    assert [mail["recipient"] for mail in app.mail] == [EMAIL]
     verified = app.verify(response.json()["challenge_id"])
     assert verified.status_code == 200
     assert app.reset(verified.json()["token"], "replacement-password").status_code == 200
-    assert app.client.post(PREFIX + "/login", json={"identifier": contact, "password": PASSWORD}).status_code == 401
-    assert app.client.post(PREFIX + "/login", json={"identifier": contact, "password": "replacement-password"}).status_code == 200
+    assert app.client.post(PREFIX + "/login", json={"identifier": EMAIL, "password": PASSWORD}).status_code == 401
+    assert app.client.post(PREFIX + "/login", json={"identifier": EMAIL, "password": "replacement-password"}).status_code == 200
     assert app.reset(verified.json()["token"]).status_code == 410
 
 
-@pytest.mark.parametrize("channel,unknown", [("email", "unknown@example.com"), ("mobile", "9876543218")])
-def test_unregistered_contacts_never_receive_codes_and_get_same_response(recovery_app, channel, unknown):
+def test_unregistered_email_never_receives_codes_and_gets_same_response(recovery_app):
     app = recovery_app
     assert app.register().status_code == 201
-    known = app.forgot(EMAIL if channel == "email" else MOBILE, channel=channel)
-    response = app.forgot(unknown, channel=channel)
+    unknown = "unknown@example.com"
+    known = app.forgot(EMAIL)
+    response = app.forgot(unknown)
     assert response.status_code == known.status_code == 200
     assert response.json().keys() == known.json().keys()
     assert response.json()["message"] == known.json()["message"]
-    assert len(app.mail) + len(app.sms) == 1
+    assert len(app.mail) == 1
     assert app.verify(response.json()["challenge_id"]).status_code == 400
-    assert app.forgot(unknown, channel=channel).status_code == 429
+    assert app.forgot(unknown).status_code == 429
 
 
-@pytest.mark.parametrize("channel,identifier", [("mobile", EMAIL), ("email", MOBILE), ("fax", EMAIL), ("mobile", "+919876543210")])
-def test_recovery_channel_validates_its_own_contact(recovery_app, channel, identifier):
-    response = recovery_app.forgot(identifier, channel=channel)
+@pytest.mark.parametrize("identifier", [MOBILE, "+919876543210", "not-an-email"])
+def test_recovery_requires_an_email_address(recovery_app, identifier):
+    response = recovery_app.forgot(identifier)
     assert response.status_code == 422
-    assert not recovery_app.mail and not recovery_app.sms
+    assert not recovery_app.mail
 
 
-def test_mobile_recovery_does_not_require_gmail_and_missing_sms_does_not_reveal_account(recovery_app, monkeypatch):
-    from src.modules.auth import recovery
+def test_recovery_rejects_client_delivery_overrides_and_verification_flags(recovery_app):
     app = recovery_app
     assert app.register().status_code == 201
-    monkeypatch.setattr(recovery.email_client, "email_ready", lambda: False)
-    assert app.forgot(MOBILE, channel="mobile").status_code == 200
-    assert len(app.sms) == 1 and not app.mail
-    monkeypatch.setattr(recovery.sms_client, "otp_sms_ready", lambda: False)
-    known = app.forgot(MOBILE, channel="mobile")
-    unknown = app.forgot("9876543218", channel="mobile")
-    assert known.status_code == unknown.status_code == 503
-    assert known.json() == unknown.json()
+    invalid = app.client.post(PREFIX + "/forgot-password", json={"identifier": EMAIL,
+        "recipient": "attacker@example.com", **app.captcha()})
+    assert invalid.status_code == 422 and not app.mail
+    challenge = app.challenge()
+    invalid = app.client.post(PREFIX + "/verify-reset-otp", json={"challenge_id": challenge,
+        "otp": "000000", "verified": True})
+    assert invalid.status_code == 422
+    assert app.verify(challenge, "000000").status_code == 400
