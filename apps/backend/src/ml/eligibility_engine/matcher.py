@@ -115,11 +115,11 @@ class EligibilityMatcher:
             return True
 
         if not business or str(business).strip() == "":
-            return True
+            return None
 
         user_bus = normalize(business)
         if not user_bus or user_bus in ["any", "all", "na", "none", "n/a"]:
-            return True
+            return None
 
         # Build expanded terms for user business
         expanded_user_terms = {user_bus}
@@ -285,9 +285,15 @@ class EligibilityMatcher:
             failed.append("Rural")
 
         # BUSINESS
-        if self.match_business(
+        business_match = self.match_business(
                 user["Business_Type"],
-                scheme["Business Types"]):
+                scheme["Business Types"])
+
+        if business_match is None:
+
+            unknown.append("Business")
+
+        elif business_match:
 
             matched.append("Business")
 

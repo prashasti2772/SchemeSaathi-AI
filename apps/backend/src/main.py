@@ -43,6 +43,7 @@ async def lifespan(app: FastAPI):
     email_client.log_configuration()
     if settings.ENV == "production" and (settings.JWT_SECRET_KEY == "change-this-secret-in-production" or len(settings.JWT_SECRET_KEY) < 32):
         raise RuntimeError("Set JWT_SECRET_KEY to a random secret of at least 32 characters")
+    from src.modules.analytics.models import AnalyticsSnapshot  # Register the defined snapshot table.
     from src.config.database import Base
     from src.config.schema import upgrade_user_schema
     async with engine.begin() as connection:

@@ -1,0 +1,63 @@
+import { test, expect } from "@playwright/test";
+
+const subtitle = "AI-driven scheme matching that connects citizens with relevant government schemes, welfare programs, education, healthcare, employment, and skill development opportunities.";
+
+test("citizen OTP login, optional questionnaire, persisted profile and entrepreneur editing", async ({ page }) => {
+  const errors = [];
+  page.on("pageerror", error => errors.push(error.message));
+  const email = "citizen-discovery-" + Date.now() + "@example.com";
+  const password = "isolated-browser-test-password";
+  await page.goto("/");
+  await expect(page.getByText(subtitle, { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Built for Citizens, Especially Underserved Communities" })).toBeVisible();
+  await expect(page.getByText("Empowering citizens with the right government support.", { exact: true })).toBeVisible();
+  await page.goto("/signup");
+  await page.getByLabel("Full name", { exact: true }).fill("Citizen Discovery Tester");
+  await page.getByLabel("Email", { exact: true }).fill(email);
+  await page.getByLabel("Password", { exact: true }).fill(password);
+  await page.getByLabel("Enter the characters shown above").fill("ABC234");
+  await page.getByRole("button", { name: "Create Account", exact: true }).click();
+  await expect(page).toHaveURL(/signin/);
+  await page.getByLabel("Email or mobile number", { exact: true }).fill(email);
+  await page.getByLabel("Password", { exact: true }).fill(password);
+  await page.getByRole("button", { name: /^Sign in$/i }).click();
+  await page.getByLabel("Verification code (OTP)", { exact: true }).fill("123456");
+  await page.getByRole("button", { name: "Verify OTP and sign in", exact: true }).click();
+  await expect(page).toHaveURL("http://127.0.0.1:8001/");
+  await page.goto("/find-schemes/personal-info");
+  await page.locator('[name="phoneNumber"]').fill("9876543210");
+  await page.getByLabel("Age", { exact: true }).fill("20");
+  for (const [name, value] of [["gender", "Female"], ["category", "General"], ["state", "Maharashtra"], ["district", "Pune"], ["residence", "Urban"]]) {
+    await page.locator('[name="' + name + '"]').selectOption(value);
+  }
+  await page.getByRole("button", { name: /Continue/ }).click();
+  await expect(page).toHaveURL(/business-details/);
+  await page.getByRole("button", { name: "AI Help", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Are there education or scholarship schemes for me?", exact: true })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: /Continue/ }).click();
+  await expect(page).toHaveURL(/other-details/);
+  await page.getByRole("button", { name: /Continue/ }).click();
+  await expect(page).toHaveURL(/review/);
+  await page.getByRole("button", { name: /Find.*Schemes/i }).click();
+  await expect(page.locator("article").first()).toBeVisible();
+  await page.goto("/find-schemes/business-details");
+  await expect(page.locator('[name="businessType"]')).toHaveValue("");
+  await page.locator('[name="businessType"]').selectOption("Service");
+  await page.locator('[name="businessActivity"]').fill("Tailoring");
+  await page.locator('[name="businessStage"]').selectOption("Startup");
+  await page.locator('[name="yearsInBusiness"]').selectOption({ index: 1 });
+  await page.getByRole("button", { name: /Continue/ }).click();
+  await page.getByRole("button", { name: /Continue/ }).click();
+  await page.getByRole("button", { name: /Find.*Schemes/i }).click();
+  await expect(page.locator("article").first()).toBeVisible();
+  await page.goto("/find-schemes/business-details");
+  await expect(page.locator('[name="businessActivity"]')).toHaveValue("Tailoring");
+  await page.goto("/ai-assistant");
+  await expect(page.getByRole("button", { name: "Are there government schemes for students?", exact: true }).first()).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await expect(page.getByText(subtitle, { exact: true })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
+  expect(errors).toEqual([]);
+});
