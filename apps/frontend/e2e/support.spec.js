@@ -8,10 +8,12 @@ const ticket = {
 
 async function supportApi(page, role = "citizen") {
   let current = structuredClone(ticket);
+  await page.addInitScript(() => sessionStorage.setItem("schemeSaathiToken", "isolated-support-fixture-token"));
   await page.route("**/api/v1/citizen/me", route => route.fulfill({ json: { id: "support-test-user", role, fullName: "Support Tester", email: "support-user@example.com" } }));
 
   await page.route("**/api/v1/citizen/tickets", route => route.fulfill({ json: [current] }));
-  await page.route("**/api/v1/citizen/tickets/support-test-123*", route => {
+  await page.route("**/api/v1/citizen/tickets/support-test-123**", route => {
+    expect(route.request().headers().authorization).toBe("Bearer isolated-support-fixture-token");
     const payload = route.request().postDataJSON();
     const isStaff = route.request().method() === "PATCH";
     current = { ...current, status: isStaff ? payload.status : "open", replies: [...current.replies, {
@@ -24,35 +26,51 @@ async function supportApi(page, role = "citizen") {
 
 test("helpdesk reply is shown, persists on refresh, and uses explicit status", async ({ page }) => {
   await supportApi(page, "support");
-  await page.goto("/support");
+  await page.goto("/__tests/support?role=support");
   await expect(page.getByRole("heading", { name: "Helpdesk queue" })).toBeVisible();
   const conversation = page.getByRole("article");
   await conversation.getByLabel("Response", { exact: true }).fill("Please reduce the file size and retry.");
-  await conversation.getByLabel("Status", { exact: true }).selectOption("resolved");
+  await conversation.getByRole("combobox", { name: "Status", exact: true }).selectOption("resolved");
   await conversation.getByRole("button", { name: "Save response" }).click();
   await expect(conversation.getByText("Please reduce the file size and retry.", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Refresh tickets" }).click();
   await expect(conversation.getByText("Please reduce the file size and retry.", { exact: true })).toBeVisible();
-  await expect(conversation.getByLabel("Status", { exact: true })).toHaveValue("resolved");
+  await expect(conversation.getByRole("combobox", { name: "Status", exact: true })).toHaveValue("resolved");
 });
 
-test("citizen follow-up saves and SMS setup is explained", async ({ page }) => {
+test("citizen follow-up persists and public email and AI assistance links are correct", async ({ page }) => {
   await supportApi(page);
-  await page.goto("/support");
+  await page.goto("/__tests/support");
   await page.getByLabel("Add a follow-up", { exact: true }).fill("I tried a smaller file and still need help.");
   await page.getByRole("button", { name: "Send follow-up", exact: true }).click();
   await expect(page.getByText("I tried a smaller file and still need help.", { exact: true })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Send me the website link" })).toBeDisabled();
-  await expect(page.getByText("SMS delivery is awaiting setup.", { exact: false })).toBeVisible();
-  await expect(page.getByRole("link", { name: "customercareprashasti@gmail.com" })).toHaveAttribute("href", /^mailto:customercareprashasti@gmail\.com/);
+  await page.getByRole("button", { name: "Refresh tickets", exact: true }).click();
+  await expect(page.getByText("I tried a smaller file and still need help.", { exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.getByText("I tried a smaller file and still need help.", { exact: true })).toBeVisible();
+  await page.goto("/support");
+  const compose = new URL(await page.getByRole("link", { name: "Write an email", exact: false }).getAttribute("href"));
+  expect(compose.origin).toBe("https://mail.google.com");
+  expect(compose.searchParams.get("to")).toBe("customercareprashasti@gmail.com");
+  expect(compose.searchParams.get("su")).toBe("SchemeSaathi Support Request");
+  await expect(page.getByRole("link", { name: /AI Scheme Assistant/ })).toHaveAttribute("href", "/ai-assistant");
+  await page.getByText("Does a scheme match guarantee approval?", { exact: true }).click();
+  await expect(page.getByText("Final eligibility and approval depend", { exact: false })).toBeVisible();
+
 });
 
-test("a ticket API failure keeps the signed-in account and SMS preference usable", async ({ page }) => {
+test("a ticket API failure preserves the session and refresh recovers the conversation", async ({ page }) => {
   await supportApi(page);
-  await page.route("**/api/v1/citizen/tickets", route => route.fulfill({ status: 503, json: { detail: "Ticket service is temporarily unavailable." } }));
-  await page.goto("/support");
+  const unavailable = route => route.fulfill({ status: 503, json: { detail: "Ticket service is temporarily unavailable." } });
+  await page.route("**/api/v1/citizen/tickets", unavailable);
+  await page.goto("/__tests/support");
   await expect(page.getByRole("alert")).toHaveText("Ticket service is temporarily unavailable.");
-  await expect(page.getByRole("button", { name: "Submit ticket", exact: true })).toBeEnabled();
-  await expect(page.getByRole("button", { name: "Opt in to SMS", exact: true })).toBeEnabled();
-  await expect(page.getByRole("link", { name: "Sign in to contact support" })).toHaveCount(0);
+  expect(await page.evaluate(() => sessionStorage.getItem("schemeSaathiToken"))).toBe("isolated-support-fixture-token");
+  await expect(page.getByRole("button", { name: "Refresh tickets", exact: true })).toBeEnabled();
+  await page.unroute("**/api/v1/citizen/tickets", unavailable);
+  await page.getByRole("button", { name: "Refresh tickets", exact: true }).click();
+  await expect(page.getByRole("alert")).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: ticket.subject, exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Send follow-up", exact: true })).toBeEnabled();
+  expect(await page.evaluate(() => sessionStorage.getItem("schemeSaathiToken"))).toBe("isolated-support-fixture-token");
 });

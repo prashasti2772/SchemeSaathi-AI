@@ -23,7 +23,7 @@ test("duplicate registration explains the conflict and offers account recovery",
   });
   await page.goto("/signup");
   await page.getByLabel("Full name", { exact: true }).fill("Test Citizen");
-  await page.getByLabel("Mobile number", { exact: true }).fill("9876543210");
+  await page.getByLabel("Mobile number (optional)", { exact: true }).fill("9876543210");
   await page.getByLabel("Email", { exact: true }).fill("tester@example.com");
   await page.getByLabel("Password", { exact: true }).fill("  example-password  ");
   await page.getByLabel("Enter the characters shown above").fill("TEST42");
@@ -60,7 +60,7 @@ test("email OTP recovery retries wrong codes, checks confirmation and keeps cred
   await page.goto("/forgot-password");
   await requestCode(page);
   await expect(page.getByText("If an account exists", { exact: false })).toBeVisible();
-  expect(requestPayload).toEqual({ channel: "email", identifier: "tester@example.com", captcha_id: expect.stringMatching(/^captcha-/), captcha_answer: "TEST42" });
+  expect(requestPayload).toEqual({ identifier: "tester@example.com", captcha_id: expect.stringMatching(/^captcha-/), captcha_answer: "TEST42" });
   await page.getByLabel("Verification code (OTP)", { exact: true }).fill("111111");
   await page.getByRole("button", { name: "Verify OTP", exact: true }).click();
   await expect(page.getByRole("alert")).toHaveText("Incorrect verification code. Try again.");
@@ -143,13 +143,13 @@ test("real test server completes registration, email OTP recovery and sign in wi
   const newPassword = "  changed-test-password  ";
   await page.goto("/signup");
   await page.getByLabel("Full name", { exact: true }).fill("Recovery Browser Tester");
-  await page.getByLabel("Mobile number", { exact: true }).fill("976" + suffix);
+  await page.getByLabel("Mobile number (optional)", { exact: true }).fill("976" + suffix);
   await page.getByLabel("Email", { exact: true }).fill(email);
   await page.getByLabel("Password", { exact: true }).fill(originalPassword);
   await page.getByLabel("Enter the characters shown above").fill("ABC234");
   await page.getByRole("button", { name: "Create Account", exact: true }).click();
-  await expect(page).toHaveURL("http://127.0.0.1:8001/");
-  await page.evaluate(() => sessionStorage.clear());
+  await expect(page).toHaveURL(/\/signin\?registered=1$/);
+  expect(await page.evaluate(() => sessionStorage.getItem("schemeSaathiToken"))).toBeNull();
   await page.goto("/forgot-password");
   await page.getByLabel("Registered email address", { exact: true }).fill(email);
   await page.getByLabel("Enter the characters shown above").fill("ABC234");
@@ -163,31 +163,35 @@ test("real test server completes registration, email OTP recovery and sign in wi
   await page.getByRole("link", { name: "Sign in", exact: true }).click();
   await page.getByLabel("Email or mobile number", { exact: true }).fill(email);
   await page.getByLabel("Password", { exact: true }).fill(originalPassword);
-  await page.getByRole("button", { name: "Sign In", exact: true }).click();
+  await page.getByRole("button", { name: /^Sign in$/i }).click();
   await expect(page.getByRole("alert")).toBeVisible();
   await page.getByLabel("Password", { exact: true }).fill(newPassword);
-  await page.getByRole("button", { name: "Sign In", exact: true }).click();
+  await page.getByRole("button", { name: /^Sign in$/i }).click();
+  await expect(page.getByLabel("Verification code (OTP)", { exact: true })).toBeVisible();
+  expect(await page.evaluate(() => sessionStorage.getItem("schemeSaathiToken"))).toBeNull();
+  await page.getByLabel("Verification code (OTP)", { exact: true }).fill("123456");
+  await page.getByRole("button", { name: "Verify OTP and sign in", exact: true }).click();
   await expect(page).toHaveURL("http://127.0.0.1:8001/");
 });
 
 
-test("real test server completes registration, mobile OTP recovery and sign in with the new password", async ({ page }) => {
+test("real email OTP recovery preserves mobile identifier sign in and requires sign-in OTP", async ({ page }) => {
   const suffix = String(Date.now()).slice(-7);
   const email = `mobile-auth-${suffix}@example.com`;
   const originalPassword = "original-test-password";
   const newPassword = "  changed-test-password  ";
   await page.goto("/signup");
   await page.getByLabel("Full name", { exact: true }).fill("Recovery Browser Tester");
-  await page.getByLabel("Mobile number", { exact: true }).fill("975" + suffix);
+  await page.getByLabel("Mobile number (optional)", { exact: true }).fill("975" + suffix);
   await page.getByLabel("Email", { exact: true }).fill(email);
   await page.getByLabel("Password", { exact: true }).fill(originalPassword);
   await page.getByLabel("Enter the characters shown above").fill("ABC234");
   await page.getByRole("button", { name: "Create Account", exact: true }).click();
-  await expect(page).toHaveURL("http://127.0.0.1:8001/");
-  await page.evaluate(() => sessionStorage.clear());
+  await expect(page).toHaveURL(/\/signin\?registered=1$/);
+  expect(await page.evaluate(() => sessionStorage.getItem("schemeSaathiToken"))).toBeNull();
   await page.goto("/forgot-password");
-  await page.getByLabel("Reset via Mobile Number", { exact: true }).check();
-  await page.getByLabel("Registered mobile number", { exact: true }).fill("975" + suffix);
+  await expect(page.getByLabel("Reset via Mobile Number", { exact: true })).toHaveCount(0);
+  await page.getByLabel("Registered email address", { exact: true }).fill(email);
   await page.getByLabel("Enter the characters shown above").fill("ABC234");
   await page.getByRole("button", { name: "Send verification code", exact: true }).click();
   await page.getByLabel("Verification code (OTP)", { exact: true }).fill("123456");
@@ -199,10 +203,14 @@ test("real test server completes registration, mobile OTP recovery and sign in w
   await page.getByRole("link", { name: "Sign in", exact: true }).click();
   await page.getByLabel("Email or mobile number", { exact: true }).fill("975" + suffix);
   await page.getByLabel("Password", { exact: true }).fill(originalPassword);
-  await page.getByRole("button", { name: "Sign In", exact: true }).click();
+  await page.getByRole("button", { name: /^Sign in$/i }).click();
   await expect(page.getByRole("alert")).toBeVisible();
   await page.getByLabel("Password", { exact: true }).fill(newPassword);
-  await page.getByRole("button", { name: "Sign In", exact: true }).click();
+  await page.getByRole("button", { name: /^Sign in$/i }).click();
+  await expect(page.getByLabel("Verification code (OTP)", { exact: true })).toBeVisible();
+  expect(await page.evaluate(() => sessionStorage.getItem("schemeSaathiToken"))).toBeNull();
+  await page.getByLabel("Verification code (OTP)", { exact: true }).fill("123456");
+  await page.getByRole("button", { name: "Verify OTP and sign in", exact: true }).click();
   await expect(page).toHaveURL("http://127.0.0.1:8001/");
 });
 
@@ -213,21 +221,28 @@ test("login connection failure is clear and does not silently replay the request
   await page.goto("/signin");
   await page.getByLabel("Email or mobile number", { exact: true }).fill("tester@example.com");
   await page.getByLabel("Password", { exact: true }).fill("some-test-password");
-  await page.getByRole("button", { name: "Sign In", exact: true }).click();
+  await page.getByRole("button", { name: /^Sign in$/i }).click();
   await expect(page.getByRole("alert")).toContainText("Unable to connect to the website service");
   expect(attempts).toBe(1);
-  await expect(page.getByRole("button", { name: "Sign In", exact: true })).toBeEnabled();
+  await expect(page.getByRole("button", { name: /^Sign in$/i })).toBeEnabled();
   await expect(page.getByLabel("Email or mobile number", { exact: true })).toHaveValue("tester@example.com");
 });
 
 
-test("changing reset method clears the contact and requests a new CAPTCHA", async ({ page }) => {
+test("restarting email recovery clears OTP and refreshes CAPTCHA without losing the email", async ({ page }) => {
   await mockCaptcha(page);
+  await page.route("**/api/v1/citizen/forgot-password", route => route.fulfill(json({ challenge_id: "restart-challenge", message: "Check your email.", expires_in: 600, resend_after: 0 })));
   await page.goto("/forgot-password");
-  await page.getByLabel("Registered email address", { exact: true }).fill("tester@example.com");
-  await page.getByLabel("Enter the characters shown above").fill("TEST42");
-  await page.getByLabel("Reset via Mobile Number", { exact: true }).check();
-  await expect(page.getByLabel("Registered mobile number", { exact: true })).toHaveValue("");
+  await expect(page.locator('input[name="captcha_id"]')).toHaveValue(/^captcha-/);
+  const initialCaptcha = await page.locator('input[name="captcha_id"]').inputValue();
+  await requestCode(page);
+  await page.getByLabel("Verification code (OTP)", { exact: true }).fill("123456");
+  await page.getByRole("button", { name: "Use another email address", exact: true }).click();
+  await expect(page.getByLabel("Registered email address", { exact: true })).toHaveValue("tester@example.com");
   await expect(page.getByLabel("Enter the characters shown above")).toHaveValue("");
-  await expect(page.getByText("receive a six-digit code by SMS", { exact: false })).toBeVisible();
+  await expect(page.getByLabel("Verification code (OTP)", { exact: true })).toHaveCount(0);
+  await expect(page.getByLabel("New password", { exact: true })).toHaveCount(0);
+  await expect(page.locator('input[name="captcha_id"]')).not.toHaveValue(initialCaptcha);
+  await requestCode(page);
+  await expect(page.getByLabel("Verification code (OTP)", { exact: true })).toHaveValue("");
 });

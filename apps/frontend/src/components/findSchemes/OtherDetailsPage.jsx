@@ -83,17 +83,6 @@ export default function OtherDetailsPage() {
     if (saving) return;
     setSaveError("");
 
-    if (
-      !form.registeredBusiness ||
-      !form.fundingRequired ||
-      !form.preferredSupport ||
-      !form.previousScheme ||
-      !form.interestedSchemeType
-    ) {
-      alert("Please complete all the details.");
-      return;
-    }
-
     setSaving(true);
     try { await saveSchemeProfileSection("other", form); }
     catch (error) { setSaveError(apiError(error)); setSaving(false); return; }
@@ -148,6 +137,7 @@ export default function OtherDetailsPage() {
                   <FormSelect
                     label={t("Registered Business?")}
                     name="registeredBusiness"
+                    optional
                     placeholder={t("Yes / No")}
                     value={form.registeredBusiness}
                     onChange={handleChange}
@@ -157,6 +147,7 @@ export default function OtherDetailsPage() {
                   <FormSelect
                     label={t("Funding Required")}
                     name="fundingRequired"
+                    optional
                     placeholder={t("Select Amount Range")}
                     value={form.fundingRequired}
                     onChange={handleChange}
@@ -166,6 +157,7 @@ export default function OtherDetailsPage() {
                   <FormSelect
                     label={t("Preferred Support")}
                     name="preferredSupport"
+                    optional
                     placeholder={t("Loan / Subsidy / Grant")}
                     value={form.preferredSupport}
                     onChange={handleChange}
@@ -175,6 +167,7 @@ export default function OtherDetailsPage() {
                   <FormSelect
                     label={t("Previous government scheme?")}
                     name="previousScheme"
+                    optional
                     placeholder={t("Yes / No")}
                     value={form.previousScheme}
                     onChange={handleChange}
@@ -184,6 +177,7 @@ export default function OtherDetailsPage() {
                   <FormSelect
                     label={t("Interested Scheme Type")}
                     name="interestedSchemeType"
+                    optional
                     placeholder={t("Select Type")}
                     value={form.interestedSchemeType}
                     onChange={handleChange}
