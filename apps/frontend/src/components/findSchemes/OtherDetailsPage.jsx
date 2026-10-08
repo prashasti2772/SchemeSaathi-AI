@@ -224,7 +224,7 @@ function FormSelect({
   value,
   onChange,
   options,
-  optional = false,
+  optional = true,
 }) {
   const { t } = useLanguage();
   return (
