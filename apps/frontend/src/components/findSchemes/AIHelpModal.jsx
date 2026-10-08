@@ -5,31 +5,11 @@ import { sendAssistantMessage } from "../../lib/api";
 import { getUserItem } from "../../lib/userStorage";
 
 const STEP_SUGGESTIONS = {
-  1: [
-    "What if I don't have a caste certificate?",
-    "Special schemes for women or senior citizens",
-    "How does state/location affect scheme eligibility?",
-  ],
-  2: [
-    "Manufacturing vs Service: how to categorize my business?",
-    "What schemes support new startups & ideas?",
-    "Turnover limits for micro and small enterprises",
-  ],
-  3: [
-    "Subsidy vs Loan: which one should I pick?",
-    "Are these schemes collateral-free?",
-    "What financial documents do I need to keep ready?",
-  ],
-  4: [
-    "Will my profile qualify for PMEGP or Mudra loan?",
-    "How does the AI calculate my match score?",
-    "Can I update my details later?",
-  ],
-  5: [
-    "How to apply for the top matched scheme?",
-    "Where is the official government application portal?",
-    "What are the interest subsidy rates?",
-  ],
+  1: ["What government schemes might I be eligible for?","Are there government schemes for students?","Which schemes are available in my state?"],
+  2: ["Are there education or scholarship schemes for me?","Are there healthcare or welfare schemes I may qualify for?","Which employment or skill-development schemes can I apply for?"],
+  3: ["What documents do I need?","How can I apply for my matched scheme?","Which schemes are available in my state?"],
+  4: ["What government schemes might I be eligible for?","How does SchemeSaathi calculate my match?","Can I update my details later?"],
+  5: ["How can I apply for my matched scheme?","What documents do I need?","Which employment or skill-development schemes can I apply for?"],
 };
 
 const STEP_NAMES = {
