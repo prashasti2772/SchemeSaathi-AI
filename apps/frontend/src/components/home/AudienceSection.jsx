@@ -8,6 +8,7 @@ const audiences = [
   "audience_minority",
   "audience_rural",
   "audience_first_time",
+  "Students",
 ];
 
 export default function AudienceSection() {
