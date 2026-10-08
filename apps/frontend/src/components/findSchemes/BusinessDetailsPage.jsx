@@ -91,16 +91,6 @@ export default function BusinessDetailsPage() {
     if (saving) return;
     setSaveError("");
 
-    if (
-      !form.businessType ||
-      !form.businessActivity.trim() ||
-      !form.businessStage ||
-      !form.yearsInBusiness
-    ) {
-      alert("Please complete all business details.");
-      return;
-    }
-
     setSaving(true);
     try { await saveSchemeProfileSection("business", form); }
     catch (error) { setSaveError(apiError(error)); setSaving(false); return; }
@@ -151,6 +141,7 @@ export default function BusinessDetailsPage() {
                   <FormSelect
                     label={t("Business Type")}
                     name="businessType"
+                    optional
                     placeholder={t("Select Business Type")}
                     value={form.businessType}
                     onChange={handleChange}
@@ -168,6 +159,7 @@ export default function BusinessDetailsPage() {
                   <FormSelect
                     label={t("Business Stage")}
                     name="businessStage"
+                    optional
                     placeholder={t("Select Stage")}
                     value={form.businessStage}
                     onChange={handleChange}
@@ -177,6 +169,7 @@ export default function BusinessDetailsPage() {
                   <FormSelect
                     label={t("Years in Business")}
                     name="yearsInBusiness"
+                    optional
                     placeholder={t("Select")}
                     value={form.yearsInBusiness}
                     onChange={handleChange}

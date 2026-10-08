@@ -160,9 +160,10 @@ class EligibilityService:
         business_type = (
             profile.get("business_type")
             or profile.get("Business_Type")
+            or profile.get("businessType")
             or profile.get("occupation")
             or profile.get("businessActivity")
-            or "MSME"
+            or None
         )
 
         income = _parse_income(

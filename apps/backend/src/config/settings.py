@@ -1,8 +1,21 @@
 from functools import lru_cache
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    @model_validator(mode="after")
+    def require_production_postgresql(self):
+        if self.ENV.lower() == "production":
+            from sqlalchemy.engine import make_url
+            try:
+                driver = make_url(self.DATABASE_URL).drivername
+            except Exception:
+                raise RuntimeError("Production requires a valid PostgreSQL DATABASE_URL") from None
+            if driver not in {"postgres", "postgresql", "postgresql+asyncpg"}:
+                raise RuntimeError("Production requires a PostgreSQL DATABASE_URL; SQLite is for local development")
+        return self
+
     APPS_SCRIPT_URL: str = ""
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
