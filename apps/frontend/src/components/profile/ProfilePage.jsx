@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { MainLayout } from "../layout";
 import { useLanguage } from "../../lib/i18n.jsx";
 import { getUserItem } from "../../lib/userStorage";
+import { apiError, logoutSession } from "../../lib/api";
+import { loadSchemeProfile } from "../../lib/schemeProfile";
 
 function readJSON(key) {
   try {
@@ -18,6 +20,7 @@ export default function ProfilePage() {
   const [personal, setPersonal] = useState(null);
   const [business, setBusiness] = useState(null);
   const [other, setOther] = useState(null);
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     const isLoggedIn = sessionStorage.getItem("schemeSaathiLoggedIn") === "true";
@@ -27,15 +30,18 @@ export default function ProfilePage() {
     }
 
     setUser(readJSON("schemeSaathiUser"));
-    setPersonal(getUserItem("schemeSaathiPersonalDetails"));
-    setBusiness(getUserItem("schemeSaathiBusinessDetails"));
-    setOther(getUserItem("schemeSaathiOtherDetails"));
+    const controller = new AbortController();
+    loadSchemeProfile(controller.signal).then(() => {
+      if (controller.signal.aborted) return;
+      setPersonal(getUserItem("schemeSaathiPersonalDetails"));
+      setBusiness(getUserItem("schemeSaathiBusinessDetails"));
+      setOther(getUserItem("schemeSaathiOtherDetails"));
+    }).catch(error => { if (!controller.signal.aborted) setLoadError(apiError(error)); });
+    return () => controller.abort();
   }, []);
 
-  const handleSignOut = () => {
-    sessionStorage.removeItem("schemeSaathiLoggedIn");
-    sessionStorage.removeItem("schemeSaathiToken");
-    sessionStorage.removeItem("schemeSaathiUser");
+  const handleSignOut = async () => {
+    await logoutSession();
     window.location.href = "/";
   };
 
@@ -81,6 +87,8 @@ export default function ProfilePage() {
             </button>
           </section>
 
+          {loadError && <p role="alert" className="mt-6 rounded-xl bg-red-50 p-4 text-sm text-red-700">{t("We could not load your saved details.")} {loadError} <button onClick={() => window.location.reload()} className="underline">{t("Try again")}</button></p>}
+          <a href="/saved-schemes" className="mt-5 inline-block text-sm font-semibold text-[#0d2b55] underline">{t("Saved schemes")}</a>
           {/* PERSONAL DETAILS */}
 
           <ProfileSection title={t("Personal Details")} editHref="/find-schemes/personal-info" editSection="personal">
@@ -92,6 +100,11 @@ export default function ProfilePage() {
                   ["Social Category", personal.category],
                   ["State", personal.state],
                   ["District / City", personal.district],
+                  ["Education", personal.education],
+                  ["Occupation", personal.occupation],
+                  ["Interests", personal.interests],
+                  ["Welfare needs", personal.welfareNeeds],
+                  ["Entrepreneurship support", personal.entrepreneurshipSupport],
                 ]}
               />
             ) : (
@@ -101,7 +114,7 @@ export default function ProfilePage() {
 
           {/* BUSINESS DETAILS */}
 
-          <ProfileSection title={t("Business Details")} editHref="/find-schemes/business-details" editSection="business">
+          {personal?.entrepreneurshipSupport === "Yes" && <ProfileSection title={t("Business Details")} editHref="/find-schemes/business-details" editSection="business">
             {business ? (
               <FieldGrid
                 fields={[
@@ -117,6 +130,8 @@ export default function ProfilePage() {
             )}
           </ProfileSection>
 
+          }
+
           {/* OTHER DETAILS */}
 
           <ProfileSection title={t("Other Details")} editHref="/find-schemes/other-details" editSection="other">
@@ -124,8 +139,7 @@ export default function ProfilePage() {
               <FieldGrid
                 fields={[
                   ["Annual Income", other.annualIncome],
-                  ["Registered Business", other.registeredBusiness],
-                  ["Funding Required", other.fundingRequired],
+                  ...(personal?.entrepreneurshipSupport === "Yes" ? [["Registered Business", other.registeredBusiness], ["Funding Required", other.fundingRequired]] : []),
                   ["Preferred Support", other.preferredSupport],
                   ["Interested Scheme Type", other.interestedSchemeType],
                 ]}
@@ -135,7 +149,7 @@ export default function ProfilePage() {
             )}
           </ProfileSection>
 
-          {personal?.phoneNumber && (
+          {personal?.state && (
             <div className="mt-6 text-center">
               <a
                 href="/find-schemes/matching-schemes"

@@ -2,104 +2,22 @@ import { useEffect, useState } from "react";
 import { MainLayout } from "../layout";
 import { apiError, fetchCatalogSchemes } from "../../lib/api";
 import { useLanguage } from "../../lib/i18n.jsx";
+import { officialSchemeUrl } from "../../lib/citizenProfile";
+import SaveSchemeButton from "../schemes/SaveSchemeButton";
 
 const baseCategories = [
-  {
-    id: 1,
-    nameKey: "category_loan_name",
-    queryKey: "loan",
-    icon: "💰",
-    descriptionKey: "category_loan_desc",
-    tags: ["Loans", "Credit", "Finance", "Mudra", "PMEGP"],
-  },
-  {
-    id: 2,
-    nameKey: "category_msme_name",
-    queryKey: "MSME",
-    icon: "🏭",
-    descriptionKey: "category_msme_desc",
-    tags: ["MSME", "Industry", "Subsidies", "Manufacturing"],
-  },
-  {
-    id: 3,
-    nameKey: "category_startup_name",
-    queryKey: "startup",
-    icon: "🚀",
-    descriptionKey: "category_startup_desc",
-    tags: ["Startup", "Innovation", "Incubation", "Funding"],
-  },
-  {
-    id: 4,
-    nameKey: "category_women_name",
-    queryKey: "women",
-    icon: "👩‍💼",
-    descriptionKey: "category_women_desc",
-    tags: ["Women", "Entrepreneurship", "Mahila", "Grants"],
-  },
-  {
-    id: 5,
-    nameKey: "category_agri_name",
-    queryKey: "agriculture",
-    icon: "🌾",
-    descriptionKey: "category_agri_desc",
-    tags: ["Agriculture", "Rural", "Farming", "Solar"],
-  },
-  {
-    id: 6,
-    nameKey: "category_education_name",
-    queryKey: "education",
-    icon: "🎓",
-    descriptionKey: "category_education_desc",
-    tags: ["Education", "Skills", "Training", "Scholarships"],
-  },
-  {
-    id: 7,
-    nameKey: "category_craft_name",
-    queryKey: "handicraft",
-    icon: "🎨",
-    descriptionKey: "category_craft_desc",
-    tags: ["Handicraft", "Artisans", "Vishwakarma", "Weaving"],
-  },
-  {
-    id: 8,
-    nameKey: "category_housing_name",
-    queryKey: "housing",
-    icon: "🏠",
-    descriptionKey: "category_housing_desc",
-    tags: ["Housing", "Urban", "Infrastructure", "SVANidhi"],
-  },
-  {
-    id: 9,
-    nameKey: "category_welfare_name",
-    queryKey: "welfare",
-    icon: "🤝",
-    descriptionKey: "category_welfare_desc",
-    tags: ["Welfare", "Pension", "Social Security", "Inclusion"],
-  },
-  {
-    id: 10,
-    nameKey: "category_subsidy_name",
-    queryKey: "subsidy",
-    icon: "💳",
-    descriptionKey: "category_subsidy_desc",
-    tags: ["Subsidy", "Grant", "DBT", "Financial Support"],
-  },
-  {
-    id: 11,
-    nameKey: "category_technology_name",
-    queryKey: "technology",
-    icon: "💻",
-    descriptionKey: "category_technology_desc",
-    tags: ["Technology", "Green Energy", "Solar", "Digital"],
-  },
-  {
-    id: 12,
-    nameKey: "category_health_name",
-    queryKey: "health",
-    icon: "🏥",
-    descriptionKey: "category_health_desc",
-    tags: ["Health", "Insurance", "Medical", "Safety"],
-  },
+  { id: 10, nameKey: "Entrepreneurship", queryKey: "Entrepreneurship", icon: "\u{1F3EA}", descriptionKey: "Support for starting or growing a business, including credit and subsidies.", tags: ["Entrepreneurship", "Business", "Subsidies"] },
+  { id: 7, nameKey: "Skill Development", queryKey: "Skill Development", icon: "\u{1F6E0}", descriptionKey: "Training and practical skills for work and enterprise.", tags: ["Skills", "Training", "Enterprise"] },
+  { id: 11, nameKey: "Artisan support", queryKey: "Artisan Support", icon: "\u{1F9F5}", descriptionKey: "Skills, tools and support for traditional crafts and trades.", tags: ["Artisans", "Tools", "Training"] },
+  { id: 12, nameKey: "Marketing and technology", queryKey: "Marketing & Technology", icon: "\u{1F4BB}", descriptionKey: "Support for market access, enterprise development and technology.", tags: ["Marketing", "Technology", "Business"] },
+  { id: 6, nameKey: "Employment", queryKey: "Employment", icon: "\u{1F4BC}", descriptionKey: "Employment and livelihood opportunities.", tags: ["Employment", "Livelihood", "Workers"] },
+  { id: 1, nameKey: "Education", queryKey: "Education", icon: "\u{1F393}", descriptionKey: "Scholarships and support for learning.", tags: ["Education", "Scholarships", "Students"] },
+  { id: 2, nameKey: "Healthcare", queryKey: "Healthcare", icon: "\u{1F3E5}", descriptionKey: "Health coverage and medical assistance.", tags: ["Health", "Insurance", "Treatment"] },
+  { id: 3, nameKey: "Agriculture", queryKey: "Agriculture", icon: "\u{1F33E}", descriptionKey: "Support for farmers and agricultural households.", tags: ["Agriculture", "Farmers", "Rural"] },
+  { id: 4, nameKey: "Pensions", queryKey: "Pensions", icon: "\u{1F91D}", descriptionKey: "Social security and support in later life.", tags: ["Pension", "Social Security", "Older people"] },
+  { id: 5, nameKey: "Housing", queryKey: "Housing", icon: "\u{1F3E0}", descriptionKey: "Assistance for a safe place to live.", tags: ["Housing", "Rural", "Urban"] },
+  { id: 8, nameKey: "Women and family support", queryKey: "Women", icon: "\u{1F469}", descriptionKey: "Support for women, mothers and families.", tags: ["Women", "Maternity", "Family"] },
+  { id: 9, nameKey: "Disability support", queryKey: "Disability Support", icon: "\u267F", descriptionKey: "Assistance and inclusion for people with disabilities.", tags: ["Disability", "Accessibility", "Inclusion"] },
 ];
 
 
@@ -115,7 +33,7 @@ export default function CategoriesPage() {
   const [retry, setRetry] = useState(0);
   const [expanded, setExpanded] = useState(null);
 
-  const hasFilter = Boolean(query.trim()) || Boolean(category);
+  const hasFilter = Boolean(query.trim()) || Boolean(category) || window.location.pathname === "/search";
 
   useEffect(() => {
     if (!hasFilter) {
@@ -131,7 +49,7 @@ export default function CategoriesPage() {
 
     const timer = setTimeout(async () => {
       try {
-        const data = await fetchCatalogSchemes([category, query.trim()].filter(Boolean).join(" "), 12, page * 12);
+        const data = await fetchCatalogSchemes(query.trim(), 12, page * 12, category);
         if (active) setResult(data);
       } catch (e) {
         if (active) setError(apiError(e));
@@ -167,7 +85,7 @@ export default function CategoriesPage() {
           <div className="mt-4 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div className="min-w-0 max-w-3xl">
               <h1 className="text-3xl font-extrabold tracking-tight text-white md:text-5xl">{t("categories_page_title")}</h1>
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-200 md:text-base">{t("categories_page_subtitle")}</p>
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-200 md:text-base">{t("entrepreneur_categories_note")}</p>
             </div>
             <div className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-slate-200 backdrop-blur-sm">
               {t("categories_count", { count: baseCategories.length })}
@@ -348,12 +266,15 @@ export default function CategoriesPage() {
                         ))}
                       </dl>
                     )}
+                    <SaveSchemeButton scheme={s} />
+                    {s.verified_on && <p className="my-3 text-xs text-slate-500">{t("Source checked")}: {s.verified_on}</p>}
                     <div className="mt-auto flex flex-wrap gap-3 border-t border-slate-200 pt-4 text-sm">
-                      {/^(https?:\/\/)/i.test(s.official_url || "") && (
-                        <a href={s.official_url} target="_blank" rel="noopener noreferrer" className="font-semibold underline text-[#0d2b55]">
+                      {officialSchemeUrl(s.official_url) && (
+                        <a href={officialSchemeUrl(s.official_url)} target="_blank" rel="noopener noreferrer" className="font-semibold underline text-[#0d2b55]">
                           {t("categories_official_guidance")}
                         </a>
                       )}
+                      {officialSchemeUrl(s.application_url) && <a href={officialSchemeUrl(s.application_url)} target="_blank" rel="noopener noreferrer" className="font-semibold underline text-[#0d2b55]">{t("Official application guidance")}</a>}
                       <a href={"/ai-assistant?q=" + encodeURIComponent("Tell me about " + s.scheme_name)} className="font-semibold underline text-[#0d2b55]">
                         {t("categories_ask_assistant")}
                       </a>

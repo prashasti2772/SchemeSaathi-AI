@@ -106,14 +106,11 @@ async def extract_attachment_text(file_bytes: bytes, filename: str) -> str:
         return ""
     if content_type.startswith("image/") or filename.endswith((".png", ".jpg", ".jpeg", ".webp")):
         if not settings.GOOGLE_VISION_API_KEY:
-            return (
-                f"Uploaded image: {filename}. "
-                "Image OCR is not configured on this server. Add GOOGLE_VISION_API_KEY in the backend environment to read image text."
-            )
+            return ""
         text = await _vision_extract_text(file_bytes)
         if text:
             return text
-        return f"Uploaded image: {filename}. Please use the image details to answer the user question."
+        return ""
 
     if filename.endswith(".txt"):
         try:
@@ -138,9 +135,7 @@ async def extract_attachment_text(file_bytes: bytes, filename: str) -> str:
         if text:
             return text
 
-    if filename:
-        return f"Uploaded document: {filename}. Please read the attachment and answer based on the document content."
-    return "Uploaded attachment. Please review the file and answer the user question."
+    return ""
 
 
 @router.post("/self-service/schemes-match")
@@ -152,13 +147,14 @@ async def match(request: Request, profile: dict[str, Any], db: AsyncSession = De
     if not profile.get("age") or not (profile.get("state") or profile.get("location")):
         raise HTTPException(422, "Please complete age and state in your profile")
     try:
-        matches = await asyncio.to_thread(eligibility_service.match_schemes, profile, 20, True)
+        matches = await asyncio.to_thread(eligibility_service.match_schemes, profile, 20, False)
     except (ValueError, TypeError):
         raise HTTPException(422, "Please check age, income and profile values")
+    matches = [row for row in matches if row["status"] != "INELIGIBLE"]
     matches = await localization.localize_records(db, matches, language)
     return {"matches": matches, "total": len(matches),
             "translation_status": "original" if language == "en" else "unavailable" if any(row["translation_status"] != "translated" for row in matches) else "translated",
-            "notice": "Preliminary screening using the supplied dataset; verify current rules on the official portal."}
+            "notice": "Preliminary screening against reviewed official guidance. UNKNOWN means more information is required; the department makes the final decision."}
 
 
 @router.post("/self-service/assistant-chat")
@@ -183,6 +179,8 @@ async def chat_with_upload(
         if len(contents) > 5 * 1024 * 1024:
             raise HTTPException(413, "Choose a file smaller than 5 MB.")
         attachment_text = await extract_attachment_text(contents, file.filename or "upload")
+        if not attachment_text:
+            raise HTTPException(422, "Text could not be extracted from this file. Paste the relevant text or choose a supported readable document.")
     final_message = message.strip()
     if attachment_text:
         if final_message:

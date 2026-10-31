@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import logo from "../logo.jpg";
 import { LANGUAGES, useLanguage } from "../../lib/i18n.jsx";
+import { logoutSession } from "../../lib/api";
 
 const navItems = [
   { key: "nav_home", href: "/" },
@@ -28,10 +29,8 @@ export default function Header() {
     }
   })();
 
-  const handleSignOut = () => {
-    sessionStorage.removeItem("schemeSaathiLoggedIn");
-    sessionStorage.removeItem("schemeSaathiToken");
-    sessionStorage.removeItem("schemeSaathiUser");
+  const handleSignOut = async () => {
+    await logoutSession();
     window.location.href = "/";
   };
 
@@ -293,6 +292,8 @@ export default function Header() {
                   >
                     {t("profile")}
                   </a>
+
+                  <a href="/saved-schemes" className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50">{t("Saved schemes")}</a>
 
                   <button
                     type="button"

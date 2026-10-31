@@ -9,7 +9,7 @@ export default function Footer() {
         <span className="font-semibold text-slate-100">{t("SchemeSaathi AI")}</span>
 
         <p className="text-center text-slate-300">
-          {t("footer_citizen_description")}
+          {t("entrepreneur_footer")}
         </p>
 
         <span className="font-semibold text-[#f4d780]">

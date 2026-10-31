@@ -10,6 +10,7 @@ import { getUserItem, getCurrentUserId } from "../../lib/userStorage";
 import { recordWav } from "../../lib/recordWav";
 import copy from "../../lib/chatCopy.json";
 import greetings from "../../lib/chatGreetings.json";
+import { buildCitizenProfile } from "../../lib/citizenProfile";
 
 
 const historyKey = () => "schemeSaathiChatV2::" + getCurrentUserId();
@@ -20,7 +21,7 @@ function readHistory() {
   } catch { return []; }
 }
 function readProfile() {
-  return Object.assign({}, ...["schemeSaathiPersonalDetails", "schemeSaathiBusinessDetails", "schemeSaathiOtherDetails"].map(k => getUserItem(k) || {}));
+  return buildCitizenProfile(...["schemeSaathiPersonalDetails", "schemeSaathiBusinessDetails", "schemeSaathiOtherDetails"].map(k => getUserItem(k) || {}));
 }
 
 export default function AIAssistantPage() {

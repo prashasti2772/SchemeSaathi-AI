@@ -142,3 +142,72 @@ def test_legacy_auth_route_does_not_bypass_otp_and_refresh_requires_reauthentica
     assert "access_token" not in pending.json() and "refresh_token" not in pending.json()
     assert verify(app, pending.json()["challenge_id"]).status_code == 200
     assert app.client.post("/api/v1/auth/refresh", json={"refresh_token": "legacy-token"}).status_code == 401
+
+
+def otp_session(app):
+    assert app.register().status_code == 201
+    pending = login(app)
+    return verify(app, pending.json()["challenge_id"]).json()
+
+
+def refresh(app, token):
+    return app.client.post("/api/v1/auth/refresh", json={"refresh_token": token})
+
+
+def test_otp_session_refresh_rotates_persisted_hash_and_logout_revokes(recovery_app):
+    from src.utils.security import decode_token
+    app = recovery_app
+    session = otp_session(app)
+    raw = session["refresh_token"]
+    assert decode_token(raw)["auth_method"] == "email_otp"
+    assert raw not in str([dict(row) for row in app.sql("SELECT * FROM refresh_tokens")])
+    renewed = refresh(app, raw)
+    assert renewed.status_code == 200, renewed.text
+    replacement = renewed.json()
+    assert replacement["refresh_token"] != raw
+    assert refresh(app, raw).status_code == 401
+    headers = {"Authorization": "Bearer " + replacement["access_token"]}
+    assert app.client.get(PREFIX + "/me", headers=headers).status_code == 200
+    assert app.client.post("/api/v1/auth/logout", json={"refresh_token": replacement["refresh_token"]}).status_code == 204
+    assert refresh(app, replacement["refresh_token"]).status_code == 401
+
+
+def test_concurrent_refresh_cannot_issue_two_replacement_sessions(recovery_app):
+    app = recovery_app
+    token = otp_session(app)["refresh_token"]
+    ready = Barrier(2)
+    def submit(_):
+        ready.wait(timeout=10)
+        return refresh(app, token).status_code
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        statuses = list(executor.map(submit, range(2)))
+    assert sorted(statuses) == [200, 401]
+    assert len(app.sql("SELECT id FROM refresh_tokens WHERE revoked=0")) == 1
+
+
+@pytest.mark.parametrize("mutation", ["UPDATE users SET auth_version=auth_version+1", "UPDATE users SET is_active=0", "UPDATE refresh_tokens SET expires_at='2000-01-01'"])
+def test_refresh_rejects_expired_and_invalidated_sessions(recovery_app, mutation):
+    app = recovery_app
+    token = otp_session(app)["refresh_token"]
+    app.sql(mutation)
+    assert refresh(app, token).status_code == 401
+
+
+def test_password_reset_revokes_otp_refresh_session(recovery_app):
+    app = recovery_app
+    token = otp_session(app)["refresh_token"]
+    grant = app.verify(app.challenge()).json()["token"]
+    assert app.reset(grant).status_code == 200
+    assert refresh(app, token).status_code == 401
+
+
+def test_existing_bcrypt_account_can_complete_password_plus_otp_login(recovery_app):
+    import bcrypt
+    app = recovery_app
+    assert app.register().status_code == 201
+    legacy_hash = bcrypt.hashpw(PASSWORD.encode(), bcrypt.gensalt(rounds=4)).decode()
+    app.sql("UPDATE users SET hashed_password=?", (legacy_hash,))
+    assert login(app, password="wrong-password").status_code == 401
+    challenge = login(app)
+    assert challenge.status_code == 200, challenge.text
+    assert verify(app, challenge.json()["challenge_id"]).status_code == 200

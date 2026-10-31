@@ -13,9 +13,9 @@ from src.middlewares.auth_middleware import get_current_user
 from src.middlewares.rbac_middleware import require_roles
 from src.middlewares.rate_limiter import limiter
 from src.modules.users.models import User, UserRole
-from src.modules.auth import login_otp, recovery
+from src.modules.auth import login_otp, recovery, service as auth_service
 from src.modules.public import support_service
-from src.utils.security import hash_password, verify_password, create_access_token
+from src.utils.security import hash_password, verify_password
 
 router = APIRouter(prefix="/citizen", tags=["Citizen"])
 require_support_manager = require_roles("admin", "support")
@@ -40,6 +40,21 @@ class Register(CaptchaInput):
     mobile: str | None = Field(default=None, pattern=r"^[6-9]\d{9}$")
     password: str = Field(min_length=10, max_length=128)
 
+    @field_validator("full_name")
+    @classmethod
+    def meaningful_name(cls, value):
+        value = value.strip()
+        if len(value) < 2:
+            raise ValueError("Enter your full name using at least two characters")
+        return value
+
+    @field_validator("password")
+    @classmethod
+    def meaningful_password(cls, value):
+        if not value.strip():
+            raise ValueError("Password cannot contain only spaces")
+        return value
+
     @field_validator("mobile", mode="before")
     @classmethod
     def optional_mobile(cls, value):
@@ -63,6 +78,13 @@ class ResetPasswordRequest(BaseModel):
     token: str = Field(min_length=10, max_length=512)
     password: str = Field(min_length=10, max_length=128)
 
+    @field_validator("password")
+    @classmethod
+    def meaningful_password(cls, value):
+        if not value.strip():
+            raise ValueError("Password cannot contain only spaces")
+        return value
+
 async def find_user_by_identifier(db: AsyncSession, identifier: str):
     key = identifier.strip().lower()
     return (await db.execute(select(User).where(or_(User.email == key, User.mobile == key)))).scalar_one_or_none()
@@ -72,8 +94,10 @@ def account(user):
     return {"id": str(user.id), "fullName": user.full_name, "email": user.email,
             "mobile": user.mobile, "role": user.role.value}
 
-def session(user):
-    return {"access_token": create_access_token(str(user.id), user.role.value, user.auth_version), "user": account(user)}
+async def session(db, user):
+    tokens = await auth_service.issue_otp_session(db, user)
+    return {"access_token": tokens.access_token, "refresh_token": tokens.refresh_token,
+            "token_type": tokens.token_type, "user": account(user)}
 
 @router.get("/captcha")
 @limiter.limit("20/minute")
@@ -128,7 +152,7 @@ async def resend_login_otp(request: Request, payload: LoginChallengeInput, db: A
 @limiter.limit("15/minute")
 async def verify_login_otp(request: Request, payload: VerifyResetOtpRequest, db: AsyncSession = Depends(get_db)):
     user = await login_otp.verify_login(db, payload.challenge_id, payload.otp)
-    return session(user)
+    return await session(db, user)
 
 @router.post("/forgot-password")
 @limiter.limit("5/minute")
@@ -265,3 +289,5 @@ async def followup(request: Request, ticket_id: str, payload: TicketFollowup, ba
 
 from src.modules.public import scheme_profile
 router.include_router(scheme_profile.router)
+from src.modules.public import saved_schemes
+router.include_router(saved_schemes.router)

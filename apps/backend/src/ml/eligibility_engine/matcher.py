@@ -55,6 +55,9 @@ class EligibilityMatcher:
 
     def match_age(self, age, rule):
 
+        if age is None:
+            return None
+
         minimum, maximum = parse_age(rule)
 
         if minimum <= age <= maximum:
@@ -90,6 +93,9 @@ class EligibilityMatcher:
         if "any" in genders:
             return True
 
+        if gender is None or str(gender).strip().lower() in {"", "any", "unknown", "prefer not to say"}:
+            return None
+
         return normalize(gender) in genders
 
     # -------------------------------------------------------
@@ -103,6 +109,9 @@ class EligibilityMatcher:
         if "any" in categories:
             return True
 
+        if category is None or str(category).strip().lower() in {"", "any", "unknown"}:
+            return None
+
         return normalize(category) in categories
 
     # -------------------------------------------------------
@@ -115,11 +124,11 @@ class EligibilityMatcher:
             return True
 
         if not business or str(business).strip() == "":
-            return True
+            return None
 
         user_bus = normalize(business)
         if not user_bus or user_bus in ["any", "all", "na", "none", "n/a"]:
-            return True
+            return None
 
         # Build expanded terms for user business
         expanded_user_terms = {user_bus}
@@ -139,9 +148,6 @@ class EligibilityMatcher:
         # Manufacturing & Artisans
         if any(w in user_bus for w in ["factory", "manufac", "unit", "product", "craft", "handicraft", "weave", "loom", "artisan", "textile"]):
             expanded_user_terms.update(["manufacturing", "handicraft", "msme", "industrial"])
-
-        # Default fallback for general business activity
-        expanded_user_terms.update(["msme", "micro-enterprise", "small business"])
 
         for b in businesses:
             b_norm = normalize(b)
@@ -166,6 +172,9 @@ class EligibilityMatcher:
 
         if "Any" in states:
             return True
+
+        if not state:
+            return None
 
         for s in states:
 
@@ -205,123 +214,25 @@ class EligibilityMatcher:
     # -------------------------------------------------------
 
     def match_scheme(self, user, scheme):
-
-        matched = []
-
-        failed = []
-
-        unknown = []
-
-        # AGE
-        if self.match_age(
-                user["Age"],
-                scheme["Age Range"]):
-
-            matched.append("Age")
-
-        else:
-
-            failed.append("Age")
-
-        # INCOME
-        income_match = self.match_income(
-                user["Income"],
-                scheme["Max Income"])
-
-        if income_match is None:
-
-            unknown.append("Income")
-
-        elif income_match:
-
-            matched.append("Income")
-
-        else:
-
-            failed.append("Income")
-
-        # GENDER
-        if self.match_gender(
-                user["Gender"],
-                scheme["Eligible Genders"]):
-
-            matched.append("Gender")
-
-        else:
-
-            failed.append("Gender")
-
-        # CATEGORY
-        if self.match_category(
-                user["Category"],
-                scheme["Eligible Categories"]):
-
-            matched.append("Category")
-
-        else:
-
-            failed.append("Category")
-
-        # DISABILITY
-        if self.match_disability(
-                user["Disability"],
-                scheme["Disability Required"]):
-
-            matched.append("Disability")
-
-        else:
-
-            failed.append("Disability")
-
-        # RURAL
-        if self.match_rural(
-                user["Rural"],
-                scheme["Rural Only"]):
-
-            matched.append("Rural")
-
-        else:
-
-            failed.append("Rural")
-
-        # BUSINESS
-        if self.match_business(
-                user["Business_Type"],
-                scheme["Business Types"]):
-
-            matched.append("Business")
-
-        else:
-
-            failed.append("Business")
-
-        # STATE (only if column exists)
-        if "State" in scheme.index:
-
-            if self.match_state(
-                    user["State"],
-                    scheme["State"]):
-
-                matched.append("State")
-
-            else:
-
-                failed.append("State")
-
+        matched, failed, unknown = [], [], []
+        checks = [
+            ("Age", self.match_age, "Age", "Age Range"),
+            ("Income", self.match_income, "Income", "Max Income"),
+            ("Gender", self.match_gender, "Gender", "Eligible Genders"),
+            ("Category", self.match_category, "Category", "Eligible Categories"),
+            ("Disability", self.match_disability, "Disability", "Disability Required"),
+            ("Rural", self.match_rural, "Rural", "Rural Only"),
+            ("Business", self.match_business, "Business_Type", "Business Types"),
+        ]
+        if "State" in scheme:
+            checks.append(("State", self.match_state, "State", "State"))
+        for label, check, profile_key, rule_key in checks:
+            result = check(user.get(profile_key), scheme.get(rule_key))
+            (unknown if result is None else matched if result else failed).append(label)
         return {
-
-            "matched": matched,
-
-            "failed": failed,
-
-            "unknown": unknown,
-
-            "eligible": len(failed) == 0 and len(unknown) == 0,
-
-            "matched_count": len(matched),
-
-            "failed_count": len(failed)
-
+            "matched": matched, "failed": failed, "unknown": unknown,
+            "eligible": not failed and not unknown,
+            "matched_count": len(matched), "failed_count": len(failed),
         }
 
     # -------------------------------------------------------

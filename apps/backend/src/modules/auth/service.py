@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.middlewares.error_handler import UnauthorizedException
 from src.modules.auth.models import RefreshToken
@@ -20,39 +20,43 @@ async def authenticate_user(db: AsyncSession, payload: LoginRequest) -> dict:
 
 
 async def refresh_access_token(db: AsyncSession, raw_refresh_token: str) -> TokenResponse:
-    # Legacy password-only refresh sessions must reauthenticate with the OTP flow.
-    raise UnauthorizedException("Sign in again with your password and verification code.")
-
-
-async def _legacy_refresh_access_token(db: AsyncSession, raw_refresh_token: str) -> TokenResponse:
     from src.utils.security import decode_token
 
     try:
         payload = decode_token(raw_refresh_token)
     except ValueError as exc:
         raise UnauthorizedException("Invalid or expired refresh token") from exc
-    if payload.get("type") != "refresh":
-        raise UnauthorizedException("Provided token is not a refresh token")
+    # Password-only sessions issued before OTP was required cannot be upgraded.
+    if (payload.get("type") != "refresh" or payload.get("auth_method") != "email_otp"
+            or not isinstance(payload.get("jti"), str)):
+        raise UnauthorizedException("Sign in again with your password and verification code.")
 
     token_hash = hash_token(payload["jti"])
-    result = await db.execute(select(RefreshToken).where(RefreshToken.token_hash == token_hash))
-    stored_token = result.scalar_one_or_none()
-    if not stored_token or stored_token.revoked:
+    user_id = (await db.execute(select(RefreshToken.user_id).where(RefreshToken.token_hash == token_hash))).scalar_one_or_none()
+    if not user_id:
         raise UnauthorizedException("Refresh token has been revoked or reused")
-    if stored_token.expires_at.replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
-        raise UnauthorizedException("Refresh token has expired")
 
-    user_result = await db.execute(select(User).where(User.id == stored_token.user_id))
+    # Lock the user before token rows, matching password-reset lock order on PostgreSQL.
+    user_result = await db.execute(select(User).where(User.id == user_id).with_for_update())
     user = user_result.scalar_one_or_none()
-    if not user or not user.is_active:
+    if not user or not user.is_active or str(user.id) != payload.get("sub"):
+        await db.rollback()
         raise UnauthorizedException("User account is inactive or does not exist")
 
     if payload.get("auth_version", 0) != user.auth_version:
+        await db.rollback()
         raise UnauthorizedException("Your session has expired. Please sign in again.")
 
-    stored_token.revoked = True
-    new_pair, new_token_hash = await _issue_token_pair(db, user, return_hash=True)
-    stored_token.replaced_by_hash = new_token_hash
+    # Atomic consumption also protects SQLite, where FOR UPDATE is not available.
+    consumed = (await db.execute(update(RefreshToken).where(
+        RefreshToken.token_hash == token_hash, RefreshToken.revoked.is_(False),
+        RefreshToken.expires_at > datetime.now(timezone.utc),
+    ).values(revoked=True).returning(RefreshToken.user_id))).scalar_one_or_none()
+    if not consumed:
+        await db.rollback()
+        raise UnauthorizedException("Refresh token has been revoked or reused")
+    new_pair, new_token_hash = _token_pair(db, user)
+    await db.execute(update(RefreshToken).where(RefreshToken.token_hash == token_hash).values(replaced_by_hash=new_token_hash))
     await db.commit()
     return new_pair
 
@@ -72,12 +76,16 @@ async def revoke_refresh_token(db: AsyncSession, raw_refresh_token: str) -> None
         await db.commit()
 
 
-async def _issue_token_pair(db: AsyncSession, user: User, return_hash: bool = False):
+def _token_pair(db: AsyncSession, user: User):
     access_token = create_access_token(subject=str(user.id), role=user.role.value, auth_version=user.auth_version)
-    signed_refresh_token, refresh_hash, expires_at = create_refresh_token(subject=str(user.id), auth_version=user.auth_version)
+    signed_refresh_token, refresh_hash, expires_at = create_refresh_token(subject=str(user.id), auth_version=user.auth_version, otp_verified=True)
     db.add(RefreshToken(user_id=user.id, token_hash=refresh_hash, expires_at=expires_at))
-    await db.commit()
     token_response = TokenResponse(access_token=access_token, refresh_token=signed_refresh_token, user=user)
-    if return_hash:
-        return token_response, refresh_hash
+    return token_response, refresh_hash
+
+
+async def issue_otp_session(db: AsyncSession, user: User) -> TokenResponse:
+    """Called only after consuming a valid password-plus-email-OTP challenge."""
+    token_response, _ = _token_pair(db, user)
+    await db.commit()
     return token_response

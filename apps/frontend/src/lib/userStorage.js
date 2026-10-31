@@ -36,5 +36,5 @@ export function removeUserItem(baseKey) {
 
 export function hasCompletedWizardProfile() {
   const personal = getUserItem("schemeSaathiPersonalDetails");
-  return Boolean(personal?.phoneNumber);
+  return Boolean(personal?.age && personal?.state);
 }

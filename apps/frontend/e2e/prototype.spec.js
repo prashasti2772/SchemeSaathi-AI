@@ -33,6 +33,7 @@ test("citizen signup, wizard, chat, voice status and support work together", asy
   await page.getByRole("combobox",{name:"State",exact:true}).selectOption("Uttar Pradesh");
   await page.getByRole("combobox",{name:"District",exact:true}).selectOption("Lucknow");
   await page.getByRole("combobox",{name:"Residence",exact:true}).selectOption("Rural");
+  await page.locator('[name="entrepreneurshipSupport"]').selectOption("Yes");
   await page.getByRole("button",{name:/Continue/}).click();
   await expect(page).toHaveURL(/business-details/);
   await page.locator('[name="businessType"]').selectOption("Service");
@@ -43,7 +44,8 @@ test("citizen signup, wizard, chat, voice status and support work together", asy
   await page.locator('[name="numberOfEmployees"]').selectOption({index:1});
   await page.getByRole("button",{name:/Continue/}).click();
   await expect(page).toHaveURL(/other-details/);
-  for (const name of ["annualIncome","registeredBusiness","fundingRequired","preferredSupport","previousScheme","interestedSchemeType"]) await page.locator('[name="'+name+'"]').selectOption({index:1});
+  await page.locator('[name="annualIncome"]').fill("90000");
+  for (const name of ["registeredBusiness","fundingRequired","preferredSupport","previousScheme","interestedSchemeType"]) await page.locator('[name="'+name+'"]').selectOption({index:1});
   await page.getByRole("button",{name:/Continue/}).click();
   await expect(page).toHaveURL(/review/);
   await page.getByRole("button",{name:/Find.*Schemes/i}).click();
@@ -86,24 +88,23 @@ test("citizen signup, wizard, chat, voice status and support work together", asy
 
 
 
-test("catalogue search, pagination and scheme details work", async ({page}) => {
-  await page.goto("/search");
+test("verified catalogue search, sectors, scheme details and official links work", async ({page}) => {
+  await page.goto("/categories");
   await expect(page.locator("article")).toHaveCount(12);
-  await expect(page.locator("article h3")).toHaveCount(12);
-  await page.getByLabel("Search schemes", {exact:true}).fill("loan");
-  await expect(page.locator("article h2")).toHaveCount(12);
-  const first = await page.locator("article h2").first().textContent();
-  await page.getByRole("button", {name:"Next", exact:true}).click();
-  await expect(page.getByText("Page 2 /", {exact:false})).toBeVisible();
-  await expect(page.locator("article h2").first()).not.toHaveText(first);
-  await page.getByLabel("Search schemes", {exact:true}).fill("women loan");
-  await expect(page.locator("article").first()).toBeVisible();
+  await page.goto("/search");
+  const catalogue = await (await page.request.get("/api/v1/eligibility/schemes?limit=12")).json();
+  await expect(page.locator("article")).toHaveCount(catalogue.schemes.length);
+  await page.getByLabel("Search schemes", {exact:true}).fill("scholarship");
+  await expect(page.locator("article h2")).toHaveCount(1);
   await page.getByRole("button", {name:"Benefits, eligibility and application details"}).first().click();
   await expect(page.locator("article dl").first()).toBeVisible();
+  await expect(page.getByRole("link", {name:"Official application guidance"}).first()).toHaveAttribute("href", /^https:\/\/scholarships\.gov\.in/);
   await page.getByLabel("Search schemes", {exact:true}).fill("zzzzqqqqxxxx");
   await expect(page.getByRole("heading", {name:"No matching schemes"})).toBeVisible();
   await page.getByRole("button", {name:"Clear search and filters"}).first().click();
-  await expect(page.locator("article")).toHaveCount(12);
+  await expect(page.locator("article")).toHaveCount(catalogue.schemes.length);
+  await page.getByRole("button", {name:"Disability support",exact:true}).click();
+  await expect(page.locator("article")).toHaveCount(1);
   await page.setViewportSize({width:390,height:844});
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
 });

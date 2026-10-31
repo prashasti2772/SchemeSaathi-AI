@@ -168,7 +168,10 @@ async def verify_otp(db: AsyncSession, challenge_id: str, code: str) -> dict:
 
 async def reset_password(db: AsyncSession, token: str, password: str) -> dict:
     now = datetime.utcnow()
-    user_id = (await db.execute(update(RecoveryChallenge).where(RecoveryChallenge.grant_hash == secret_hash("grant", "", token), RecoveryChallenge.verified_at.is_not(None), RecoveryChallenge.consumed_at.is_(None), RecoveryChallenge.grant_expires_at > now).values(consumed_at=now).returning(RecoveryChallenge.user_id))).scalar_one_or_none()
+    grant_hash = secret_hash("grant", "", token)
+    user_id = (await db.execute(select(RecoveryChallenge.user_id).where(RecoveryChallenge.grant_hash == grant_hash,
+        RecoveryChallenge.verified_at.is_not(None), RecoveryChallenge.consumed_at.is_(None),
+        RecoveryChallenge.grant_expires_at > now))).scalar_one_or_none()
     if not user_id:
         await db.rollback()
         raise HTTPException(410, "Your password reset session has expired. Request a new code.")
@@ -176,6 +179,15 @@ async def reset_password(db: AsyncSession, token: str, password: str) -> dict:
     if not user:
         await db.rollback()
         raise HTTPException(410, "Your password reset session is no longer available. Request a new code.")
+    # Match refresh/password-change lock order: user first, then challenge/token rows.
+    now = datetime.utcnow()
+    consumed = (await db.execute(update(RecoveryChallenge).where(RecoveryChallenge.grant_hash == grant_hash,
+        RecoveryChallenge.verified_at.is_not(None), RecoveryChallenge.consumed_at.is_(None),
+        RecoveryChallenge.grant_expires_at > now).values(consumed_at=now)
+        .returning(RecoveryChallenge.user_id))).scalar_one_or_none()
+    if not consumed:
+        await db.rollback()
+        raise HTTPException(410, "Your password reset session has expired. Request a new code.")
     user.hashed_password = hash_password(password)
     user.auth_version += 1
     user.reset_token = None

@@ -18,8 +18,13 @@ const initialForm = {
   category: "",
   state: "",
   district: "",
-  disability: "No",
-  residence: "Urban",
+  disability: "",
+  residence: "",
+  education: "",
+  occupation: "",
+  interests: "",
+  welfareNeeds: "",
+  entrepreneurshipSupport: "",
 };
 
 /* ====== OPTIONS ====== */
@@ -112,7 +117,7 @@ export default function PersonalInfoPage() {
       return false;
     }
 
-    if (!form.phoneNumber.trim() || !/^\d{10}$/.test(form.phoneNumber.trim())) {
+    if (form.phoneNumber.trim() && !/^\d{10}$/.test(form.phoneNumber.trim())) {
       alert("Please enter a valid 10-digit mobile number.");
       return false;
     }
@@ -179,9 +184,8 @@ export default function PersonalInfoPage() {
   }
 
 
-    window.location.assign(
-      "/find-schemes/business-details"
-    );
+    window.location.assign(form.entrepreneurshipSupport === "Yes"
+      ? "/find-schemes/business-details" : "/find-schemes/other-details");
   };
 
   const handleBack = () => {
@@ -247,8 +251,9 @@ export default function PersonalInfoPage() {
                   {/* MOBILE NUMBER */}
 
                   <FormInput
-                    label={t("Mobile Number")}
+                    label={t("Mobile Number (optional)")}
                     name="phoneNumber"
+                    optional
                     type="tel"
                     placeholder={t("10-digit mobile number")}
                     value={form.phoneNumber}
@@ -290,8 +295,8 @@ export default function PersonalInfoPage() {
                     options={categories}
                   />
 
-                  <FormSelect label={t("Disability")} name="disability" value={form.disability} onChange={handleChange} options={["No", "Yes"]} />
-                  <FormSelect label={t("Residence")} name="residence" value={form.residence} onChange={handleChange} options={["Urban", "Rural"]} />
+                  <FormSelect label={t("Disability")} name="disability" placeholder={t("Not provided")} optional value={form.disability} onChange={handleChange} options={["No", "Yes"]} />
+                  <FormSelect label={t("Residence")} name="residence" placeholder={t("Not provided")} optional value={form.residence} onChange={handleChange} options={["Urban", "Rural"]} />
                   {/* STATE */}
 
                   <FormSelect
@@ -313,6 +318,12 @@ export default function PersonalInfoPage() {
                     onChange={handleChange}
                     options={getDistrictsForState(form.state)}
                   />
+
+                  <FormSelect label={t("Education")} name="education" optional placeholder={t("Not provided")} value={form.education} onChange={handleChange} options={["No formal education", "Primary", "Secondary", "Higher secondary", "Diploma", "Graduate", "Postgraduate", "Other"]} />
+                  <FormSelect label={t("Occupation")} name="occupation" optional placeholder={t("Not provided")} value={form.occupation} onChange={handleChange} options={["Student", "Farmer", "Agricultural worker", "Employed", "Unemployed", "Homemaker", "Self-employed", "Retired", "Other"]} />
+                  <FormInput label={t("Interests (optional)")} name="interests" optional placeholder={t("For example: education, healthcare, agriculture")} value={form.interests} onChange={handleChange} />
+                  <FormInput label={t("Welfare needs (optional)")} name="welfareNeeds" optional placeholder={t("For example: housing, pension, disability support")} value={form.welfareNeeds} onChange={handleChange} />
+                  <FormSelect label={t("Do you want entrepreneurship support?")} name="entrepreneurshipSupport" optional placeholder={t("Not sure / not provided")} value={form.entrepreneurshipSupport} onChange={handleChange} options={["Yes", "No"]} />
 
                 </div>
               </fieldset>
@@ -372,6 +383,7 @@ function FormInput({
   onChange,
   min,
   max,
+  optional = false,
 }) {
   return (
     <label className="block">
@@ -388,7 +400,8 @@ function FormInput({
         onChange={onChange}
         min={min}
         max={max}
-        required
+        required={!optional}
+        maxLength={500}
         className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3.5 text-[13px] text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#0d2b55] focus:ring-2 focus:ring-[#0d2b55]/10"
       />
 
@@ -405,6 +418,7 @@ function FormSelect({
   value,
   onChange,
   options,
+  optional = false,
 }) {
   const { t } = useLanguage();
   return (
@@ -418,7 +432,7 @@ function FormSelect({
         name={name}
         value={value}
         onChange={onChange}
-        required
+        required={!optional}
         className={`h-11 w-full rounded-lg border border-slate-300 bg-white px-3.5 text-[13px] outline-none transition focus:border-[#0d2b55] focus:ring-2 focus:ring-[#0d2b55]/10 ${
           value
             ? "text-slate-700"
@@ -426,7 +440,7 @@ function FormSelect({
         }`}
       >
 
-        <option value="" disabled>
+        <option value="" disabled={!optional}>
           {placeholder}
         </option>
 

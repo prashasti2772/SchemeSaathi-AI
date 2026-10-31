@@ -13,6 +13,7 @@ from src.middlewares.rate_limiter import limiter
 from src.middlewares.request_logger import RequestLoggingMiddleware
 from src.middlewares.security_headers import SecurityHeadersMiddleware
 from src.modules.analytics.router import router as analytics_router
+from src.modules.analytics.models import AnalyticsSnapshot  # Register the existing table for create_all.
 from src.modules.applications.router import router as applications_router
 from src.modules.auth.router import router as auth_router
 from src.modules.beneficiaries.router import router as beneficiaries_router
@@ -44,13 +45,19 @@ async def lifespan(app: FastAPI):
     if settings.ENV == "production" and (settings.JWT_SECRET_KEY == "change-this-secret-in-production" or len(settings.JWT_SECRET_KEY) < 32):
         raise RuntimeError("Set JWT_SECRET_KEY to a random secret of at least 32 characters")
     from src.config.database import Base
-    from src.config.schema import upgrade_user_schema
+    from src.config.schema import upgrade_user_schema, validate_production_schema
     async with engine.begin() as connection:
-        if connection.dialect.name == "postgresql":
-            from sqlalchemy import text
-            await connection.execute(text("SELECT pg_advisory_xact_lock(724930128)"))
-        await connection.run_sync(Base.metadata.create_all)
-        await connection.run_sync(upgrade_user_schema)
+        if settings.ENV == "production":
+            if connection.dialect.name != "postgresql":
+                raise RuntimeError("Production requires the existing PostgreSQL DATABASE_URL")
+            await connection.run_sync(lambda sync: validate_production_schema(
+                sync, Base.metadata, include_staff=settings.ENABLE_STAFF_API))
+        else:
+            if connection.dialect.name == "postgresql":
+                from sqlalchemy import text
+                await connection.execute(text("SELECT pg_advisory_xact_lock(724930128)"))
+            await connection.run_sync(Base.metadata.create_all)
+            await connection.run_sync(upgrade_user_schema)
     
     # Pre-warm AI & ML services asynchronously at startup so first requests are instantaneous
     try:
@@ -130,7 +137,12 @@ app.include_router(chatbot_router, prefix=api_router_prefix)
 
 @app.get("/health", tags=["Health"])
 async def health_check():
-    return {"status": "ok", "environment": settings.ENV}
+    import os
+    result = {"status": "ok", "environment": settings.ENV}
+    commit = os.getenv("RENDER_GIT_COMMIT", "")
+    if len(commit) == 40 and all(c in "0123456789abcdef" for c in commit.lower()):
+        result["commit"] = commit.lower()
+    return result
 
 
 def _rate_limit_handler(request, exc):

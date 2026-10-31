@@ -246,3 +246,30 @@ test("restarting email recovery clears OTP and refreshes CAPTCHA without losing 
   await requestCode(page);
   await expect(page.getByLabel("Verification code (OTP)", { exact: true })).toHaveValue("");
 });
+
+test("expired access session rotates once and reloads the saved citizen profile", async ({ page }) => {
+  await page.addInitScript(() => {
+    if (sessionStorage.getItem("schemeSaathiToken")) return;
+    sessionStorage.setItem("schemeSaathiToken", "expired-access");
+    sessionStorage.setItem("schemeSaathiRefreshToken", "otp-refresh");
+    sessionStorage.setItem("schemeSaathiUser", JSON.stringify({ id: "session-test", fullName: "Session Tester" }));
+    sessionStorage.setItem("schemeSaathiLoggedIn", "true");
+  });
+  const renewals = [];
+  await page.route("**/api/v1/auth/refresh", route => {
+    renewals.push(route.request().postDataJSON());
+    return route.fulfill(json({ access_token: "renewed-access", refresh_token: "rotated-refresh", user: { id: "session-test", full_name: "Session Tester" } }));
+  });
+  await page.route("**/api/v1/citizen/saved-schemes", route => route.fulfill(json({ schemes: [] })));
+  await page.route("**/api/v1/citizen/scheme-profile", route => {
+    if (route.request().headers().authorization !== "Bearer renewed-access") return route.fulfill(json({ detail: "Expired access token" }, 401));
+    return route.fulfill(json({ exists: true, personal: { fullName: "Session Tester", age: 24 }, business: {}, other: {} }));
+  });
+  await page.goto("/find-schemes/personal-info");
+  await expect(page.locator('[name="fullName"]')).toHaveValue("Session Tester");
+  await expect(page.locator('[name="age"]')).toHaveValue("24");
+  expect(await page.evaluate(() => sessionStorage.getItem("schemeSaathiRefreshToken"))).toBe("rotated-refresh");
+  await page.reload();
+  await expect(page.locator('[name="age"]')).toHaveValue("24");
+  expect(renewals).toEqual([{ refresh_token: "otp-refresh" }]);
+});

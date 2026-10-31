@@ -9,6 +9,9 @@ export const api = axios.create({
   headers: { "Content-Type": "application/json" },
   timeout: 15000,
 });
+const sessionApi = axios.create({ baseURL: API_BASE_URL, timeout: 15000 });
+let refreshPending = null;
+let sessionVersion = 0;
 
 /* Submits the wizard's collected profile and returns explainable scheme
    matches from the real Eligibility Engine. */
@@ -86,9 +89,9 @@ export async function searchSchemesSemantically(query, topK = 5) {
 }
 
 /* Fetches catalog schemes filtered by category or query */
-export async function fetchCatalogSchemes(query = "", limit = 50, offset = 0) {
+export async function fetchCatalogSchemes(query = "", limit = 50, offset = 0, category = "") {
   const response = await api.get("/eligibility/schemes", {
-    params: { query: query || undefined, limit, offset },
+    params: { query: query || undefined, category: category || undefined, limit, offset },
   });
   return response.data;
 }
@@ -99,10 +102,55 @@ api.interceptors.request.use((config) => {
   return config;
 });
 export function saveSession(data) {
+  if (!data.access_token || !data.user) throw new Error("Incomplete authentication response");
+  sessionVersion += 1;
   sessionStorage.setItem("schemeSaathiToken", data.access_token);
-  sessionStorage.setItem("schemeSaathiUser", JSON.stringify(data.user));
+  sessionStorage.setItem("schemeSaathiUser", JSON.stringify({ ...data.user, fullName: data.user.fullName || data.user.full_name }));
   sessionStorage.setItem("schemeSaathiLoggedIn", "true");
+  if (data.refresh_token) sessionStorage.setItem("schemeSaathiRefreshToken", data.refresh_token);
+  else sessionStorage.removeItem("schemeSaathiRefreshToken");
 }
+
+export function clearSession() {
+  sessionVersion += 1;
+  for (const key of ["schemeSaathiToken", "schemeSaathiRefreshToken", "schemeSaathiUser", "schemeSaathiLoggedIn"]) sessionStorage.removeItem(key);
+}
+
+export async function logoutSession() {
+  const refreshToken = sessionStorage.getItem("schemeSaathiRefreshToken");
+  clearSession();
+  if (!refreshToken) return;
+  try {
+    await sessionApi.post("/auth/logout", { refresh_token: refreshToken }, { timeout: 3000 });
+  } catch {
+    // Local credentials are removed even when the server is unreachable.
+  }
+}
+
+api.interceptors.response.use((response) => response, async (error) => {
+  const request = error.config;
+  const authenticationRoute = /^\/(?:auth\/|citizen\/(?:login|register|resend-login-otp|verify-login-otp|forgot-password|verify-reset-otp|reset-password)(?:$|\?))/;
+  if (error.response?.status !== 401 || !request || request._sessionRetry || !request.headers?.Authorization || authenticationRoute.test(request.url)) throw error;
+  request._sessionRetry = true;
+  const currentAccess = sessionStorage.getItem("schemeSaathiToken");
+  // A concurrent request may already have completed the refresh.
+  if (currentAccess && request.headers.Authorization !== `Bearer ${currentAccess}`) return api(request);
+  const refreshToken = sessionStorage.getItem("schemeSaathiRefreshToken");
+  if (!refreshToken) { clearSession(); throw error; }
+  if (!refreshPending) {
+    const version = sessionVersion;
+    refreshPending = sessionApi.post("/auth/refresh", { refresh_token: refreshToken }).then(({ data }) => {
+      // Signing out or switching accounts while refreshing must not restore a session.
+      if (version !== sessionVersion) throw error;
+      saveSession(data);
+    }).catch((failure) => {
+      if (version === sessionVersion && [401, 403].includes(failure.response?.status)) clearSession();
+      throw failure;
+    }).finally(() => { refreshPending = null; });
+  }
+  await refreshPending;
+  return api(request);
+});
 export function apiError(error) {
   if (!error.response) {
     return error.code === "ECONNABORTED" || error.code === "ETIMEDOUT"

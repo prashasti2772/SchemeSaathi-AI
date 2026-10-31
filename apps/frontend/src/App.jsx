@@ -26,6 +26,7 @@ import CategoriesPage from "./components/categories/CategoriesPage";
 import ResourcesPage from "./components/resources/ResourcesPage";
 
 import ProfilePage from "./components/profile/ProfilePage";
+import SavedSchemesPage from "./components/schemes/SavedSchemesPage";
 
 
 import SupportPage from "./components/SupportPage";
@@ -131,6 +132,7 @@ if (path === "/voice-assistant") {
 if (path === "/profile") {
   return <ProfilePage />;
 }
+if (path === "/saved-schemes") return <SavedSchemesPage />;
 
   return <HomePage />;
 }

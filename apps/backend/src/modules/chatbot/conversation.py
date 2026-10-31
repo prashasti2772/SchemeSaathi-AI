@@ -21,6 +21,7 @@ CONCEPTS = {
 }
 DEFINITION = r"how .*work|what (?:is|are)|what do.*mean|meaning|definition|define|explain|samjha|matlab|kya (?:hai|hota|hoti)|क्या (?:है|होत)|मतलब|अर्थ|समझा|म्हणजे|શું|என்றால்|என்ன|అంటే|ఏమిటి|কী|মানে|ಎಂದರೇನು|ಅರ್ಥ"
 DISCOVERY = r"\b(find|search|recommend|suggest|schemes? for|list|looking for|need (?:a |an )?(?:loan|fund|subsid)|want (?:a |an )?(?:loan|fund|subsid))\b|योजनाएं|योजनाएँ|योजना बताओ|योजना खोज|योजना शोध|योजनाओं|योजना चाहिए|yojana chahiye|schemes batao|loan chahiye|યોજનાઓ|திட்டங்கள்|పథకాలు|প্রকল্পগুলি|প্রকল্প খুঁজ|ಯೋಜನೆಗಳು"
+SUPPORT_NEEDS = r"\b(?:artisans?|crafts?(?:people|sperson|sman)?|training|marketing|technology|livelihood|entrepreneur(?:ship)?|start (?:a |my )?(?:business|enterprise)|self[- ]employment)\b"
 EXAMPLE = r"example|उदाहरण|मिसाल|मिसाळ|ઉદાહરણ|உதாரண|ఉదాహరణ|উদাহরণ|ಉದಾಹರಣೆ"
 REPAYMENT = r"repay|pay (?:it |this )?back|return.*money|लौटान|वापस|चुकान|परत|परतफेड|वापसी|wapas|chukana|પાછ|પરત|திருப்பி|తిరిగి|ফেরত|ಹಿಂದಿರುಗಿ|ಮರುಪಾವತಿ"
 FIELD_PATTERNS = {
@@ -37,11 +38,20 @@ LANGUAGE_NAMES = {
     "bn": r"bengali|bangla|বাংলা|बंगाली", "kn": r"kannada|ಕನ್ನಡ|कन्नड़",
 }
 SCHEME_ALIASES = {
+    "kisan": (r"\bpm[ -]?kisan\b|\bkisan samman\b", "kisan samman"),
+    "ayushman": (r"\bayushman\b|\bpm[ -]?jay\b", "ayushman bharat"),
+    "pension": (r"\bignoaps\b", "indira gandhi national old age"),
+    "pmay": (r"\bpmay\b|\bawas yojana\b", "awas yojana"),
+    "pmmvy": (r"\bpmmvy\b|\bmatru vandana\b", "matru vandana"),
+    "ncs": (r"\bncs\b|national career service", "national career service"),
+    "pmkvy": (r"\bpmkvy\b|\bkaushal vikas\b", "kaushal vikas"),
     "pmegp": (r"\bpmegp\b|पीएमईजीपी|प्रधानमंत्री रोजगार सृजन", "prime minister.*employment generation"),
     "mudra": (r"\bmudra\b|मुद्रा|முத்ரா|ముద్ర|মুদ্রা|ಮುದ್ರಾ|મુદ્રા", "pradhan mantri mudra"),
     "standup": (r"stand[ -]?up india|स्टैंड.?अप", "stand[ -]?up india"),
     "vishwakarma": (r"\bvishwakarma\b|विश्वकर्मा", "pm vishwakarma"),
     "svanidhi": (r"\bsvanidhi\b|स्वनिधि", "svanidhi"),
+    "esdp": (r"\besdp\b|entrepreneurship and skill development programme", "entrepreneurship and skill development programme"),
+    "nssh": (r"\bnssh\b|\bsc[ /-]?st hub\b", "national sc.st hub"),
 }
 
 
@@ -114,6 +124,8 @@ def classify(message, history, named_schemes):
             return "explanation", found
         if not found and old_topic and re.fullmatch(r"(?:please )?(?:explain (?:more|simply|again)|tell me more|more|समझाओ|और बताओ|सरल भाषा में)", plain):
             return "explanation", [old_topic]
+    if not named_schemes and re.search(r"am i eligible|can i get|मेरी पात्रता|क्या मुझे|मुझे मिलेगा", text):
+        return "profile", []
     for field, pattern in FIELD_PATTERNS.items():
         if re.search(pattern, text):
             if named_schemes:
@@ -124,7 +136,7 @@ def classify(message, history, named_schemes):
         return "description", []
     if re.search(r"am i eligible|can i get|मेरी पात्रता|क्या मुझे|मुझे मिलेगा", text):
         return "profile", []
-    if re.search(DISCOVERY, text) or (len(text.split()) <= 5 and re.search(r"tailor|dairy|agriculture|women entrepreneur|महिला उद्यम|सिलाई", text)):
+    if re.search(DISCOVERY, text) or re.search(r"\b(?:grants?|loans?|subsid(?:y|ies))\b.*\b(?:available|for|support)\b", text) or re.search(SUPPORT_NEEDS, text) or re.search(r"\bschemes?\b|\b(?:need|want|looking for|what about)\b.*\b(?:grants?|loans?|subsid(?:y|ies))\b", text) or (len(text.split()) <= 5 and re.search(r"tailor|dairy|agriculture|scholarship|education|healthcare|hospital|pension|housing|employment|jobs|skill|disability|women entrepreneur|महिला उद्यम|सिलाई", text)):
         return "discovery", []
     return "clarify", []
 
