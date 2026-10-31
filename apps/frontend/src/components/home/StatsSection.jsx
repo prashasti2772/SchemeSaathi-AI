@@ -4,7 +4,7 @@ import { api } from "../../lib/api";
 
 const stats = [
   { value: "36", labelKey: "homepage_stats_states" },
-  { value: "Explainable", labelKey: "homepage_stats_screening" },
+  { valueKey: "homepage_stats_guidance", labelKey: "homepage_stats_screening" },
 ];
 
 export default function StatsSection() {
@@ -31,7 +31,7 @@ export default function StatsSection() {
             className="group flex min-h-28 flex-col items-center justify-center border-b border-slate-200/90 px-5 py-5 text-center transition duration-200 last:border-b-0 hover:bg-[#fff9ea] sm:border-b-0 sm:border-r sm:last:border-r-0"
           >
             <div className="text-[28px] font-extrabold tracking-[-0.03em] text-[#081d3d]">
-              {stat.value}
+              {stat.valueKey ? t(stat.valueKey) : stat.value}
             </div>
             <div className="mt-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-[#5d6d82] group-hover:text-[#0d2b55]">
               {t(stat.labelKey)}
