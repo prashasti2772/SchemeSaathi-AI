@@ -18,7 +18,7 @@ export default function StatsSection() {
     return () => controller.abort();
   }, []);
   const catalogueStats = [
-    { value: counts?.schemes ?? "—", labelKey: "homepage_stats_schemes" },
+    { value: "653", labelKey: "homepage_stats_dataset", footnoteKey: "homepage_stats_reviewed", footnoteCount: counts?.schemes ?? "—" },
     { value: counts?.categories ?? "—", labelKey: "homepage_stats_categories" },
     ...stats,
   ];
@@ -36,6 +36,11 @@ export default function StatsSection() {
             <div className="mt-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-[#5d6d82] group-hover:text-[#0d2b55]">
               {t(stat.labelKey)}
             </div>
+            {stat.footnoteKey && (
+              <div className="mt-1 text-center text-xs text-slate-500">
+                {stat.footnoteCount} {t(stat.footnoteKey)}
+              </div>
+            )}
           </div>
         ))}
       </div>
