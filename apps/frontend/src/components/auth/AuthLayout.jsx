@@ -14,8 +14,8 @@ export default function AuthLayout({ children, mode = "register" }) {
     <aside className="hidden min-h-screen bg-[#0d2b55] px-10 py-10 text-white lg:flex lg:flex-col xl:px-14">
       <a href="/" className="block w-fit rounded-lg bg-white p-3"><img src={logo} alt={t("SchemeSaathi AI home")} className="h-auto w-56 max-w-full object-contain" /></a>
       <div className="my-16 max-w-sm">
-        <h1 className="text-4xl font-extrabold leading-tight">{content.title}</h1>
-        <p className="mt-4 text-lg leading-7 text-slate-200">{content.description}</p>
+        <h1 className="text-4xl font-extrabold leading-tight">{t(content.title)}</h1>
+        <p className="mt-4 text-lg leading-7 text-slate-200">{t(content.description)}</p>
         <div className="mt-10 space-y-6">
           <Feature text={t("Personalized scheme matches")} />
           <Feature text={t("AI-powered guidance")} />

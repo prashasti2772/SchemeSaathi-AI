@@ -1,4 +1,5 @@
-﻿import { MainLayout } from "./layout";
+import { useLanguage } from "../lib/i18n.jsx";
+import { MainLayout } from "./layout";
 
 const SUPPORT_EMAIL = "customercareprashasti@gmail.com";
 
@@ -16,6 +17,7 @@ const GMAIL_COMPOSE =
   );
 
 export default function SupportPage() {
+  const { t } = useLanguage();
   return (
     <MainLayout>
       <main className="mx-auto max-w-6xl px-4 py-10">
@@ -25,7 +27,7 @@ export default function SupportPage() {
           </p>
 
           <h1 className="mt-2 text-3xl font-bold">
-            Support & Assistance
+            {t("Support & Assistance")}
           </h1>
 
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-200">
@@ -53,7 +55,7 @@ export default function SupportPage() {
               </div>
 
               <h2 className="mt-5 text-xl font-bold">
-                Email Support
+                {t("Email Support")}
               </h2>
 
               <p className="mt-2 text-sm leading-6 text-slate-200">
@@ -76,7 +78,7 @@ export default function SupportPage() {
               href={GMAIL_COMPOSE}
               className="mt-6 inline-flex w-fit items-center gap-2 font-semibold text-[#f3c735] hover:underline"
             >
-              Write an email →
+              {t("Write an email →")}
             </a>
           </section>
 
@@ -100,7 +102,7 @@ export default function SupportPage() {
               </div>
 
               <h2 className="mt-5 text-xl font-bold">
-                AI Scheme Assistant
+                {t("AI Scheme Assistant")}
               </h2>
 
               <p className="mt-2 text-sm leading-6 text-slate-200">
@@ -110,14 +112,14 @@ export default function SupportPage() {
             </div>
 
             <span className="mt-6 font-semibold text-[#f3c735]">
-              Open assistant →
+              {t("Open assistant →")}
             </span>
           </a>
         </div>
 
         <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-xl font-bold text-[#0d2b55]">
-            Common questions
+            {t("Common questions")}
           </h2>
 
           <div className="mt-5 space-y-3">
