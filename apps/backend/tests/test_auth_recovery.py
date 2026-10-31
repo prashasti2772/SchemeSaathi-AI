@@ -471,3 +471,17 @@ def test_recovery_rejects_client_delivery_overrides_and_verification_flags(recov
         "otp": "000000", "verified": True})
     assert invalid.status_code == 422
     assert app.verify(challenge, "000000").status_code == 400
+
+
+def test_registration_rejects_blank_name_and_whitespace_only_password(recovery_app):
+    assert recovery_app.register(full_name="  ").status_code == 422
+    assert recovery_app.register(password=" " * 12).status_code == 422
+    assert not recovery_app.sql("SELECT id FROM users")
+
+
+def test_reset_rejects_whitespace_only_password_without_consuming_grant(recovery_app):
+    app = recovery_app
+    assert app.register().status_code == 201
+    grant = app.verify(app.challenge()).json()["token"]
+    assert app.reset(grant, " " * 12).status_code == 422
+    assert app.reset(grant, "  meaningful-password  ").status_code == 200

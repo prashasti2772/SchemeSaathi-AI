@@ -43,7 +43,8 @@ def new_account(client, suffix):
 def test_health_and_catalog(client):
     assert client.get("/health").status_code == 200
     result = client.get("/api/v1/eligibility/schemes?limit=5").json()
-    assert result["total"] == 653 and len(result["schemes"]) == 5
+    assert result["total"] == 14 and len(result["schemes"]) == 5
+    assert all(row["verified_on"] == "2026-10-28" for row in result["schemes"])
 
 def test_auth_is_real(client):
     auth = new_account(client, 1)
@@ -112,11 +113,10 @@ def test_matches_and_invalid_location(client):
     matches=r.json()["matches"]
     assert matches, r.text
     assert all("Agriculture Infrastructure Fund" != m["name"] for m in matches)
-    assert all(m["eligible"] and not m["failed_conditions"] and 0 <= m["score"] <= 1 for m in matches)
+    assert all(m["status"] in {"ELIGIBLE", "UNKNOWN"} and not m["failed_conditions"] and 0 <= m["score"] <= 1 for m in matches)
+    assert any(m["status"] == "UNKNOWN" and m["unknown_conditions"] and not m["eligible"] for m in matches)
     assert all("State" in m["matched_conditions"] for m in matches)
-    for m in matches:
-        row=eligibility_service.engine.df.loc[eligibility_service.engine.df["Scheme Name"] == m["name"]].iloc[0]
-        assert row["State"] in ("Any","Uttar Pradesh")
+    assert all(eligibility_service.get_scheme(m["scheme_id"]) for m in matches)
     profile["district"]="Chennai"
     assert client.post("/api/v1/public/self-service/schemes-match",json=profile).status_code == 422
     assert client.post("/api/v1/public/self-service/schemes-match",json={}).status_code == 422
@@ -161,9 +161,9 @@ def test_location_snapshot():
 
 
 def test_search_pagination_and_multiple_words(client):
-    first = client.get("/api/v1/eligibility/schemes?limit=12").json()
-    second = client.get("/api/v1/eligibility/schemes?limit=12&offset=12").json()
-    assert first["has_more"] and len(second["schemes"]) == 12
+    first = client.get("/api/v1/eligibility/schemes?limit=5").json()
+    second = client.get("/api/v1/eligibility/schemes?limit=5&offset=5").json()
+    assert first["has_more"] and len(second["schemes"]) == 5
     assert not set(s["scheme_name"] for s in first["schemes"]) & set(s["scheme_name"] for s in second["schemes"])
     found = client.get("/api/v1/eligibility/schemes", params={"query":"women loan"}).json()
     assert found["total"] > 0
@@ -343,12 +343,12 @@ def test_generative_chat_receives_question_context_and_selected_language(client,
         calls.append(kwargs)
         return SimpleNamespace(text="यह सीधे आपके सवाल का जवाब है।")
     monkeypatch.setattr(chatbot_service, "_genai_client", SimpleNamespace(aio=SimpleNamespace(models=SimpleNamespace(generate_content=generate))))
-    data = client.post("/api/v1/public/self-service/assistant-chat", json={"message":"How can I plan cash flow for a seasonal tailoring business?", "language":"hi"}).json()
+    data = client.post("/api/v1/public/self-service/assistant-chat", json={"message":"What is a grant?", "language":"hi"}).json()
     assert data["mode"] == "generated" and data["language"] == "hi"
     assert data["retrieved_schemes"] == []
     assert data["reply"] == "यह सीधे आपके सवाल का जवाब है।"
     assert "Answer in Hindi" in calls[0]["config"]["system_instruction"]
-    assert json.loads(calls[0]["contents"])["question"].startswith("How can I plan cash flow")
+    assert json.loads(calls[0]["contents"])["question"] == "What is a grant?"
     data = client.post("/api/v1/public/self-service/assistant-chat", json={"message":"What is a subsidy?", "language":"hi"}).json()
     assert data["mode"] == "generated"
     assert data["retrieved_schemes"] == []

@@ -5,7 +5,7 @@ export default function AboutPage() {
   const { t } = useLanguage();
   const steps = [
     { key: "about_step_profile", label: t("about_step_profile"), description: t("Basic profile details used for relevant eligibility screening.") },
-    { key: "about_step_business", label: t("about_step_business"), description: t("Business type, activity and stage help refine scheme matches.") },
+    { key: "citizen_needs", label: t("Support needs"), description: t("Education, occupation, interests and welfare needs help refine scheme suggestions. Business questions appear when you request entrepreneurship support.") },
     { key: "about_step_other", label: t("about_step_other"), description: t("Additional financial/requirement information improves relevance.") },
     { key: "about_step_matches", label: t("about_step_matches"), description: t("Receive suitable schemes with eligibility, benefits and next steps.") },
   ];
@@ -19,7 +19,7 @@ export default function AboutPage() {
             <h1 className="mt-5 max-w-4xl text-4xl font-black leading-tight md:text-5xl">
               {t("about_title_line1")} {t("about_title_line2")}
             </h1>
-            <p className="mt-5 max-w-3xl text-base leading-8 text-slate-100 md:text-lg">{t("about_intro")}</p>
+            <p className="mt-5 max-w-3xl text-base leading-8 text-slate-100 md:text-lg">{t("entrepreneur_subtitle")}</p>
           </div>
         </section>
 

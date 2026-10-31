@@ -1,10 +1,13 @@
 from functools import lru_cache
+from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     APPS_SCRIPT_URL: str = ""
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    # Load the existing backend settings consistently from root or backend cwd.
+    # Explicit process environment continues to take precedence.
+    model_config = SettingsConfigDict(env_file=Path(__file__).resolve().parents[2] / ".env", extra="ignore")
 
     ENABLE_STAFF_API: bool = False
     PUBLIC_SITE_URL: str = "http://localhost:5173"

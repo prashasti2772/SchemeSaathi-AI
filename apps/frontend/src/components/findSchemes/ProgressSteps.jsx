@@ -1,6 +1,7 @@
 import { useLanguage } from "../../lib/i18n.jsx";
 import React, { useState } from "react";
 import AIHelpModal from "./AIHelpModal";
+import { getUserItem } from "../../lib/userStorage";
 
 const steps = [
   { number: 1, label: "Personal Info" },
@@ -13,6 +14,7 @@ const steps = [
 export default function ProgressSteps({ currentStep = 1 }) {
   const { t } = useLanguage();
   const [isAiHelpOpen, setIsAiHelpOpen] = useState(false);
+  const visibleSteps = steps.filter(step => step.number !== 2 || getUserItem("schemeSaathiPersonalDetails")?.entrepreneurshipSupport === "Yes");
 
   const openAIAssistant = () => {
     setIsAiHelpOpen(true);
@@ -38,9 +40,9 @@ export default function ProgressSteps({ currentStep = 1 }) {
           "
         />
 
-        <div className="relative grid grid-cols-5">
+        <div className={`relative grid ${visibleSteps.length === 5 ? "grid-cols-5" : "grid-cols-4"}`}>
 
-          {steps.map((step) => {
+          {visibleSteps.map((step, index) => {
 
             const active =
               step.number <= currentStep;
@@ -71,7 +73,7 @@ export default function ProgressSteps({ currentStep = 1 }) {
                     }
                   `}
                 >
-                  {step.number}
+                  {index + 1}
                 </div>
 
                 <span
@@ -85,7 +87,7 @@ export default function ProgressSteps({ currentStep = 1 }) {
                     }
                   `}
                 >
-                  {step.label}
+                  {t(step.number === 3 ? "Support Needs" : step.label)}
                 </span>
 
               </div>

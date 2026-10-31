@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-const subtitle = "AI-driven scheme matching that connects citizens with relevant government schemes, welfare programs, education, healthcare, employment, and skill development opportunities.";
+const subtitle = "Discover government support for marginalized and aspiring entrepreneurs: grants, subsidies, skills, artisan support, market access and loans. Explore relevant welfare opportunities for you and your family too.";
 
 test("citizen OTP login, optional questionnaire, persisted profile and entrepreneur editing", async ({ page }) => {
   const errors = [];
@@ -9,8 +9,8 @@ test("citizen OTP login, optional questionnaire, persisted profile and entrepren
   const password = "isolated-browser-test-password";
   await page.goto("/");
   await expect(page.getByText(subtitle, { exact: true })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Built for Citizens, Especially Underserved Communities" })).toBeVisible();
-  await expect(page.getByText("Empowering citizens with the right government support.", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Who We Support" })).toBeVisible();
+  await expect(page.getByText("Government support for entrepreneurs and communities.", { exact: true })).toBeVisible();
   await page.goto("/signup");
   await page.getByLabel("Full name", { exact: true }).fill("Citizen Discovery Tester");
   await page.getByLabel("Email", { exact: true }).fill(email);
@@ -30,18 +30,34 @@ test("citizen OTP login, optional questionnaire, persisted profile and entrepren
   for (const [name, value] of [["gender", "Female"], ["category", "General"], ["state", "Maharashtra"], ["district", "Pune"], ["residence", "Urban"]]) {
     await page.locator('[name="' + name + '"]').selectOption(value);
   }
-  await page.getByRole("button", { name: /Continue/ }).click();
-  await expect(page).toHaveURL(/business-details/);
-  await page.getByRole("button", { name: "AI Help", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Are there education or scholarship schemes for me?", exact: true })).toBeVisible();
-  await page.keyboard.press("Escape");
+  await page.locator('[name="occupation"]').selectOption("Student");
+  await page.locator('[name="education"]').selectOption("Higher secondary");
+  await page.locator('[name="interests"]').fill("education");
+  await page.locator('[name="welfareNeeds"]').fill("scholarship");
   await page.getByRole("button", { name: /Continue/ }).click();
   await expect(page).toHaveURL(/other-details/);
+  await expect(page.locator('[name="registeredBusiness"]')).toHaveCount(0);
+  await expect(page.locator('[name="fundingRequired"]')).toHaveCount(0);
+  await page.locator('[name="annualIncome"]').fill("90000");
   await page.getByRole("button", { name: /Continue/ }).click();
   await expect(page).toHaveURL(/review/);
   await page.getByRole("button", { name: /Find.*Schemes/i }).click();
   await expect(page.locator("article").first()).toBeVisible();
+  await expect(page.getByText("More information needed", { exact: true }).first()).toBeVisible();
+  await page.getByRole("button", { name: "Save scheme", exact: true }).first().click();
+  await page.goto("/saved-schemes");
+  await expect(page.locator("article")).toHaveCount(1);
+  await page.reload();
+  await expect(page.locator("article")).toHaveCount(1);
+  await expect(page.getByRole("link", { name: "Official application guidance" })).toHaveAttribute("href", /^https:\/\/[^/]+\.(gov|nic)\.in/);
+  await page.goto("/profile");
+  await expect(page.getByText("Student", { exact: true })).toBeVisible();
+  await page.evaluate(() => { for (const key of Object.keys(localStorage)) if (key.startsWith("schemeSaathiPersonalDetails::")) localStorage.removeItem(key); });
+  await page.reload();
+  await expect(page.getByText("Student", { exact: true })).toBeVisible();
   await page.goto("/find-schemes/business-details");
+  await expect(page.locator('[name="businessType"]')).toHaveCount(0);
+  await page.getByRole("button", { name: "I want entrepreneurship support", exact: true }).click();
   await expect(page.locator('[name="businessType"]')).toHaveValue("");
   await page.locator('[name="businessType"]').selectOption("Service");
   await page.locator('[name="businessActivity"]').fill("Tailoring");

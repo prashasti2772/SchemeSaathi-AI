@@ -2,7 +2,10 @@ import { useLanguage } from "../../lib/i18n.jsx";
 import React, { useEffect, useRef, useState } from "react";
 import FormattedText from "./FormattedText";
 import { sendAssistantMessage } from "../../lib/api";
-import { getUserItem } from "../../lib/userStorage";
+import { getUserItem, getCurrentUserId } from "../../lib/userStorage";
+import { buildCitizenProfile } from "../../lib/citizenProfile";
+
+const historyKey = () => "schemeSaathiAssistantHistory::" + getCurrentUserId();
 
 const STEP_SUGGESTIONS = {
   1: ["What government schemes might I be eligible for?","Are there government schemes for students?","Which schemes are available in my state?"],
@@ -21,7 +24,7 @@ const STEP_NAMES = {
 };
 
 export default function AIHelpModal({ isOpen, onClose, currentStep = 1 }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [isSending, setIsSending] = useState(false);
@@ -34,7 +37,7 @@ export default function AIHelpModal({ isOpen, onClose, currentStep = 1 }) {
   useEffect(() => {
     if (isOpen) {
       try {
-        const saved = sessionStorage.getItem("schemeSaathiAssistantHistory");
+        const saved = sessionStorage.getItem(historyKey());
         if (saved) {
           const parsed = JSON.parse(saved);
           if (parsed.length > 0) {
@@ -58,7 +61,7 @@ export default function AIHelpModal({ isOpen, onClose, currentStep = 1 }) {
   // Sync back to sessionStorage so full page assistant sees same history
   useEffect(() => {
     if (messages.length > 0) {
-      sessionStorage.setItem("schemeSaathiAssistantHistory", JSON.stringify(messages));
+      sessionStorage.setItem(historyKey(), JSON.stringify(messages));
       scrollRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
@@ -99,7 +102,8 @@ export default function AIHelpModal({ isOpen, onClose, currentStep = 1 }) {
         .filter((m) => !m.content.startsWith("Hi! I'm the SchemeSathi AI Assistant") && !m.content.startsWith("Sorry, I couldn't reach"))
         .map((m) => ({ role: m.role, content: m.content }));
 
-      const result = await sendAssistantMessage(text, history, phoneNumber);
+      const profile = buildCitizenProfile(personal, getUserItem("schemeSaathiBusinessDetails"), getUserItem("schemeSaathiOtherDetails"));
+      const result = await sendAssistantMessage(text, history, phoneNumber, profile, language);
 
       setMessages((current) => [
         ...current,

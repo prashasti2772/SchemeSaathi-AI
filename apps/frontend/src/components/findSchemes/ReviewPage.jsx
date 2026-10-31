@@ -26,6 +26,8 @@ export default function ReviewPage() {
     "schemeSaathiOtherDetails"
   );
 
+  const wantsBusinessSupport = personal.entrepreneurshipSupport === "Yes";
+
   /* ====== EDIT PERSONAL ====== */
 
   const handleEditPersonal = () => {
@@ -174,6 +176,11 @@ export default function ReviewPage() {
                     personal.state ||
                       "Not provided",
                   ],
+                  ["Education", personal.education || "Not provided"],
+                  ["Occupation", personal.occupation || "Not provided"],
+                  ["Interests", personal.interests || "Not provided"],
+                  ["Welfare needs", personal.welfareNeeds || "Not provided"],
+                  ["Entrepreneurship support", personal.entrepreneurshipSupport || "Not provided"],
                   [
                     "District",
                     personal.district ||
@@ -186,7 +193,7 @@ export default function ReviewPage() {
 
             {/* ====== BUSINESS DETAILS ====== */}
 
-            <ReviewCard
+            {wantsBusinessSupport && <ReviewCard
               title={t("Business Details")}
               onEdit={handleEditBusiness}
             >
@@ -228,6 +235,8 @@ export default function ReviewPage() {
 
             </ReviewCard>
 
+            }
+
             {/* ====== OTHER DETAILS ====== */}
 
             <ReviewCard
@@ -242,16 +251,7 @@ export default function ReviewPage() {
                     other.annualIncome ||
                       "Not provided",
                   ],
-                  [
-                    "Registered Business",
-                    other.registeredBusiness ||
-                      "Not provided",
-                  ],
-                  [
-                    "Funding Required",
-                    other.fundingRequired ||
-                      "Not provided",
-                  ],
+                  ...(wantsBusinessSupport ? [["Registered Business", other.registeredBusiness || "Not provided"], ["Funding Required", other.fundingRequired || "Not provided"]] : []),
                   [
                     "Preferred Support",
                     other.preferredSupport ||

@@ -1,4 +1,8 @@
+from datetime import datetime
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+from src.modules.auth.models import RefreshToken
+from src.modules.auth.recovery import RecoveryChallenge
 from src.middlewares.error_handler import ConflictException, NotFoundException, UnauthorizedException
 from src.modules.users import repository
 from src.modules.users.models import User
@@ -42,7 +46,18 @@ async def update_user(db: AsyncSession, user_id: str, payload: UserUpdate) -> Us
 
 
 async def change_password(db: AsyncSession, user: User, payload: ChangePasswordRequest) -> None:
+    checked_version = user.auth_version
+    user = (await db.execute(select(User).where(User.id == user.id).with_for_update()
+                            .execution_options(populate_existing=True))).scalar_one_or_none()
+    if not user or not user.is_active or user.auth_version != checked_version:
+        raise UnauthorizedException("Your account changed. Sign in again.")
     if not verify_password(payload.current_password, user.hashed_password):
         raise UnauthorizedException("Current password is incorrect")
     user.hashed_password = hash_password(payload.new_password)
+    user.auth_version += 1
+    user.reset_token = None
+    user.reset_token_expires_at = None
+    await db.execute(update(RefreshToken).where(RefreshToken.user_id == user.id).values(revoked=True))
+    await db.execute(update(RecoveryChallenge).where(RecoveryChallenge.user_id == user.id,
+                     RecoveryChallenge.consumed_at.is_(None)).values(consumed_at=datetime.utcnow()))
     await repository.update_user(db, user)

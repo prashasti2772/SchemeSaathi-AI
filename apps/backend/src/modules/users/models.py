@@ -23,7 +23,7 @@ class User(Base, TimestampMixin):
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
-    role: Mapped[UserRole] = mapped_column(Enum(UserRole, name="user_role"), default=UserRole.SUPPORT, nullable=False)
+    role: Mapped[UserRole] = mapped_column(Enum(UserRole, name="user_role"), default=UserRole.CITIZEN, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False)
     auth_version: Mapped[int] = mapped_column(Integer, default=0, server_default="0", nullable=False)

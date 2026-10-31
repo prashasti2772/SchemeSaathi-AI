@@ -21,7 +21,7 @@ async def chat_with_assistant(request: Request, payload: AssistantChatRequest):
 
 @router.get("/search")
 async def search_schemes_semantically(q: str = Query(..., min_length=1, max_length=200), top_k: int = Query(5, ge=1, le=20), language: localization.Language = "en", db: AsyncSession = Depends(get_db)):
-    """Performs direct semantic vector search against the 653 government schemes dataset."""
+    """Search the reviewed citizen catalogue; retain official identifiers and links."""
     query, query_status = await localization.search_query(q, language)
     results = await chatbot_service.search_async(query=query, top_k=top_k)
     results = await localization.localize_records(db, results, language)

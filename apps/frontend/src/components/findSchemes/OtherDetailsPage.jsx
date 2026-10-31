@@ -42,6 +42,14 @@ const supportOptions = [
 ];
 
 const schemeTypeOptions = [
+  "Education",
+  "Healthcare",
+  "Agriculture",
+  "Pension",
+  "Housing",
+  "Employment",
+  "Women and family support",
+  "Disability support",
   "Financial Assistance",
   "Business Loan",
   "Subsidy",
@@ -61,6 +69,7 @@ export default function OtherDetailsPage() {
   const { t } = useLanguage();
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const wantsBusinessSupport = getUserItem("schemeSaathiPersonalDetails")?.entrepreneurshipSupport === "Yes";
   const editMode =
     sessionStorage.getItem("schemeSaathiEditMode");
 
@@ -97,7 +106,7 @@ export default function OtherDetailsPage() {
       sessionStorage.removeItem("schemeSaathiEditMode");
       window.location.assign("/find-schemes/review");
     } else {
-      window.location.assign("/find-schemes/business-details");
+      window.location.assign(wantsBusinessSupport ? "/find-schemes/business-details" : "/find-schemes/personal-info");
     }
   };
 
@@ -124,17 +133,12 @@ export default function OtherDetailsPage() {
                 onSubmit={handleContinue}
               >
                 <fieldset disabled={saving} className="contents"><div className="grid gap-x-5 gap-y-5 sm:grid-cols-2">
-                  <FormSelect
-                    label={t("Annual Income (optional)")}
-                    name="annualIncome"
-                    optional
-                    placeholder={t("Select Income Range")}
-                    value={form.annualIncome}
-                    onChange={handleChange}
-                    options={incomeOptions}
-                  />
+                  <label className="block"><span className="mb-2 block text-[13px] font-medium text-slate-700">{t("Annual family income in rupees (optional)")}</span>
+                    <input name="annualIncome" inputMode="decimal" value={form.annualIncome} onChange={handleChange} maxLength={100} placeholder={t("For example: 120000")} className="h-11 w-full rounded-lg border border-slate-300 px-3.5 text-[13px]" />
+                    <span className="mt-1 block text-xs text-slate-500">{t("Leave blank if unknown. An income range may require further information.")}</span>
+                  </label>
 
-                  <FormSelect
+                  {wantsBusinessSupport && <FormSelect
                     label={t("Registered Business?")}
                     name="registeredBusiness"
                     optional
@@ -142,9 +146,9 @@ export default function OtherDetailsPage() {
                     value={form.registeredBusiness}
                     onChange={handleChange}
                     options={["Yes", "No"]}
-                  />
+                  />}
 
-                  <FormSelect
+                  {wantsBusinessSupport && <FormSelect
                     label={t("Funding Required")}
                     name="fundingRequired"
                     optional
@@ -152,7 +156,7 @@ export default function OtherDetailsPage() {
                     value={form.fundingRequired}
                     onChange={handleChange}
                     options={fundingOptions}
-                  />
+                  />}
 
                   <FormSelect
                     label={t("Preferred Support")}

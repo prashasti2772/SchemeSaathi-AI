@@ -4,6 +4,8 @@ import ProgressSteps from "./ProgressSteps";
 import { MainLayout } from "../layout";
 import { fetchMatchingSchemes } from "../../lib/api";
 import { getUserItem } from "../../lib/userStorage";
+import { buildCitizenProfile, officialSchemeUrl } from "../../lib/citizenProfile";
+import SaveSchemeButton from "../schemes/SaveSchemeButton";
 
 /* ====== LOCAL STORAGE HELPER (scoped to the signed-in account) ====== */
 
@@ -12,32 +14,6 @@ function getLocalStorageData(key) {
 }
 
 /* ====== BUILD THE API PAYLOAD FROM THE WIZARD'S SAVED STEPS ====== */
-
-function buildProfilePayload(personal, business, other) {
-  return {
-    phone_number: personal?.phoneNumber || "",
-    full_name: personal?.fullName || "",
-    age: personal?.age ? Number(personal.age) : null,
-    gender: personal?.gender || null,
-    state: personal?.state,
-    district: personal?.district,
-    disability: personal?.disability === "Yes",
-    rural: personal?.residence === "Rural",
-    location: [personal?.district, personal?.state].filter(Boolean).join(", "),
-    social_category: personal?.category || null,
-    occupation: business?.businessActivity || null,
-    business_type: business?.businessType || null,
-    business_stage: business?.businessStage || null,
-    years_in_business: business?.yearsInBusiness || null,
-    annual_turnover: business?.annualTurnover || null,
-    number_of_employees: business?.numberOfEmployees || null,
-    annual_income: other?.annualIncome || null,
-    registered_business: other?.registeredBusiness || null,
-    funding_required: other?.fundingRequired || null,
-    preferred_support: other?.preferredSupport || null,
-    interested_scheme_type: other?.interestedSchemeType || null,
-  };
-}
 
 /* ====== COMPONENT ====== */
 
@@ -72,7 +48,7 @@ export default function MatchingSchemesPage() {
     setStatus("loading");
 
     try {
-      const payload = buildProfilePayload(personalDetails, businessDetails, otherDetails);
+      const payload = buildCitizenProfile(personalDetails, businessDetails, otherDetails);
       const result = await fetchMatchingSchemes(payload);
       if (result.error) throw new Error(result.error);
       setMatches(result.matches || []);
@@ -107,8 +83,9 @@ export default function MatchingSchemesPage() {
   /* ======= VIEW SCHEME ========= */
 
   const handleViewScheme = (scheme) => {
-    if (scheme.official_source_url) {
-      window.open(scheme.official_source_url, "_blank", "noopener,noreferrer");
+    const officialUrl = officialSchemeUrl(scheme.application_url || scheme.official_source_url);
+    if (officialUrl) {
+      window.open(officialUrl, "_blank", "noopener,noreferrer");
     } else {
       alert("An official source link isn't available for this scheme yet.");
     }
@@ -181,8 +158,8 @@ export default function MatchingSchemesPage() {
                   <div className="mt-3 flex flex-wrap gap-2">
                     {personalDetails?.state && <ProfileTag>{personalDetails.state}</ProfileTag>}
                     {personalDetails?.category && <ProfileTag>{personalDetails.category}</ProfileTag>}
-                    {businessDetails?.businessType && <ProfileTag>{businessDetails.businessType}</ProfileTag>}
-                    {businessDetails?.businessStage && <ProfileTag>{businessDetails.businessStage}</ProfileTag>}
+                    {personalDetails?.entrepreneurshipSupport === "Yes" && businessDetails?.businessType && <ProfileTag>{businessDetails.businessType}</ProfileTag>}
+                    {personalDetails?.entrepreneurshipSupport === "Yes" && businessDetails?.businessStage && <ProfileTag>{businessDetails.businessStage}</ProfileTag>}
                     {otherDetails?.preferredSupport && <ProfileTag>{otherDetails.preferredSupport}</ProfileTag>}
                     {otherDetails?.interestedSchemeType && <ProfileTag>{otherDetails.interestedSchemeType}</ProfileTag>}
                   </div>
@@ -198,12 +175,12 @@ export default function MatchingSchemesPage() {
                   >
                     {t("Personal")}</button>
 
-                  <button
+                  {personalDetails?.entrepreneurshipSupport === "Yes" && <button
                     type="button"
                     onClick={() => handleEdit("business")}
                     className="rounded-lg border border-slate-200 px-4 py-2 text-[12px] font-medium text-[#0d2b55] transition hover:bg-slate-50"
                   >
-                    {t("Business")}</button>
+                    {t("Business")}</button>}
 
                   <button
                     type="button"
@@ -295,7 +272,7 @@ function SchemeCard({ scheme, onView }) {
 
         <div className="flex flex-col items-end gap-1.5">
           <span className="rounded-full bg-[#fff5c9] px-2.5 py-1 text-[10px] font-semibold text-[#8c6b00]">
-            {Math.round(scheme.score * 100)}{t("% recorded checks")}</span>
+            {t(scheme.status === "UNKNOWN" ? "More information needed" : scheme.status === "ELIGIBLE" ? "Recorded criteria met" : "Preliminary screening")}</span>
           {scheme.confidence && (
             <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-medium text-slate-600">
               {t("Preliminary screening")}</span>
@@ -315,6 +292,8 @@ function SchemeCard({ scheme, onView }) {
       )}
 
       <p className="mt-3 text-xs text-amber-800">{t("Preliminary screening only. Verify all conditions and current availability on the official portal.")}</p>
+      {scheme.unknown_conditions?.length > 0 && <div className="mt-3 rounded-lg bg-amber-50 p-3 text-xs text-amber-900"><p className="font-semibold">{t("Information needed")}</p><ul className="mt-1 list-inside list-disc">{scheme.unknown_conditions.map(condition => <li key={condition}>{condition}</li>)}</ul></div>}
+      {scheme.failed_conditions?.length > 0 && <p className="mt-3 text-xs text-red-700">{scheme.failed_conditions.join("; ")}</p>}
       {/* DESCRIPTION */}
 
       <p className="mt-4 text-[12px] leading-5 text-slate-500">{scheme.description}</p>
@@ -351,6 +330,8 @@ function SchemeCard({ scheme, onView }) {
         <p className="text-[11px] font-semibold text-[#172b49]">{t("How to apply")}</p>
         <p className="mt-1 text-[11px] leading-5 text-slate-500">{scheme.application_route}</p>
       </div>
+
+      <SaveSchemeButton scheme={scheme} />
 
       {/* BUTTON */}
 

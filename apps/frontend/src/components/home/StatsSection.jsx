@@ -1,19 +1,31 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useLanguage } from "../../lib/i18n.jsx";
+import { api } from "../../lib/api";
 
 const stats = [
-  { value: "650+", labelKey: "homepage_stats_schemes" },
-  { value: "12", labelKey: "homepage_stats_categories" },
   { value: "36", labelKey: "homepage_stats_states" },
   { value: "Explainable", labelKey: "homepage_stats_screening" },
 ];
 
 export default function StatsSection() {
   const { t } = useLanguage();
+  const [counts, setCounts] = useState(null);
+  useEffect(() => {
+    const controller = new AbortController();
+    api.get("/eligibility/categories", { signal: controller.signal }).then(({ data }) => {
+      if (!controller.signal.aborted) setCounts({ schemes: data.total, categories: data.categories.length });
+    }).catch(() => { /* Unknown counts stay blank when the catalogue is unavailable. */ });
+    return () => controller.abort();
+  }, []);
+  const catalogueStats = [
+    { value: counts?.schemes ?? "—", labelKey: "homepage_stats_schemes" },
+    { value: counts?.categories ?? "—", labelKey: "homepage_stats_categories" },
+    ...stats,
+  ];
   return (
     <section className="mx-auto max-w-7xl px-5 pt-8 sm:px-8 lg:px-10">
       <div className="grid overflow-hidden rounded-[24px] border border-[#d7dfe9] bg-[#f9fafc] shadow-[0_18px_38px_rgba(8,29,61,0.08)] sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
+        {catalogueStats.map((stat) => (
           <div
             key={stat.labelKey}
             className="group flex min-h-28 flex-col items-center justify-center border-b border-slate-200/90 px-5 py-5 text-center transition duration-200 last:border-b-0 hover:bg-[#fff9ea] sm:border-b-0 sm:border-r sm:last:border-r-0"

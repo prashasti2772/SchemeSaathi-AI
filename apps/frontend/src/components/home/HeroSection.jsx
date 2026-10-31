@@ -16,20 +16,21 @@ export default function HeroSection() {
       <div className="mx-auto grid min-h-98.5 max-w-7xl items-center gap-10 px-5 py-12 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:px-10 lg:py-10">
         <div className="relative z-10 max-w-152.5">
           <p className="mb-5 text-[12px] font-medium uppercase tracking-[0.16em] text-[#f4d780]">
-            {t("homepage_badge")}
+            {t("entrepreneur_badge")}
           </p>
 
           <h1 className="text-[42px] font-extrabold leading-[1.08] tracking-tight text-white sm:text-[48px]">
-            {t("homepage_title_line1")}
+            {t("entrepreneur_title_line1")}
             <br />
-            {t("homepage_title_line2")}
+            {t("entrepreneur_title_line2")}
             <br />
-            <span className="text-[#f4d780]">{t("homepage_highlight")}</span>
+            <span className="text-[#f4d780]">{t("entrepreneur_highlight")}</span>
           </h1>
 
           <p className="mt-4 max-w-141.25 text-[16px] font-semibold leading-6 text-slate-200">
-            {t("homepage_subtitle")}
+            {t("entrepreneur_subtitle")}
           </p>
+          <p className="mt-3 max-w-xl text-sm leading-6 text-slate-300">{t("entrepreneur_screening")}</p>
 
           <div className="mt-6 flex flex-wrap items-center gap-5">
             <a

@@ -1,5 +1,6 @@
 ﻿import categoryStrings from "./locales/categories.js";
 import voiceStrings from "./locales/voice.js";
+import homeStrings from "./locales/home.js";
 import SUPPORT_STRINGS from "./locales/support.js";
 import additionalText from "./locales/additional.tsv?raw";
 import React, { createContext, useContext, useEffect, useState } from "react";
@@ -251,7 +252,7 @@ for (const row of additionalText.replace(/^\uFEFF/, "").trim().split(/\r?\n/)) {
   const values = row.split("|");
   if (values.length === 8) STRINGS[values[0]] = Object.fromEntries(LANGUAGES.map((language, i) => [language.code, values[i]]));
 }
-Object.assign(STRINGS, categoryStrings, voiceStrings, SUPPORT_STRINGS);
+Object.assign(STRINGS, categoryStrings, voiceStrings, SUPPORT_STRINGS, homeStrings);
 
 const sourceStrings = new Map(Object.entries(STRINGS).flatMap(([key, values]) => [[key.toLowerCase(), values], [values.en.toLowerCase(), values]]));
 
