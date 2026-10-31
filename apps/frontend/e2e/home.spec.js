@@ -1,15 +1,15 @@
 import { test, expect } from "@playwright/test";
 import { officialSchemeUrl } from "../src/lib/citizenProfile.js";
 
-test("entrepreneur homepage shows verified opportunities, guidance and responsive navigation", async ({ page }) => {
+test("scheme discovery homepage shows verified opportunities, guidance and responsive navigation", async ({ page }) => {
   expect(officialSchemeUrl("https://scsthub.in/")).toBe("https://scsthub.in/");
   expect(officialSchemeUrl("https://www.scsthub.in/")).toBe("https://www.scsthub.in/");
   for (const hostile of ["https://scsthub.in.attacker.example/", "https://evilscsthub.in/", "https://scsthub.in@attacker.example/", "https://user:password@scsthub.in/", "https://user:password@www.msme.gov.in/", "http://scsthub.in/", "javascript:alert(1)"]) {
     expect(officialSchemeUrl(hostile)).toBeNull();
   }
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Build Your Future");
-  for (const name of ["Who We Support", "How It Works", "Categories of Support", "Featured Verified Schemes", "Clear Guidance for Your Next Step", "Frequently Asked Questions", "Find Support for Your Next Step"]) {
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Explore Schemes");
+  for (const name of ["Explore by Your Needs", "How It Works", "Categories of Support", "Featured Verified Schemes", "Clear Guidance for Your Next Step", "Frequently Asked Questions", "Find Support for Your Next Step"]) {
     await expect(page.getByRole("heading", { name, exact: true })).toBeVisible();
   }
   const featured = page.getByRole("region", { name: "Featured Verified Schemes" });
