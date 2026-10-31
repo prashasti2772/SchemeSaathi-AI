@@ -2,12 +2,11 @@ import React from "react";
 import { useLanguage } from "../../lib/i18n.jsx";
 
 const audiences = [
-  "audience_women",
-  "audience_scst",
-  "audience_obc",
-  "audience_minority",
-  "audience_rural",
-  "audience_first_time",
+  "home_audience_students", "home_audience_jobseekers",
+  "home_audience_farmers", "home_audience_artisans",
+  "home_audience_entrepreneurs", "audience_women",
+  "home_audience_families", "home_audience_seniors",
+  "home_audience_disability",
 ];
 
 export default function AudienceSection() {
@@ -20,7 +19,7 @@ export default function AudienceSection() {
             {t("entrepreneur_audience_title")}
           </h2>
           <span className="inline-flex w-fit items-center rounded-full border border-[#f4d780] bg-[#fff7dc] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#6e5300]">
-            Trusted access
+            {t("home_independent_badge")}
           </span>
         </div>
 

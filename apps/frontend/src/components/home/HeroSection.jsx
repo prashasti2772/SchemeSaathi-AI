@@ -30,7 +30,7 @@ export default function HeroSection() {
           <p className="mt-4 max-w-141.25 text-[16px] font-semibold leading-6 text-slate-200">
             {t("entrepreneur_subtitle")}
           </p>
-          <p className="mt-3 max-w-xl text-sm leading-6 text-slate-300">{t("entrepreneur_screening")}</p>
+          <p className="mt-4 max-w-xl rounded-lg border border-[#f4d780]/50 bg-white/10 px-3 py-2 text-sm leading-6 text-slate-100">{t("entrepreneur_screening")}</p>
 
           <div className="mt-6 flex flex-wrap items-center gap-5">
             <a
