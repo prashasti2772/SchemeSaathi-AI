@@ -1,4 +1,4 @@
-﻿FROM node:24-bookworm-slim AS frontend
+FROM node:24-bookworm-slim AS frontend
 WORKDIR /build
 COPY apps/frontend/package*.json ./
 RUN npm ci
@@ -11,10 +11,11 @@ COPY apps/backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY apps/backend/src ./src
 COPY --from=frontend /build/dist ./static
-RUN useradd --create-home appuser && mkdir /data && chown appuser:appuser /data
+RUN useradd --create-home appuser && mkdir -p /data && chown -R appuser:appuser /app /data
 USER appuser
 ENV STATIC_DIR=/app/static
 ENV ENV=production
+ENV DATABASE_URL=sqlite+aiosqlite:////data/schemesathi.db
 EXPOSE 8000
 CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
