@@ -1,0 +1,49 @@
+import React, { useEffect, useState } from "react";
+import { useLanguage } from "../../lib/i18n.jsx";
+import { api } from "../../lib/api";
+
+const stats = [
+  { value: "36", labelKey: "homepage_stats_states" },
+  { valueKey: "homepage_stats_guidance", labelKey: "homepage_stats_screening" },
+];
+
+export default function StatsSection() {
+  const { t } = useLanguage();
+  const [counts, setCounts] = useState(null);
+  useEffect(() => {
+    const controller = new AbortController();
+    api.get("/eligibility/categories", { signal: controller.signal }).then(({ data }) => {
+      if (!controller.signal.aborted) setCounts({ schemes: data.total, categories: data.categories.length });
+    }).catch(() => { /* Unknown counts stay blank when the catalogue is unavailable. */ });
+    return () => controller.abort();
+  }, []);
+  const catalogueStats = [
+    { value: "653", labelKey: "homepage_stats_dataset", footnoteKey: "homepage_stats_reviewed", footnoteCount: counts?.schemes ?? "—" },
+    { value: counts?.categories ?? "—", labelKey: "homepage_stats_categories" },
+    ...stats,
+  ];
+  return (
+    <section className="mx-auto max-w-7xl px-5 pt-8 sm:px-8 lg:px-10">
+      <div className="grid overflow-hidden rounded-[24px] border border-[#d7dfe9] bg-[#f9fafc] shadow-[0_18px_38px_rgba(8,29,61,0.08)] sm:grid-cols-2 lg:grid-cols-4">
+        {catalogueStats.map((stat) => (
+          <div
+            key={stat.labelKey}
+            className="group flex min-h-28 flex-col items-center justify-center border-b border-slate-200/90 px-5 py-5 text-center transition duration-200 last:border-b-0 hover:bg-[#fff9ea] sm:border-b-0 sm:border-r sm:last:border-r-0"
+          >
+            <div className="text-[28px] font-extrabold tracking-[-0.03em] text-[#081d3d]">
+              {stat.valueKey ? t(stat.valueKey) : stat.value}
+            </div>
+            <div className="mt-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-[#5d6d82] group-hover:text-[#0d2b55]">
+              {t(stat.labelKey)}
+            </div>
+            {stat.footnoteKey && (
+              <div className="mt-1 text-center text-xs text-slate-500">
+                {stat.footnoteCount} {t(stat.footnoteKey)}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}

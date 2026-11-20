@@ -1,0 +1,301 @@
+﻿id,text,language,intent
+1,Maine jo application diya tha uska kya hua,hi,APPLICATION_STATUS
+2,How much financial assistance will I get,en,BENEFIT_INFORMATION
+3,Mujhe schemes ki list batao,hi,SCHEME_INFORMATION
+4,Main handicraft ka kaam shuru karna chahti hoon,hi,START_BUSINESS
+5,Mujhe officer se problem hai,hi,COMPLAINT
+6,Meri problem ka solution nahi hua,hi,COMPLAINT
+7,aadhaar chahiye kya,hinglish,DOCUMENT_HELP
+8,Skill development scheme batao,hi,GET_TRAINING
+9,Main dairy ka kaam shuru karna chahta hoon,hi,START_BUSINESS
+10,Is scheme ke liye kaunse documents lagenge,hi,DOCUMENT_HELP
+11,Meri application mein issue aa raha hai,hi,COMPLAINT
+12,Main business loan lena chahta hoon,hi,GET_LOAN
+13,Why is my application pending,en,APPLICATION_STATUS
+14,business expand krna h,hinglish,EXPAND_BUSINESS
+15,Mere paas income certificate nahi hai,hi,DOCUMENT_HELP
+16,mera form kaha tak pahucha,hinglish,APPLICATION_STATUS
+17,Mujhe guidance chahiye,hi,OTHER
+18,Application verification complete hua kya,hi,APPLICATION_STATUS
+19,main iske liye apply kar sakta hu kya,hinglish,CHECK_ELIGIBILITY
+20,Tell me about government schemes,en,SCHEME_INFORMATION
+21,Business ke liye subsidy wali scheme batao,hi,GET_SUBSIDY
+22,Business management training chahiye,hi,GET_TRAINING
+23,shikayat register karni hai,hinglish,COMPLAINT
+24,Is scheme mein kitna benefit milega,hi,BENEFIT_INFORMATION
+25,Mujhe tailoring course karna hai,hi,GET_TRAINING
+26,I want to increase my shop capacity,en,EXPAND_BUSINESS
+27,Kya koi meri madad karega,hi,OTHER
+28,help chahiye,hinglish,OTHER
+29,Ye scheme kisliye hai,hi,SCHEME_INFORMATION
+30,Meri problem solve nahi hui,hi,COMPLAINT
+31,I want to start working from home,en,START_BUSINESS
+32,Mujhe government benefits ki jankari chahiye,hi,SCHEME_INFORMATION
+33,Mera existing business grow karna hai,hi,EXPAND_BUSINESS
+34,mujhe naya business krna hai,hinglish,START_BUSINESS
+35,What is the status of my application,en,APPLICATION_STATUS
+36,Where can I get business training,en,GET_TRAINING
+37,Main apni dukaan kholna chahti hoon,hi,START_BUSINESS
+38,I want a government subsidy,en,GET_SUBSIDY
+39,meri shop ko bada karna hai,hinglish,EXPAND_BUSINESS
+40,silai machine ke liye loan milega kya,hinglish,GET_LOAN
+41,Is there a subsidy for sewing machines,en,GET_SUBSIDY
+42,Kya mere business par subsidy milegi,hi,GET_SUBSIDY
+43,Mujhe assistance chahiye,hi,OTHER
+44,Kya mahilaon ke liye business loan hai,hi,GET_LOAN
+45,Mujhe silai machine par subsidy chahiye,hi,GET_SUBSIDY
+46,Mujhe rojgar ke liye paisa udhar chahiye,hi,GET_LOAN
+47,Mera document accept nahi kiya gaya,hi,COMPLAINT
+48,Meri payment nahi aayi,hi,COMPLAINT
+49,Training free mein milegi kya,hi,GET_TRAINING
+50,Mujhe service ke khilaf shikayat karni hai,hi,COMPLAINT
+51,Documents ki list batao,hi,DOCUMENT_HELP
+52,Which scheme am I eligible for,en,CHECK_ELIGIBILITY
+53,Shikayat kaise register karun,hi,COMPLAINT
+54,Mujhe sarkari subsidy chahiye,hi,GET_SUBSIDY
+55,meri help karo,hinglish,OTHER
+56,Mujhe kuch poochna hai,hi,OTHER
+57,government subsidy kaise milegi,hinglish,GET_SUBSIDY
+58,I need financial support for my business,en,GET_SUBSIDY
+59,Do I need an income certificate,en,DOCUMENT_HELP
+60,Mujhe apna business badhana hai,hi,EXPAND_BUSINESS
+61,Meri complaint register karni hai,hi,COMPLAINT
+62,Mujhe dairy business ke liye loan chahiye,hi,GET_LOAN
+63,Mujhe ghar par achar banane ka business start karna hai,hi,START_BUSINESS
+64,Kaunse papers jama karne hain,hi,DOCUMENT_HELP
+65,scheme ka benefit kya hai,hinglish,SCHEME_INFORMATION
+66,Mujhe apni workshop badi karni hai,hi,EXPAND_BUSINESS
+67,ghar se stitching ka kaam start karna h,hinglish,START_BUSINESS
+68,Loan mein kitni madad milegi,hi,BENEFIT_INFORMATION
+69,Mujhe loan scheme ki jankari chahiye,hi,GET_LOAN
+70,Document verification kaise hoga,hi,DOCUMENT_HELP
+71,Mujhe computer training chahiye,hi,GET_TRAINING
+72,Kya main is yojana ka labh le sakti hoon,hi,CHECK_ELIGIBILITY
+73,Mera application bina wajah reject ho gaya,hi,COMPLAINT
+74,Is Aadhaar required,en,DOCUMENT_HELP
+75,Kya mujhe is yojana ka fayda milega,hi,CHECK_ELIGIBILITY
+76,Mujhe nahi pata kya karna hai,hi,OTHER
+77,Mujhe machine kharidne par subsidy milegi kya,hi,GET_SUBSIDY
+78,Mujhe apne kaam ke liye arthik sahayata chahiye,hi,GET_SUBSIDY
+79,I need a small business loan,en,GET_LOAN
+80,Mera sawaal alag hai,hi,OTHER
+81,Yojana ke baare mein batao,hi,SCHEME_INFORMATION
+82,Is yojana ke baare mein bataiye,hi,SCHEME_INFORMATION
+83,I want to start a dairy business,en,START_BUSINESS
+84,koi skill course hai kya,hinglish,GET_TRAINING
+85,Mujhe government subsidy leni hai,hi,GET_SUBSIDY
+86,Kahan se skill training milegi,hi,GET_TRAINING
+87,I want vocational training,en,GET_TRAINING
+88,government loan kaise milega,hinglish,GET_LOAN
+89,I want to start a small business,en,START_BUSINESS
+90,Mujhe silai center kholna hai,hi,START_BUSINESS
+91,How can I verify my documents,en,DOCUMENT_HELP
+92,Silai ki training kahan milegi,hi,GET_TRAINING
+93,I need a loan to buy a sewing machine,en,GET_LOAN
+94,application track karna hai,hinglish,APPLICATION_STATUS
+95,Business ko aur customers tak pahunchana hai,hi,EXPAND_BUSINESS
+96,I want to start a tailoring business,en,START_BUSINESS
+97,Kya Aadhaar card chahiye,hi,DOCUMENT_HELP
+98,ye scheme mujhe milegi kya,hinglish,CHECK_ELIGIBILITY
+99,financial help kitni milegi,hinglish,BENEFIT_INFORMATION
+100,How can I get a government business loan,en,GET_LOAN
+101,Mujhe scheme ka benefit nahi mila,hi,COMPLAINT
+102,Is there a loan scheme for women entrepreneurs,en,GET_LOAN
+103,Main apni dukaan mein aur samaan rakhna chahta hoon,hi,EXPAND_BUSINESS
+104,Kya bank account proof chahiye,hi,DOCUMENT_HELP
+105,How much benefit does this scheme provide,en,BENEFIT_INFORMATION
+106,Mujhe apni application ki complaint karni hai,hi,COMPLAINT
+107,Am I eligible for this scheme,en,CHECK_ELIGIBILITY
+108,I want to open a small shop,en,START_BUSINESS
+109,Form bharne ke liye kya lagega,hi,DOCUMENT_HELP
+110,business ke liye subsidy milegi kya,hinglish,GET_SUBSIDY
+111,Meri income ke hisab se main eligible hoon kya,hi,CHECK_ELIGIBILITY
+112,Yojana mein kitna paisa milta hai,hi,BENEFIT_INFORMATION
+113,Business subsidy ke baare mein bataiye,hi,GET_SUBSIDY
+114,application me problem hai,hinglish,COMPLAINT
+115,complaint karni hai,hinglish,COMPLAINT
+116,I want tailoring training,en,GET_TRAINING
+117,meri eligibility check karo,hinglish,CHECK_ELIGIBILITY
+118,I do not know what to do,en,OTHER
+119,income certificate zaroori h kya,hinglish,DOCUMENT_HELP
+120,Mera form submit hua hai kya,hi,APPLICATION_STATUS
+121,Business ke liye sarkari loan kaise milega,hi,GET_LOAN
+122,ye scheme kis liye hai,hinglish,SCHEME_INFORMATION
+123,Caste certificate dena padega kya,hi,DOCUMENT_HELP
+124,Tell me about this scheme,en,SCHEME_INFORMATION
+125,Mera naam beneficiary list mein aa sakta hai kya,hi,CHECK_ELIGIBILITY
+126,Sarkar kitna paisa degi,hi,BENEFIT_INFORMATION
+127,Mujhe business ke liye extra equipment chahiye,hi,EXPAND_BUSINESS
+128,Kya main is scheme ke liye eligible hoon,hi,CHECK_ELIGIBILITY
+129,documents kaunse lagenge,hinglish,DOCUMENT_HELP
+130,Mujhe sahayata chahiye,hi,OTHER
+131,Mujhe kaun si scheme mil sakti hai,hi,CHECK_ELIGIBILITY
+132,Mujhe stitching sikhni hai,hi,GET_TRAINING
+133,What is the purpose of this scheme,en,SCHEME_INFORMATION
+134,Is there free government training,en,GET_TRAINING
+135,Aap meri madad kar sakte ho,hi,OTHER
+136,government kitna paisa degi,hinglish,BENEFIT_INFORMATION
+137,Government ki nayi schemes kaun si hain,hi,SCHEME_INFORMATION
+138,Mujhe kaunse documents dene honge,hi,DOCUMENT_HELP
+139,Income certificate zaroori hai kya,hi,DOCUMENT_HELP
+140,Mujhe ghar se silai ka kaam shuru karna hai,hi,START_BUSINESS
+141,I want skill training,en,GET_TRAINING
+142,Do I qualify for this benefit,en,CHECK_ELIGIBILITY
+143,Application ke liye kya documents chahiye,hi,DOCUMENT_HELP
+144,mujhe training chahiye,hinglish,GET_TRAINING
+145,Meri scheme application ka update batao,hi,APPLICATION_STATUS
+146,Mujhe is scheme se kya milega,hi,BENEFIT_INFORMATION
+147,Main is scheme ke liye eligible hoon kya,hi,CHECK_ELIGIBILITY
+148,kam interest wala business loan chahiye,hinglish,GET_LOAN
+149,Mera silai ka kaam badhana hai,hi,EXPAND_BUSINESS
+150,Mahilaon ke liye subsidy scheme hai kya,hi,GET_SUBSIDY
+151,What benefit will I receive,en,BENEFIT_INFORMATION
+152,Kya mahilaon ke liye training scheme hai,hi,GET_TRAINING
+153,mera form pending kyu hai,hinglish,APPLICATION_STATUS
+154,Scheme ka benefit kya hai,hi,SCHEME_INFORMATION
+155,Mujhe government se related kuch puchna hai,hi,OTHER
+156,mera benefit nahi mila,hinglish,COMPLAINT
+157,application approve hua kya,hinglish,APPLICATION_STATUS
+158,I need a loan for my business,en,GET_LOAN
+159,form ke liye kya papers lagenge,hinglish,DOCUMENT_HELP
+160,Sarkar se subsidy kaise milegi,hi,GET_SUBSIDY
+161,Mera form kis stage par hai,hi,APPLICATION_STATUS
+162,Kaunsi government schemes chal rahi hain,hi,SCHEME_INFORMATION
+163,Mujhe chhota vyavsay shuru karna hai,hi,START_BUSINESS
+164,Mujhe production badhana hai,hi,EXPAND_BUSINESS
+165,Mujhe business ke liye nayi machine chahiye,hi,EXPAND_BUSINESS
+166,Please check my eligibility,en,CHECK_ELIGIBILITY
+167,Mujhe kuch information chahiye,hi,OTHER
+168,Is yojana mein kya labh milta hai,hi,BENEFIT_INFORMATION
+169,scheme ke bare me batao,hinglish,SCHEME_INFORMATION
+170,Mujhe apna kaam shuru karne ke liye loan chahiye,hi,GET_LOAN
+171,subsidy chahiye,hinglish,GET_SUBSIDY
+172,Mera application reject hua kya,hi,APPLICATION_STATUS
+173,payment nahi aayi,hinglish,COMPLAINT
+174,I need equipment to grow my business,en,EXPAND_BUSINESS
+175,Subsidy pane ka process kya hai,hi,GET_SUBSIDY
+176,How can I register a complaint,en,COMPLAINT
+177,Is scheme ki eligibility batao,hi,CHECK_ELIGIBILITY
+178,Meri dukaan ko expand karna hai,hi,EXPAND_BUSINESS
+179,Can someone help me,en,OTHER
+180,Can I apply for this government scheme,en,CHECK_ELIGIBILITY
+181,Mera application kaha tak pahucha,hi,APPLICATION_STATUS
+182,Mujhe apna business shuru karna hai,hi,START_BUSINESS
+183,How much money will the government provide,en,BENEFIT_INFORMATION
+184,subsidy kitni milegi,hinglish,BENEFIT_INFORMATION
+185,Mujhe business ki training chahiye,hi,GET_TRAINING
+186,Benefit ek baar milega ya baar baar,hi,BENEFIT_INFORMATION
+187,Mujhe kitni subsidy milegi,hi,BENEFIT_INFORMATION
+188,government schemes ki list batao,hinglish,SCHEME_INFORMATION
+189,silai machine subsidy hai kya,hinglish,GET_SUBSIDY
+190,Meri tailoring shop ko bada karna hai,hi,EXPAND_BUSINESS
+191,Mujhe kam byaj wala loan chahiye,hi,GET_LOAN
+192,Mujhe government schemes ke baare mein jankari chahiye,hi,SCHEME_INFORMATION
+193,Mera paisa abhi tak nahi aaya,hi,COMPLAINT
+194,Mera form approve hua kya,hi,APPLICATION_STATUS
+195,My application was rejected unfairly,en,COMPLAINT
+196,Main ghar se kapde banane ka kaam karna chahti hoon,hi,START_BUSINESS
+197,mujhe samajh nahi aa raha,hinglish,OTHER
+198,How much subsidy is available,en,BENEFIT_INFORMATION
+199,Main apne business ka vistar karna chahta hoon,hi,EXPAND_BUSINESS
+200,When will my application be processed,en,APPLICATION_STATUS
+201,Mujhe naya chhota business kholna hai,hi,START_BUSINESS
+202,free skill training milegi kya,hinglish,GET_TRAINING
+203,Mujhe business expand karne ke liye madad chahiye,hi,EXPAND_BUSINESS
+204,Application pending kyu hai,hi,APPLICATION_STATUS
+205,Is scheme ka fayda kya hai,hi,SCHEME_INFORMATION
+206,Mujhe application tracking mein madad chahiye,hi,APPLICATION_STATUS
+207,Please meri help karo,hi,OTHER
+208,Kya main is benefit ke liye qualify karta hoon,hi,CHECK_ELIGIBILITY
+209,Loan ke liye kaun si yojana hai,hi,GET_LOAN
+210,Eligibility kya hai,hi,CHECK_ELIGIBILITY
+211,Meri eligibility check karo,hi,CHECK_ELIGIBILITY
+212,I need help,en,OTHER
+213,Mujhe apna startup shuru karna hai,hi,START_BUSINESS
+214,business loan chahiye,hinglish,GET_LOAN
+215,Scheme ka total fayda kitna hai,hi,BENEFIT_INFORMATION
+216,Business funding ke liye loan chahiye,hi,GET_LOAN
+217,I need support to expand my business,en,EXPAND_BUSINESS
+218,Meri problem alag hai,hi,OTHER
+219,Mujhe is scheme ka purpose samjhao,hi,SCHEME_INFORMATION
+220,I want to expand my business,en,EXPAND_BUSINESS
+221,business training kaha milegi,hinglish,GET_TRAINING
+222,Mujhe help chahiye,hi,OTHER
+223,Can I track my application,en,APPLICATION_STATUS
+224,Mere liye available schemes kaun si hain,hi,SCHEME_INFORMATION
+225,apni shop kholni hai,hinglish,START_BUSINESS
+226,Financial assistance kitni hai,hi,BENEFIT_INFORMATION
+227,Mujhe vocational training leni hai,hi,GET_TRAINING
+228,Subsidy ke liye kaun si yojana hai,hi,GET_SUBSIDY
+229,Application ka status check karna hai,hi,APPLICATION_STATUS
+230,Mera benefit kab milega,hi,APPLICATION_STATUS
+231,Main apni dairy unit badhana chahta hoon,hi,EXPAND_BUSINESS
+232,I want to file a complaint,en,COMPLAINT
+233,I have a question,en,OTHER
+234,Kya ismein monthly paisa milta hai,hi,BENEFIT_INFORMATION
+235,document list batao,hinglish,DOCUMENT_HELP
+236,Mujhe poultry business start karna hai,hi,START_BUSINESS
+237,existing business grow karna hai,hinglish,EXPAND_BUSINESS
+238,How can I apply for a subsidy,en,GET_SUBSIDY
+239,Benefit cash mein milega kya,hi,BENEFIT_INFORMATION
+240,Meri application mein galti hai,hi,COMPLAINT
+241,is scheme me kya milega,hinglish,BENEFIT_INFORMATION
+242,Mere application ka status kya hai,hi,APPLICATION_STATUS
+243,Sarkari scheme kaise kaam karti hai,hi,SCHEME_INFORMATION
+244,I want to grow my existing business,en,EXPAND_BUSINESS
+245,Has my application been approved,en,APPLICATION_STATUS
+246,main eligible hu kya,hinglish,CHECK_ELIGIBILITY
+247,What documents do I need,en,DOCUMENT_HELP
+248,application ka status batao,hinglish,APPLICATION_STATUS
+249,Mujhe kitni financial madad milegi,hi,BENEFIT_INFORMATION
+250,Main tailoring ka business shuru karna chahta hoon,hi,START_BUSINESS
+251,Dairy farming ki training chahiye,hi,GET_TRAINING
+252,Mujhe silai machine ke liye loan chahiye,hi,GET_LOAN
+253,Kya mahila hone par mujhe ye scheme milegi,hi,CHECK_ELIGIBILITY
+254,Main apna kaam start karna chahti hoon,hi,START_BUSINESS
+255,Kya main government scheme ke liye apply kar sakta hoon,hi,CHECK_ELIGIBILITY
+256,Kya sarkar free training deti hai,hi,GET_TRAINING
+257,apna kaam aur badhana hai,hinglish,EXPAND_BUSINESS
+258,Kya dairy business ke liye subsidy hai,hi,GET_SUBSIDY
+259,Mera application kab process hoga,hi,APPLICATION_STATUS
+260,Main apna rojgar badhana chahta hoon,hi,EXPAND_BUSINESS
+261,Is there a subsidy for my business,en,GET_SUBSIDY
+262,Kya mujhe business loan mil sakta hai,hi,GET_LOAN
+263,My benefit has not been received,en,COMPLAINT
+264,Main apna rojgar shuru karna chahta hoon,hi,START_BUSINESS
+265,Kya government business setup mein subsidy deti hai,hi,GET_SUBSIDY
+266,What government schemes are available,en,SCHEME_INFORMATION
+267,I need some guidance,en,OTHER
+268,Kya mere state mein ye scheme available hai,hi,CHECK_ELIGIBILITY
+269,Kuch aur puchna hai,hi,OTHER
+270,I have a problem with my application,en,COMPLAINT
+271,Mujhe chhote business ke liye karz chahiye,hi,GET_LOAN
+272,Mujhe business ke liye loan chahiye,hi,GET_LOAN
+273,sarkari yojana ki info chahiye,hinglish,SCHEME_INFORMATION
+274,Application documents kahan jama honge,hi,DOCUMENT_HELP
+275,kuch puchna hai,hinglish,OTHER
+276,Mujhe documents arrange karne mein madad chahiye,hi,DOCUMENT_HELP
+277,What benefits does this scheme provide,en,SCHEME_INFORMATION
+278,Mujhe dukaan ke liye loan chahiye,hi,GET_LOAN
+279,business ke liye new machine chahiye,hinglish,EXPAND_BUSINESS
+280,Mujhe promised benefit nahi mila,hi,COMPLAINT
+281,Scheme ka benefit amount kitna hai,hi,BENEFIT_INFORMATION
+282,main apna kaam shuru krna chahti hu,hinglish,START_BUSINESS
+283,Mujhe yojana ki basic information chahiye,hi,SCHEME_INFORMATION
+284,Mujhe samajh nahi aa raha,hi,OTHER
+285,Which documents are required for this scheme,en,DOCUMENT_HELP
+286,Scheme ka maximum benefit kya hai,hi,BENEFIT_INFORMATION
+287,mere liye kaunsi scheme hai,hinglish,CHECK_ELIGIBILITY
+288,Mere liye kaunsi scheme eligible hai,hi,CHECK_ELIGIBILITY
+289,Sarkari yojana kya hoti hai,hi,SCHEME_INFORMATION
+290,subsidy wali scheme batao,hinglish,GET_SUBSIDY
+291,Mujhe grant ya subsidy chahiye,hi,GET_SUBSIDY
+292,Application ka result kab aayega,hi,APPLICATION_STATUS
+293,silai ki training chahiye,hinglish,GET_TRAINING
+294,mujhe guidance chahiye,hinglish,OTHER
+295,mujhe business start krna h,hinglish,START_BUSINESS
+296,Is yojana ke liye Aadhaar mandatory hai kya,hi,DOCUMENT_HELP
+297,mujhe loan lena h business ke liye,hinglish,GET_LOAN
+298,Mujhe apna business chalane ki training chahiye,hi,GET_TRAINING
+299,kitna benefit milega,hinglish,BENEFIT_INFORMATION
+300,Mujhe skill training karni hai,hi,GET_TRAINING

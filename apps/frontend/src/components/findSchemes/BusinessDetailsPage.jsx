@@ -1,0 +1,309 @@
+import { saveSchemeProfileSection } from "../../lib/schemeProfile";
+import { apiError } from "../../lib/api";
+import React, { useState } from "react";
+import { useLanguage } from "../../lib/i18n.jsx";
+import ProgressSteps from "./ProgressSteps";
+import WhyAskCard from "./WhyAskCard";
+import { MainLayout } from "../layout";
+import { getUserItem } from "../../lib/userStorage";
+
+const initialForm = {
+  businessType: "",
+  businessActivity: "",
+  businessStage: "",
+  yearsInBusiness: "",
+  annualTurnover: "",
+  numberOfEmployees: "",
+};
+
+const businessTypes = [
+  "Manufacturing",
+  "Service",
+  "Trading",
+  "Agriculture",
+  "Retail",
+  "Other",
+];
+
+const businessStages = [
+  "Idea / Planning",
+  "Startup",
+  "Early Stage",
+  "Established",
+  "Expansion",
+];
+
+const yearsOptions = [
+  "Less than 1 year",
+  "1 - 3 years",
+  "3 - 5 years",
+  "5 - 10 years",
+  "More than 10 years",
+];
+
+const turnoverOptions = [
+  "Below ₹1 Lakh",
+  "₹1 - ₹5 Lakh",
+  "₹5 - ₹10 Lakh",
+  "₹10 - ₹25 Lakh",
+  "₹25 Lakh - ₹1 Crore",
+  "Above ₹1 Crore",
+];
+
+const employeeOptions = [
+  "1 - 5",
+  "6 - 10",
+  "11 - 20",
+  "21 - 50",
+  "51 - 100",
+  "More than 100",
+];
+
+function loadBusinessData() {
+  const saved = getUserItem("schemeSaathiBusinessDetails");
+  return saved ? { ...initialForm, ...saved } : { ...initialForm };
+}
+
+export default function BusinessDetailsPage() {
+  const { t } = useLanguage();
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const [requestedSupport, setRequestedSupport] = useState(() => getUserItem("schemeSaathiPersonalDetails")?.entrepreneurshipSupport === "Yes");
+  const editMode =
+    sessionStorage.getItem("schemeSaathiEditMode");
+
+  const isEditMode = editMode === "business";
+
+  // Always start from this account's saved answers, if any -- revisiting
+  // the wizard should never show a blank form when data already exists.
+  const [form, setForm] = useState(loadBusinessData);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleContinue = async (e) => {
+    e.preventDefault();
+    if (saving) return;
+    setSaveError("");
+
+    setSaving(true);
+    try { await saveSchemeProfileSection("business", form); }
+    catch (error) { setSaveError(apiError(error)); setSaving(false); return; }
+
+    const cameFromEdit = isEditMode;
+
+    sessionStorage.removeItem("schemeSaathiEditMode");
+
+    if (cameFromEdit) {
+      window.location.assign("/find-schemes/review");
+    } else {
+      window.location.assign("/find-schemes/other-details");
+    }
+  };
+
+  const handleBack = () => {
+    if (isEditMode) {
+      sessionStorage.removeItem("schemeSaathiEditMode");
+      window.location.assign("/find-schemes/review");
+    } else {
+      window.location.assign("/find-schemes/personal-info");
+    }
+  };
+
+  if (!requestedSupport) return <MainLayout><main className="mx-auto max-w-3xl px-5 py-12">
+    <h1 className="text-2xl font-bold text-[#172b49]">{t("Entrepreneurship support")}</h1>
+    <p className="mt-4 text-sm text-slate-600">{t("Business questions are optional and only used when you want entrepreneurship support. Your previously saved answers are preserved.")}</p>
+    {saveError && <p role="alert" className="mt-4 text-red-700">{saveError}</p>}
+    <button type="button" disabled={saving} className="mt-6 rounded-lg bg-[#0d2b55] px-5 py-3 text-white" onClick={async () => {
+      setSaving(true);
+      try {
+        await saveSchemeProfileSection("personal", { ...(getUserItem("schemeSaathiPersonalDetails") || {}), entrepreneurshipSupport: "Yes" });
+        setRequestedSupport(true);
+      } catch (error) { setSaveError(apiError(error)); }
+      finally { setSaving(false); }
+    }}>{t("I want entrepreneurship support")}</button>
+    <a href="/find-schemes/other-details" className="ml-4 text-sm text-[#0d2b55] underline">{t("Continue without business questions")}</a>
+  </main></MainLayout>;
+
+  return (
+    <MainLayout>
+      <div className="min-h-[calc(100vh-132px)] bg-[#f7f8fc] pb-20">
+        <ProgressSteps currentStep={2} />
+
+        <div className="mx-auto max-w-287.5 px-5 sm:px-8">
+          <div className="mt-9">
+            <h1 className="text-[27px] font-extrabold tracking-[-0.02em] text-[#172b49]">
+              {t("Tell us about your business")}</h1>
+
+            {isEditMode && (
+              <p className="mt-2 text-[13px] text-slate-500">
+                {t("Update your business information below.")}</p>
+            )}
+          </div>
+
+          <div className="mt-4 grid gap-7 lg:grid-cols-[1fr_330px]">
+            <section className="rounded-2xl border border-slate-200 bg-white px-5 py-7 shadow-sm sm:px-6">
+              <form
+                id="business-form"
+                onSubmit={handleContinue}
+              >
+                <fieldset disabled={saving} className="contents"><div className="grid gap-x-5 gap-y-5 sm:grid-cols-2">
+                  <FormSelect
+                    label={t("Business Type")}
+                    name="businessType"
+                    optional
+                    placeholder={t("Select Business Type")}
+                    value={form.businessType}
+                    onChange={handleChange}
+                    options={businessTypes}
+                  />
+
+                  <FormInput
+                    label={t("Business Activity")}
+                    name="businessActivity"
+                    placeholder={t("Describe your business")}
+                    value={form.businessActivity}
+                    onChange={handleChange}
+                  />
+
+                  <FormSelect
+                    label={t("Business Stage")}
+                    name="businessStage"
+                    optional
+                    placeholder={t("Select Stage")}
+                    value={form.businessStage}
+                    onChange={handleChange}
+                    options={businessStages}
+                  />
+
+                  <FormSelect
+                    label={t("Years in Business")}
+                    name="yearsInBusiness"
+                    optional
+                    placeholder={t("Select")}
+                    value={form.yearsInBusiness}
+                    onChange={handleChange}
+                    options={yearsOptions}
+                  />
+
+                  <FormSelect
+                    label={t("Annual Turnover (optional)")}
+                    name="annualTurnover"
+                    optional
+                    placeholder={t("Select Range")}
+                    value={form.annualTurnover}
+                    onChange={handleChange}
+                    options={turnoverOptions}
+                  />
+
+                  <FormSelect
+                    label={t("Number of Employees/Workers (optional)")}
+                    name="numberOfEmployees"
+                    optional
+                    placeholder={t("Select Range")}
+                    value={form.numberOfEmployees}
+                    onChange={handleChange}
+                    options={employeeOptions}
+                  />
+                </div>
+              </fieldset>
+                {saveError && <p role="alert" className="mt-4 text-sm text-red-700">{saveError}</p>}
+                {saving && <p role="status" className="mt-4 text-sm text-slate-600">{t("Saving your details?")}</p>}
+              </form>
+            </section>
+
+            <WhyAskCard />
+          </div>
+
+          <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              onClick={handleBack}
+              className="h-11 w-full rounded-lg border border-slate-200 bg-white px-8 text-[13px] font-medium text-[#0d2b55] hover:bg-slate-50 sm:w-37.5"
+            >
+              ← {t("common_back")}
+            </button>
+
+            <button
+              type="submit"
+              disabled={saving}
+              form="business-form"
+              className="h-11 w-full rounded-lg bg-[#0d2b55] px-8 text-[13px] font-medium text-white shadow-sm transition hover:bg-[#173b70] sm:w-58"
+            >
+              {t("common_continue")} →
+            </button>
+          </div>
+        </div>
+      </div>
+    </MainLayout>
+  );
+}
+
+function FormInput({
+  label,
+  name,
+  placeholder,
+  value,
+  onChange,
+}) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-[13px] font-medium text-slate-700">
+        {label}
+      </span>
+
+      <input
+        type="text"
+        name={name}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3.5 text-[13px] outline-none placeholder:text-slate-400 focus:border-[#0d2b55] focus:ring-2 focus:ring-[#0d2b55]/10"
+      />
+    </label>
+  );
+}
+
+function FormSelect({
+  label,
+  name,
+  placeholder,
+  value,
+  onChange,
+  options,
+  optional = false,
+}) {
+  const { t } = useLanguage();
+  return (
+    <label className="block">
+      <span className="mb-2 block text-[13px] font-medium text-slate-700">
+        {label}
+      </span>
+
+      <select
+        name={name}
+        value={value}
+        onChange={onChange}
+        className={`h-11 w-full rounded-lg border border-slate-300 bg-white px-3.5 text-[13px] outline-none focus:border-[#0d2b55] focus:ring-2 focus:ring-[#0d2b55]/10 ${
+          value ? "text-slate-700" : "text-slate-400"
+        }`}
+      >
+        <option value="" disabled={!optional}>
+          {placeholder}
+        </option>
+
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {t(option)}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}

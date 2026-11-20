@@ -1,0 +1,41 @@
+{
+  "records": 653,
+  "note": "Structural audit only; not current scheme verification. Source CSV retained unchanged.",
+  "missing_fields": {
+    "scheme_name": 0,
+    "eligibility": 0,
+    "documents": 2,
+    "application_process": 0,
+    "official_url": 0
+  },
+  "non_https_links": [
+    "Economic Development Scheme for ST & Women in STEM (EDSC-ST-WISTEM)",
+    "Mukhyamantri Gramin Swarojgar & Vikas Yojana (MGSVRY)",
+    "New Entrepreneur & Enterprise Development Scheme (NEEDS)"
+  ],
+  "review_required": [
+    "Backward Classes & Social Pension Support Scheme (BSP)",
+    "Backward Classes & Weaker Sections Skill Growth & Development Corporation Scheme (SSSGBCDC)",
+    "Credit Enhancement Guarantee Scheme For The Scheduled Castes",
+    "Dr. Ambedkar Backward Classes & Divyangjan Kalyan Yojana (DBAKY)",
+    "Export Promotion Council Membership Reimbursement Scheme for Scheduled Caste/Scheduled Tribe",
+    "Interest Subsidy Scheme for Scheduled Caste/Scheduled Tribe Entrepreneurs",
+    "Mahila Samiriddhi Yojana for Backward Classes- Haryana",
+    "Micro Credit Finance (NSFDC)",
+    "Micro Credit Finance Scheme - National Scheduled Castes Finance and Development Corporation (MCFNSFDC)",
+    "Providing Mini Tractor and its Sub Parts to the Self Help Group of Scheduled Castes",
+    "Saksham Scheme for Backward Classes",
+    "Scheduled Caste Development Fund & Financial Assistance Scheme (SCDF)",
+    "Scheme for Small Business Owners of Scheduled Castes to Buy a Place of Business/Shop",
+    "Shilp Sampada Term Loan Scheme for Backward Classes- Haryana",
+    "Skill Development, Backward Classes & Professional Programme Promotion Scheme (SDBPPD)",
+    "Special Credit Linked Capital Subsidy Scheme (SCLCSS) for Scheduled Caste/Scheduled Tribe",
+    "State Scheme For Other Backward Classes For Purchase Of Bus",
+    "State Scheme For Scheduled Tribe / Scheduled Caste / OBC For Purchase Of Pick-up Van / Delivery Van / Goods Carrier",
+    "Subsidy Scheme For Establishment Of Goat Unit (10+1) For Scheduled Caste People",
+    "Subsidy Scheme On Establishment Of 25 R.I.R. Birds’ Unit For Scheduled Caste",
+    "Term Loan Scheme for Backward Classes",
+    "Venture Capital Fund for Scheduled Castes (VCF-SC)",
+    "Welfare, Backward Classes & Financial Assistance Grant & Incentive Scheme (WBAFBSGICS)"
+  ]
+}

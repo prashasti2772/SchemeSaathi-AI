@@ -1,0 +1,28 @@
+# Free Render web service; supply a Neon Free PostgreSQL URL when prompted.
+# Both React and the Python API are served by this one web service.
+services:
+  - type: web
+    name: schemesathi-ai
+    runtime: docker
+    plan: free
+    region: singapore
+    healthCheckPath: /health
+    envVars:
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: PUBLIC_SITE_URL
+        fromService:
+          type: web
+          name: schemesathi-ai
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: CORS_ORIGINS
+        value: '[]'
+      - key: ENV
+        value: production
+      - key: SUPPORT_EMAIL
+        value: customercareprashasti@gmail.com
+      - key: SMS_PROVIDER
+        value: firebase
+
