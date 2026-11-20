@@ -18,7 +18,7 @@ export default function StatsSection() {
     return () => controller.abort();
   }, []);
   const catalogueStats = [
-    { value: "653", labelKey: "homepage_stats_dataset", footnoteKey: "homepage_stats_reviewed", footnoteCount: counts?.schemes ?? "—" },
+    { value: "600 +", labelKey: "homepage_stats_dataset", footnoteKey: "homepage_stats_reviewed", footnoteCount: counts?.schemes ?? "—" },
     { value: counts?.categories ?? "—", labelKey: "homepage_stats_categories" },
     ...stats,
   ];
