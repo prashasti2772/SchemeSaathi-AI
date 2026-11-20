@@ -46,26 +46,35 @@ def _send_smtp_sync(to_address: str, subject: str, body: str) -> bool:
     msg.set_content(body)
 
     host = settings.SMTP_HOST or "smtp.gmail.com"
-    port = settings.SMTP_PORT or 587
+    user = (settings.SMTP_USER or "").strip()
+    password = (settings.SMTP_PASSWORD or "").replace(" ", "").strip()
+    ports_to_try = [settings.SMTP_PORT or 587]
+    if 465 not in ports_to_try:
+        ports_to_try.append(465)
 
-    try:
-        if port == 465:
-            server = smtplib.SMTP_SSL(host, port, timeout=15)
-        else:
-            server = smtplib.SMTP(host, port, timeout=15)
-            if settings.SMTP_USE_TLS:
-                server.starttls()
-        if settings.SMTP_USER and settings.SMTP_PASSWORD:
-            user = settings.SMTP_USER.strip()
-            password = settings.SMTP_PASSWORD.replace(" ", "").strip()
-            server.login(user, password)
-        server.send_message(msg)
-        server.quit()
-        logger.info("smtp_email_sent", recipient=to_address, subject=subject)
-        return True
-    except Exception as exc:
-        logger.warning("smtp_delivery_failed", error=str(exc))
-        return False
+    last_error = None
+    for port in ports_to_try:
+        try:
+            if port == 465:
+                server = smtplib.SMTP_SSL(host, port, timeout=12)
+            else:
+                server = smtplib.SMTP(host, port, timeout=12)
+                if settings.SMTP_USE_TLS:
+                    server.starttls()
+            if user and password:
+                server.login(user, password)
+            server.send_message(msg)
+            server.quit()
+            logger.info("smtp_email_sent", recipient=to_address, subject=subject, port=port)
+            return True
+        except Exception as exc:
+            last_error = exc
+            print(f"[SMTP WARNING] Port {port} delivery failed: {type(exc).__name__}: {exc}", flush=True)
+
+    print(f"\n[SMTP ERROR] All email delivery attempts failed: {type(last_error).__name__}: {last_error}", flush=True)
+    print(f"[SMTP ERROR] To enable instant sign-in without SMTP, set EMAIL_PROVIDER=mock in Render environment variables.\n", flush=True)
+    logger.warning("smtp_delivery_failed", error=str(last_error))
+    return False
 
 
 def email_ready() -> bool:
