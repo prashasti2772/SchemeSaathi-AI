@@ -1,4 +1,4 @@
-﻿"""Persisted password-plus-OTP sign-in, independent of password recovery."""
+"""Persisted password-plus-OTP sign-in, independent of password recovery."""
 import hmac
 import secrets
 import uuid
@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.config.database import Base
+from src.config.settings import settings
 from src.config.logging import get_logger
 from src.integrations import email_client
 from src.modules.auth.recovery import secret_hash, otp_text
@@ -43,7 +44,7 @@ class LoginChallenge(Base):
 
 
 def methods() -> dict:
-    return {"email": email_client.email_ready(), "provider": "brevo"}
+    return {"email": email_client.email_ready(), "provider": settings.EMAIL_PROVIDER or "brevo"}
 
 
 def destination(user: User) -> str:

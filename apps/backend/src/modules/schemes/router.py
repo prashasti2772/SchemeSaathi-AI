@@ -4,9 +4,48 @@ from src.config.database import get_db
 from src.middlewares.rbac_middleware import require_admin, require_any_staff
 from src.modules.schemes import service
 from src.modules.schemes.schemas import SchemeCreate, SchemeOut, SchemeUpdate, SchemeVersionCreate, SchemeVersionOut
+from src.modules.schemes.sync import SchemeSyncEngine, SyncRunSummary, SyncStatusResponse, SyncTriggerRequest
 from src.utils.pagination import PageParams, PageResponse
 
 router = APIRouter(prefix="/schemes", tags=["Schemes"], dependencies=[Depends(require_any_staff)])
+
+
+@router.post("/sync", response_model=SyncRunSummary, dependencies=[Depends(require_admin)])
+async def trigger_dataset_sync(payload: SyncTriggerRequest = SyncTriggerRequest(), db: AsyncSession = Depends(get_db)):
+    engine = SchemeSyncEngine.get_instance()
+    return await engine.execute_sync(
+        source_feed=payload.source_url,
+        dry_run=payload.dry_run,
+        rebuild_embeddings=payload.rebuild_embeddings,
+        db=db,
+        target_slugs=payload.target_slugs,
+    )
+
+
+@router.get("/sync/status", response_model=SyncStatusResponse)
+async def get_sync_status():
+    engine = SchemeSyncEngine.get_instance()
+    events = engine.auditor.get_recent_history(limit=50)
+    return SyncStatusResponse(
+        is_running=engine.is_running,
+        current_or_last_sync_id=engine.last_summary.sync_id if engine.last_summary else None,
+        last_completed_sync=engine.last_summary,
+        total_audit_events=len(events),
+    )
+
+
+@router.get("/sync/history")
+async def get_sync_history(limit: int = 50):
+    engine = SchemeSyncEngine.get_instance()
+    return engine.auditor.get_recent_history(limit=limit)
+
+
+@router.get("/sync/report")
+async def get_sync_report():
+    engine = SchemeSyncEngine.get_instance()
+    if not engine.last_summary:
+        return {"report": "No synchronization runs have been performed yet."}
+    return {"report": engine.auditor.generate_markdown_report(engine.last_summary)}
 
 
 @router.post("", response_model=SchemeOut, status_code=201, dependencies=[Depends(require_admin)])

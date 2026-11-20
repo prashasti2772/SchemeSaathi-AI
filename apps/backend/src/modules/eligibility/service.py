@@ -1,4 +1,4 @@
-﻿"""Citizen discovery with explicit unknown information and cited screening rules."""
+"""Citizen discovery with explicit unknown information and cited screening rules."""
 import copy
 import json
 import math
@@ -51,6 +51,16 @@ def _optional_bool(value):
 
 def _parse_documents_list(value):
     return [part.strip() for part in str(value or "").split(";") if part.strip()]
+
+
+BUSINESS_SECTORS = {
+    "retail": {"retail", "shop", "store", "trader", "vendor", "selling", "trade", "trading", "mart", "kiosk", "stall", "merchant", "commercial", "micro business", "msme"},
+    "trading": {"trading", "trade", "retail", "wholesale", "shop", "merchant", "distributor", "vendor", "micro business", "msme"},
+    "artisan": {"artisan", "craft", "carpenter", "potter", "blacksmith", "goldsmith", "sculptor", "weaver", "cobbler", "tailor", "handicraft", "handloom", "darzi", "barber", "washerman"},
+    "manufacturing": {"manufacturing", "factory", "unit", "production", "industrial", "fabrication", "processing", "msme"},
+    "service": {"service", "services", "repair", "salon", "parlour", "beauty", "hotel", "restaurant", "consult", "it", "transport", "freelance", "hospitality", "msme"},
+    "agriculture": {"agriculture", "farming", "farm", "crop", "dairy", "poultry", "cattle", "livestock", "fish", "fisheries", "horticulture", "kisan"},
+}
 
 
 class EligibilityService:
@@ -174,13 +184,66 @@ class EligibilityService:
             results = [item for item in results if item["status"] == "ELIGIBLE"]
         if profile["entrepreneurship_support"] is False:
             results = [item for item in results if item["category"] != "Entrepreneurship"]
+
+        user_bus = str(profile.get("business_type") or "").strip().lower()
+        has_business = bool(user_bus and user_bus not in ("none", "n/a", "no", "null", "false"))
+        interests_str = " ".join(str(profile.get(k) or "").lower() for k in ("occupation", "interests", "welfare_needs"))
+
+        # When a user explicitly provides a business type (e.g. Retail, Trading, Service, etc.):
+        # Only suggest schemes related to their business type and applicable across other businesses.
+        # Filter out unrelated citizen life-event schemes unless the profile explicitly requests them.
+        if has_business:
+            is_artisan = any(w in user_bus for w in BUSINESS_SECTORS["artisan"])
+            is_agri = any(w in user_bus for w in BUSINESS_SECTORS["agriculture"])
+
+            filtered_results = []
+            for item in results:
+                cat = item.get("category", "")
+                content = (cat + " " + item.get("tags", "") + " " + item.get("description", "")).lower()
+
+                # Suppress citizen welfare schemes that are strictly for non-business life events
+                if cat == "Agriculture" and not (is_agri or "agri" in interests_str or "farm" in interests_str):
+                    continue
+                if cat == "Education" and not ("student" in interests_str or "education" in interests_str or "scholarship" in interests_str):
+                    continue
+                if cat == "Women" and not ("maternity" in interests_str or "pregnancy" in interests_str):
+                    continue
+                if cat == "Disability Support" and not (profile.get("disability") is True or "disabilit" in interests_str or "divyang" in interests_str):
+                    continue
+                if cat == "Housing" and not ("housing" in interests_str or "home" in interests_str):
+                    continue
+                if cat == "Pensions" and not ("pension" in interests_str or "elderly" in interests_str):
+                    continue
+                if cat == "Employment" and not ("job" in interests_str or "unemployed" in interests_str or "career" in interests_str):
+                    continue
+                if cat == "Healthcare" and not ("health" in interests_str or "hospital" in interests_str):
+                    continue
+                # Traditional artisan-only schemes require artisan trade or artisan interest
+                if cat == "Artisan Support" and not (is_artisan or "artisan" in interests_str or "craft" in interests_str):
+                    continue
+                # Unrelated youth job training for dropouts
+                if cat == "Skill Development" and not re.search(r"entrepreneur|business|enterprise|management", content):
+                    continue
+
+                filtered_results.append(item)
+            results = filtered_results
+
         text = " ".join(str(profile.get(k) or "") for k in ("occupation", "interests", "welfare_needs", "business_type"))
         tokens = {t for t in re.findall(r"\w+", text.casefold()) if len(t) > 2}
+        if has_business:
+            for sector, syns in BUSINESS_SECTORS.items():
+                if any(w in user_bus for w in syns):
+                    tokens.update(syns)
+
         for item in results:
             content = (item["category"] + " " + item["tags"] + " " + item["description"]).casefold()
             relevant = sum(token in content for token in tokens)
             if profile["entrepreneurship_support"] is True and re.search(r"entrepreneur|artisan|microenterprise", content):
                 relevant += 1
+            if has_business:
+                for sector, syns in BUSINESS_SECTORS.items():
+                    if any(w in user_bus for w in syns) and any(w in item.get("tags", "").lower() for w in syns):
+                        relevant += 2
             item["relevance_score"] = relevant
             item["relevance_status"] = "MATCH" if relevant else "UNKNOWN"
         results.sort(key=lambda item: (item["status"] != "INELIGIBLE", item["relevance_score"], item["status"] == "ELIGIBLE", item["score"]), reverse=True)

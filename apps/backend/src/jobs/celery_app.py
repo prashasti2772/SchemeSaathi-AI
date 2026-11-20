@@ -11,5 +11,12 @@ celery_app.conf.update(
     task_track_started=True,
     task_time_limit=120,
     worker_max_tasks_per_child=200,
+    beat_schedule={
+        "daily-government-scheme-sync": {
+            "task": "schemes.sync_government_schemes",
+            "schedule": 86400.0,  # Run daily
+            "kwargs": {"dry_run": False, "rebuild_embeddings": True, "check_website_health": True},
+        }
+    },
 )
 celery_app.autodiscover_tasks(["src.jobs"])

@@ -86,13 +86,19 @@ class Settings(BaseSettings):
     AWS_SECRET_ACCESS_KEY: str = ""
     AWS_REGION: str = "ap-south-1"
 
-    # Transactional email is delivered over Brevo's HTTPS API. This works on
-    # Render Free without opening mail transport ports.
+    # Transactional email is delivered over Brevo's HTTPS API or SMTP (Gmail/Outlook).
     EMAIL_PROVIDER: str = "brevo"
     SUPPORT_EMAIL: str = "customercareprashasti@gmail.com"
     EMAIL_FROM_ADDRESS: str = "customercareprashasti@gmail.com"
     EMAIL_FROM_NAME: str = "SchemeSaathi Support"
     BREVO_API_KEY: str = ""
+
+    # Direct SMTP Configuration (supports Gmail, Outlook, custom SMTP)
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_USE_TLS: bool = True
 
 
 @lru_cache

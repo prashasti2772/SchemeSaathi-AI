@@ -29,6 +29,13 @@ def test_brevo_configuration_is_supported(mail):
     assert mail.email_ready()
 
 
+def test_mock_email_provider_is_supported_without_brevo_key(mail, monkeypatch):
+    monkeypatch.setattr(mail.settings, "EMAIL_PROVIDER", "mock")
+    monkeypatch.setattr(mail.settings, "BREVO_API_KEY", "")
+    assert mail.email_ready()
+    assert asyncio.run(mail.send_email("dev@example.com", "Dev Verification", "Your sign-in code is 123456"))
+
+
 def test_brevo_posts_expected_payload_and_acknowledgement(mail, monkeypatch):
     import json
 

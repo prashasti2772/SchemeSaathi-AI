@@ -156,3 +156,29 @@ def test_new_scheme_facts_and_sources_are_not_rewritten_by_a_provider(monkeypatc
     assert "Common Service Centre" in answer["reply"]
     assert "https://pmvishwakarma.gov.in/" in answer["reply"]
     assert "2026-10-31" in answer["reply"]
+
+
+def test_retail_business_only_matches_retail_and_general_business_schemes():
+    matches = eligibility_service.match_schemes({
+        "age": 30, "state": "Uttar Pradesh", "business_type": "Retail",
+        "entrepreneurship_support": True,
+    })
+    slugs = {m["scheme_id"] for m in matches}
+
+    # Must include retail & general business schemes
+    assert "pmmy" in slugs
+    assert "pmegp" in slugs
+    assert "esdp" in slugs
+
+    # Mudra (PMMY) specifically covers retail shops and micro-enterprises, ranking top
+    assert matches[0]["scheme_id"] == "pmmy"
+
+    # Must exclude unrelated personal citizen welfare and artisan-only schemes
+    assert "pm-kisan" not in slugs
+    assert "pmmvy" not in slugs
+    assert "pm-usp-csss" not in slugs
+    assert "adip" not in slugs
+    assert "pmay-urban-2" not in slugs
+    assert "ignoaps" not in slugs
+    assert "pm-vishwakarma" not in slugs
+

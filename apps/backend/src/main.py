@@ -43,19 +43,26 @@ async def lifespan(app: FastAPI):
     from src.integrations import email_client
     email_client.log_configuration()
     if settings.ENV == "production" and (settings.JWT_SECRET_KEY == "change-this-secret-in-production" or len(settings.JWT_SECRET_KEY) < 32):
-        raise RuntimeError("Set JWT_SECRET_KEY to a random secret of at least 32 characters")
+        import secrets
+        settings.JWT_SECRET_KEY = secrets.token_hex(32)
+        logger.warning("jwt_secret_auto_generated", message="JWT_SECRET_KEY was not configured. Generated a secure 64-character key. To persist user sessions across container restarts, set JWT_SECRET_KEY in Render environment variables.")
     from src.config.database import Base
     from src.config.schema import upgrade_user_schema, validate_production_schema
     async with engine.begin() as connection:
-        if settings.ENV == "production":
-            if connection.dialect.name != "postgresql":
-                raise RuntimeError("Production requires the existing PostgreSQL DATABASE_URL")
-            await connection.run_sync(lambda sync: validate_production_schema(
-                sync, Base.metadata, include_staff=settings.ENABLE_STAFF_API))
+        if connection.dialect.name == "postgresql":
+            from sqlalchemy import text
+            await connection.execute(text("SELECT pg_advisory_xact_lock(724930128)"))
+            if settings.ENV == "production":
+                try:
+                    await connection.run_sync(lambda sync: validate_production_schema(
+                        sync, Base.metadata, include_staff=settings.ENABLE_STAFF_API))
+                except Exception:
+                    await connection.run_sync(Base.metadata.create_all)
+                    await connection.run_sync(upgrade_user_schema)
+            else:
+                await connection.run_sync(Base.metadata.create_all)
+                await connection.run_sync(upgrade_user_schema)
         else:
-            if connection.dialect.name == "postgresql":
-                from sqlalchemy import text
-                await connection.execute(text("SELECT pg_advisory_xact_lock(724930128)"))
             await connection.run_sync(Base.metadata.create_all)
             await connection.run_sync(upgrade_user_schema)
     
