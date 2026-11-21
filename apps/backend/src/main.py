@@ -32,6 +32,7 @@ from src.modules.voice.router import webhook_router as voice_webhook_router
 
 from src.modules.public.citizen import router as citizen_router
 from src.modules.public.voice_assistant import router as browser_voice_router
+from src.routes.graph import router as graph_router
 
 configure_logging(settings.ENV)
 logger = get_logger("main")
@@ -66,6 +67,22 @@ async def lifespan(app: FastAPI):
             await connection.run_sync(Base.metadata.create_all)
             await connection.run_sync(upgrade_user_schema)
     
+    # Initialize Neo4j graph database
+    try:
+        from src.database.neo4j_db import init_neo4j, close_neo4j
+        neo4j_connected = await init_neo4j()
+        if neo4j_connected:
+            logger.info("neo4j_connected")
+            # Auto-sync schemes to graph on startup
+            from src.database.scheme_graph import upsert_schemes_from_catalogue
+            from src.modules.eligibility.catalogue import load_catalogue
+            await upsert_schemes_from_catalogue(load_catalogue())
+            logger.info("neo4j_schemes_synced")
+        else:
+            logger.info("neo4j_disabled_or_unavailable")
+    except Exception as e:
+        logger.warning("neo4j_init_warning", error=str(e))
+
     # Pre-warm AI & ML services asynchronously at startup so first requests are instantaneous
     try:
         from src.modules.chatbot.service import chatbot_service
@@ -80,6 +97,11 @@ async def lifespan(app: FastAPI):
         
     yield
     logger.info("application_shutdown")
+    try:
+        from src.database.neo4j_db import close_neo4j
+        await close_neo4j()
+    except Exception:
+        pass
     try:
         await engine.dispose()
     except Exception:
@@ -140,6 +162,7 @@ if settings.ENABLE_STAFF_API:
 app.include_router(public_router, prefix=api_router_prefix)
 app.include_router(eligibility_router, prefix=api_router_prefix)
 app.include_router(chatbot_router, prefix=api_router_prefix)
+app.include_router(graph_router, prefix=api_router_prefix)
 
 
 @app.get("/health", tags=["Health"])

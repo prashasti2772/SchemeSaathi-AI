@@ -88,6 +88,56 @@ export async function searchSchemesSemantically(query, topK = 5) {
   return response.data;
 }
 
+/* ================= Neo4j Graph Database API ================= */
+
+export async function fetchGraphHealth() {
+  const response = await api.get("/graph/health");
+  return response.data;
+}
+
+export async function fetchGraphStats() {
+  const response = await api.get("/graph/stats");
+  return response.data;
+}
+
+export async function fetchGraphSchemes(category = "All", page = 1, limit = 20) {
+  const response = await api.get("/graph/schemes", {
+    params: { category, page, limit },
+  });
+  return response.data;
+}
+
+export async function searchGraphSchemes(query = "", category = "All", page = 1, limit = 20) {
+  const response = await api.get("/graph/search", {
+    params: { q: query, category, page, limit },
+  });
+  return response.data;
+}
+
+export async function fetchRelatedSchemes(schemeId, limit = 5) {
+  const response = await api.get(`/graph/schemes/${encodeURIComponent(schemeId)}/related`, {
+    params: { limit },
+  });
+  return response.data;
+}
+
+export async function fetchGraphCategories() {
+  const response = await api.get("/graph/categories");
+  return response.data;
+}
+
+export async function fetchGraphTags(tags, limit = 10) {
+  const response = await api.get("/graph/tags", {
+    params: { tags: Array.isArray(tags) ? tags.join(",") : tags, limit },
+  });
+  return response.data;
+}
+
+export async function syncGraphSchemes() {
+  const response = await api.post("/graph/sync");
+  return response.data;
+}
+
 /* Fetches catalog schemes filtered by category or query */
 export async function fetchCatalogSchemes(query = "", limit = 50, offset = 0, category = "") {
   const response = await api.get("/eligibility/schemes", {

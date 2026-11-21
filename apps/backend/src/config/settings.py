@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -99,6 +100,19 @@ class Settings(BaseSettings):
     SMTP_USER: str = ""
     SMTP_PASSWORD: str = ""
     SMTP_USE_TLS: bool = True
+
+    # Neo4j Graph Database (optional — improves scheme discovery)
+    NEO4J_URI: str = ""
+    NEO4J_USERNAME: str = ""
+    NEO4J_PASSWORD: str = ""
+    NEO4J_DATABASE: str = "neo4j"
+    NEO4J_ENABLED: bool = False  # auto-set to True if URI is present
+
+    @model_validator(mode="after")
+    def _set_neo4j_enabled(self) -> "Settings":
+        if self.NEO4J_URI:
+            self.NEO4J_ENABLED = True
+        return self
 
 
 @lru_cache

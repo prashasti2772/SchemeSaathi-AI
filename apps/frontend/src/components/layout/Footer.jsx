@@ -6,7 +6,7 @@ export default function Footer() {
   return (
     <footer className="border-t border-[#1d3e6b] bg-[#081d3d] text-white">
       <div className="mx-auto flex min-h-15.5 max-w-7xl flex-col items-center justify-between gap-2 px-5 py-4 text-sm sm:flex-row sm:px-8 lg:px-10">
-        <span className="font-semibold text-slate-100">{t("SchemeSaathi AI")}</span>
+        <span className="font-semibold text-slate-100">{t("SchemeSaathi")}</span>
 
         <p className="text-center text-slate-300">
           {t("entrepreneur_footer")}

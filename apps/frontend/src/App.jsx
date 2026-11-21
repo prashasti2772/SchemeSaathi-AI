@@ -27,6 +27,7 @@ import ResourcesPage from "./components/resources/ResourcesPage";
 
 import ProfilePage from "./components/profile/ProfilePage";
 import SavedSchemesPage from "./components/schemes/SavedSchemesPage";
+import GraphExplorerPage from "./components/graph/GraphExplorerPage";
 
 
 import SupportPage from "./components/SupportPage";
@@ -113,8 +114,12 @@ export default function App() {
   return <AboutPage />;
 }
 
-if (path === "/categories" || path === "/search") {
+if (path === "/search") {
   return <CategoriesPage />;
+}
+
+if (path === "/categories") {
+  return <GraphExplorerPage />;
 }
 
 if (path === "/resources") {
@@ -133,6 +138,7 @@ if (path === "/profile") {
   return <ProfilePage />;
 }
 if (path === "/saved-schemes") return <SavedSchemesPage />;
+if (path === "/graph") return <GraphExplorerPage />;
 
   return <HomePage />;
 }

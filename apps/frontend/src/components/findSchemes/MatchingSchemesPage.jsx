@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useLanguage } from "../../lib/i18n.jsx";
 import ProgressSteps from "./ProgressSteps";
 import { MainLayout } from "../layout";
-import { fetchMatchingSchemes } from "../../lib/api";
+import { fetchMatchingSchemes, fetchRelatedSchemes } from "../../lib/api";
 import { getUserItem } from "../../lib/userStorage";
 import { buildCitizenProfile, officialSchemeUrl } from "../../lib/citizenProfile";
 import SaveSchemeButton from "../schemes/SaveSchemeButton";
@@ -208,6 +208,9 @@ export default function MatchingSchemesPage() {
                   className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-[13px] text-slate-700 outline-none transition focus:border-[#0d2b55] focus:ring-2 focus:ring-[#0d2b55]/10"
                 />
               </div>
+              <p className="mt-3 text-xs text-amber-800">
+                {t("Preliminary screening only. Verify all conditions and current availability on the official portal.")}
+              </p>
             </section>
           )}
 
@@ -254,29 +257,56 @@ export default function MatchingSchemesPage() {
 
 function SchemeCard({ scheme, onView }) {
   const { t } = useLanguage();
+  const [showGraph, setShowGraph] = useState(false);
+  const [relatedSchemes, setRelatedSchemes] = useState([]);
+  const [loadingGraph, setLoadingGraph] = useState(false);
+
+  const handleToggleGraph = async () => {
+    if (showGraph) {
+      setShowGraph(false);
+      return;
+    }
+    setShowGraph(true);
+    if (relatedSchemes.length > 0) return;
+    setLoadingGraph(true);
+    try {
+      const schemeId = scheme.slug || scheme.scheme_id;
+      if (schemeId) {
+        const res = await fetchRelatedSchemes(schemeId, 3);
+        setRelatedSchemes(res.related_schemes || []);
+      }
+    } catch (err) {
+      console.warn("Neo4j graph fetch:", err);
+    } finally {
+      setLoadingGraph(false);
+    }
+  };
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
       {/* TOP */}
 
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-3">
+      <div className="flex items-start gap-3">
+        <div className="flex min-w-0 flex-1 items-start gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#0d2b55] text-lg font-bold text-[#f4c63d]">
             ₹
           </div>
 
-          <div>
-            <h2 className="text-[16px] font-bold leading-5 text-[#172b49]">{scheme.name || scheme.scheme_name}</h2>
+          <div className="min-w-0 flex-1">
+            <h2 className="truncate whitespace-nowrap text-[16px] font-bold leading-5 text-[#172b49]" title={scheme.name || scheme.scheme_name}>
+              {scheme.name || scheme.scheme_name}
+            </h2>
             <p className="mt-1 text-[11px] text-slate-400">{scheme.department}</p>
+            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+              <span className="rounded-full bg-[#fff5c9] px-2.5 py-1 text-[10px] font-semibold text-[#8c6b00]">
+                {t(scheme.status === "UNKNOWN" ? "More information needed" : scheme.status === "ELIGIBLE" ? "Recorded criteria met" : "Preliminary screening")}
+              </span>
+              {scheme.confidence && (
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-medium text-slate-600">
+                  {t("Preliminary screening")}
+                </span>
+              )}
+            </div>
           </div>
-        </div>
-
-        <div className="flex flex-col items-end gap-1.5">
-          <span className="rounded-full bg-[#fff5c9] px-2.5 py-1 text-[10px] font-semibold text-[#8c6b00]">
-            {t(scheme.status === "UNKNOWN" ? "More information needed" : scheme.status === "ELIGIBLE" ? "Recorded criteria met" : "Preliminary screening")}</span>
-          {scheme.confidence && (
-            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-medium text-slate-600">
-              {t("Preliminary screening")}</span>
-          )}
         </div>
       </div>
 
@@ -291,7 +321,6 @@ function SchemeCard({ scheme, onView }) {
         </div>
       )}
 
-      <p className="mt-3 text-xs text-amber-800">{t("Preliminary screening only. Verify all conditions and current availability on the official portal.")}</p>
       {scheme.unknown_conditions?.length > 0 && <div className="mt-3 rounded-lg bg-amber-50 p-3 text-xs text-amber-900"><p className="font-semibold">{t("Information needed")}</p><ul className="mt-1 list-inside list-disc">{scheme.unknown_conditions.map(condition => <li key={condition}>{condition}</li>)}</ul></div>}
       {scheme.failed_conditions?.length > 0 && <p className="mt-3 text-xs text-red-700">{scheme.failed_conditions.join("; ")}</p>}
       {/* DESCRIPTION */}
@@ -332,6 +361,41 @@ function SchemeCard({ scheme, onView }) {
       </div>
 
       <SaveSchemeButton scheme={scheme} />
+
+      {/* NEO4J GRAPH EXPLORATION */}
+      <div className="mt-4 pt-3 border-t border-slate-100">
+        <button
+          type="button"
+          onClick={handleToggleGraph}
+          className="w-full py-1.5 px-3 rounded-lg text-[11px] font-semibold border border-indigo-200 bg-indigo-50/70 text-indigo-900 hover:bg-indigo-100/80 transition flex items-center justify-center gap-1.5 cursor-pointer"
+        >
+          <span>🕸️</span>
+          <span>{showGraph ? "Hide Graph Connections" : "View Connected Schemes (Neo4j Graph)"}</span>
+        </button>
+
+        {showGraph && (
+          <div className="mt-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+            <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 mb-2">
+              <span>Neo4j Graph Connections:</span>
+              <a href="/graph" className="text-blue-600 hover:underline font-normal text-[10px]">Open Full Graph ↗</a>
+            </div>
+            {loadingGraph ? (
+              <p className="text-slate-400 text-[11px] py-1 text-center">Finding graph relationships...</p>
+            ) : relatedSchemes.length === 0 ? (
+              <p className="text-slate-500 text-[11px] py-1">No other active schemes currently linked in this category.</p>
+            ) : (
+              <div className="space-y-1.5">
+                {relatedSchemes.map((rel) => (
+                  <div key={rel.scheme_id} className="p-2 rounded bg-white border border-slate-200">
+                    <p className="font-semibold text-slate-800 text-[11px]">{rel.scheme_name}</p>
+                    <p className="text-[10px] text-slate-500 line-clamp-1">{rel.description}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* BUTTON */}
 

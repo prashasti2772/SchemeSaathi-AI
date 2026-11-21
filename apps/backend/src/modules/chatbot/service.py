@@ -248,8 +248,28 @@ class ChatbotService:
         return combined[:top_k]
 
     async def search_async(self, query: str, top_k: int = 4) -> list[dict]:
-        """Non-blocking async wrapper for FAISS search."""
-        return await asyncio.to_thread(self.search, query, top_k)
+        """Non-blocking async wrapper with Neo4j Graph hybrid search enrichment."""
+        base_results = await asyncio.to_thread(self.search, query, top_k)
+        
+        # Enrich results using Neo4j Knowledge Graph relationships if available
+        try:
+            from src.database.neo4j_db import is_connected
+            if is_connected():
+                from src.database.scheme_graph import search_schemes_fulltext
+                graph_matches = await search_schemes_fulltext(query, limit=top_k)
+                if graph_matches:
+                    seen = {d.get("scheme_name") or d.get("name") for d in base_results}
+                    catalog_by_slug = {d.get("slug"): d for d in self.documents}
+                    for gm in graph_matches:
+                        scheme_id = gm.get("scheme_id")
+                        full_doc = catalog_by_slug.get(scheme_id)
+                        if full_doc and (full_doc.get("scheme_name") not in seen):
+                            base_results.append(full_doc)
+                            seen.add(full_doc.get("scheme_name"))
+        except Exception as e:
+            logger.debug("neo4j_graph_search_enrichment_skipped", error=str(e))
+
+        return base_results[:top_k]
 
     def _clean_text(self, text: Any) -> str:
         if not text:

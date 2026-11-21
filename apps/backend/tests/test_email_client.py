@@ -29,6 +29,21 @@ def test_brevo_configuration_is_supported(mail):
     assert mail.email_ready()
 
 
+def test_explicit_brevo_provider_takes_precedence_over_smtp_credentials(mail, monkeypatch):
+    monkeypatch.setattr(mail.settings, "SMTP_USER", "smtp-user@example.com")
+    monkeypatch.setattr(mail.settings, "SMTP_PASSWORD", "smtp-password")
+    monkeypatch.setattr(mail, "_send_smtp_sync", lambda *args: pytest.fail("explicit Brevo provider must not use SMTP"))
+
+    client_class = httpx.AsyncClient
+    monkeypatch.setattr(mail.httpx, "AsyncClient", lambda **kw: client_class(
+        transport=httpx.MockTransport(lambda request: httpx.Response(200, json={"messageId": "test-message-id"})),
+        **kw,
+    ))
+
+    assert mail.email_ready()
+    assert asyncio.run(mail.send_email("tester@gmail.com", "Verification", "Your sign-in code is 123456"))
+
+
 def test_mock_email_provider_is_supported_without_brevo_key(mail, monkeypatch):
     monkeypatch.setattr(mail.settings, "EMAIL_PROVIDER", "mock")
     monkeypatch.setattr(mail.settings, "BREVO_API_KEY", "")

@@ -81,7 +81,7 @@ def email_ready() -> bool:
     provider = (settings.EMAIL_PROVIDER or "").lower()
     if provider in {"mock", "console", "test", "local"}:
         return True
-    if provider in {"smtp", "gmail"} or (settings.SMTP_USER and settings.SMTP_PASSWORD):
+    if provider in {"smtp", "gmail"}:
         return bool(settings.SMTP_USER and settings.SMTP_PASSWORD)
     return bool(settings.BREVO_API_KEY and settings.EMAIL_FROM_ADDRESS)
 
@@ -100,7 +100,7 @@ async def send_email(to_address: str, subject: str, body: str) -> bool:
         print("=" * 60 + "\n", flush=True)
         return True
 
-    if provider in {"smtp", "gmail"} or (settings.SMTP_USER and settings.SMTP_PASSWORD):
+    if provider in {"smtp", "gmail"}:
         import asyncio
         return await asyncio.to_thread(_send_smtp_sync, to_address, subject, body)
 

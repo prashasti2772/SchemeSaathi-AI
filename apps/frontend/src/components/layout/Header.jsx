@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import logo from "../logo.jpg";
+import logo from "../logo.png";
 import { LANGUAGES, useLanguage } from "../../lib/i18n.jsx";
 import { logoutSession } from "../../lib/api";
 
 const navItems = [
   { key: "nav_home", href: "/" },
   { key: "nav_find_schemes", href: "/find-schemes" },
-  { key: "nav_categories", href: "/categories" },
+  { key: "nav_categories", href: "/graph" },
   { key: "nav_resources", href: "/resources" },
   { key: "nav_about", href: "/about" },
 ];
