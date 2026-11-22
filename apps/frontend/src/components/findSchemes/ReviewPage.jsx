@@ -126,7 +126,7 @@ export default function ReviewPage() {
               className="
                 mt-2
                 text-[14px]
-                text-slate-500
+                text-slate-600
               "
             >
               {t("Please verify your details before finding matching schemes.")}</p>

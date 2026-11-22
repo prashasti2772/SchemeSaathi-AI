@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MainLayout } from "../layout";
 import { useLanguage } from "../../lib/i18n.jsx";
 
@@ -98,7 +98,7 @@ export default function ResourcesPage() {
         <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {filtered.map((resource) => (
             <article key={resource.id} className="flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <p className="text-sm font-semibold text-slate-500">{t(resource.categoryKey)}</p>
+              <p className="text-sm font-semibold text-slate-600">{t(resource.categoryKey)}</p>
               <h2 className="mt-3 text-xl font-bold text-[#0d2b55]">{t(resource.titleKey)}</h2>
               <p className="mt-3 flex-1 text-sm leading-7 text-slate-600">{t(resource.descriptionKey)}</p>
               <button type="button" className="mt-5 text-left text-sm font-semibold underline text-[#0d2b55]" onClick={() => { setSelected(resource); setChecked([]); }}>

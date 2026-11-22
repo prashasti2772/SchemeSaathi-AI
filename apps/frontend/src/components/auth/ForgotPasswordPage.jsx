@@ -153,7 +153,7 @@ export default function ForgotPasswordPage() {
         <button className={button} disabled={busy || !otpSeconds || otp.length !== 6}>{busy ? t("Verifying…") : t("Verify OTP")}</button>
       </form>
       <div className="mt-5 border-t border-slate-200 pt-4">
-        <button type="button" disabled={busy || resendSeconds > 0} className="text-sm font-medium text-[#0d2b55] underline disabled:text-slate-500 disabled:no-underline" onClick={restart}>{resendSeconds > 0 ? `Request a new code in ${resendSeconds}s` : t("Request a new code")}</button>
+        <button type="button" disabled={busy || resendSeconds > 0} className="text-sm font-medium text-[#0d2b55] underline disabled:text-slate-600 disabled:no-underline" onClick={restart}>{resendSeconds > 0 ? `Request a new code in ${resendSeconds}s` : t("Request a new code")}</button>
         <p className="mt-2 text-xs text-slate-600">{t("Complete a new CAPTCHA before sending another code.")}</p>
         <button type="button" disabled={busy} onClick={restart} className="mt-4 text-sm underline disabled:opacity-50">{t("Use another email address")}</button>
       </div>

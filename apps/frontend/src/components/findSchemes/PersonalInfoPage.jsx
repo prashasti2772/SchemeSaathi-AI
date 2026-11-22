@@ -215,7 +215,7 @@ export default function PersonalInfoPage() {
                 : t("wizard_personal_title")}
             </h1>
 
-            <p className="mt-2 text-[13px] text-slate-500">
+            <p className="mt-2 text-[13px] text-slate-600">
               {isEditMode
                 ? t("Update your information and continue.")
                 : t("Please provide your basic information to find suitable government schemes.")}

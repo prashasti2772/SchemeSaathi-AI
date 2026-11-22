@@ -121,7 +121,7 @@ export default function OtherDetailsPage() {
               {t("Almost there! A few more details")}</h1>
 
             {isEditMode && (
-              <p className="mt-2 text-[13px] text-slate-500">
+              <p className="mt-2 text-[13px] text-slate-600">
                 {t("Update your information below.")}</p>
             )}
           </div>
@@ -135,7 +135,7 @@ export default function OtherDetailsPage() {
                 <fieldset disabled={saving} className="contents"><div className="grid gap-x-5 gap-y-5 sm:grid-cols-2">
                   <label className="block"><span className="mb-2 block text-[13px] font-medium text-slate-700">{t("Annual family income in rupees (optional)")}</span>
                     <input name="annualIncome" inputMode="decimal" value={form.annualIncome} onChange={handleChange} maxLength={100} placeholder={t("For example: 120000")} className="h-11 w-full rounded-lg border border-slate-300 px-3.5 text-[13px]" />
-                    <span className="mt-1 block text-xs text-slate-500">{t("Leave blank if unknown. An income range may require further information.")}</span>
+                    <span className="mt-1 block text-xs text-slate-600">{t("Leave blank if unknown. An income range may require further information.")}</span>
                   </label>
 
                   {wantsBusinessSupport && <FormSelect

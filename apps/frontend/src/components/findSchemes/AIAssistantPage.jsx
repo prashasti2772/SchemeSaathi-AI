@@ -298,7 +298,7 @@ export default function AIAssistantPage() {
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 px-4 py-4 sm:px-6">
           <div className="border-l-4 border-[#d7aa2d] pl-3">
             <h1 className="text-xl font-bold text-[#0d2b55]">{t("assistant_title")}</h1>
-            <p className="mt-1 text-sm text-slate-500">{ui.intro}</p>
+            <p className="mt-1 text-sm text-slate-600">{ui.intro}</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <label className="text-sm font-medium">{ui.language}<select aria-label={ui.language} value={language} onChange={e => setLanguage(e.target.value)} className="ml-2 max-w-44 rounded-lg border border-slate-300 bg-white p-2 outline-none focus:border-[#d7aa2d]">{LANGUAGES.map(l => <option key={l.code} value={l.code}>{l.label}</option>)}</select></label>
@@ -329,7 +329,7 @@ export default function AIAssistantPage() {
           {selectedImage && <div className="mb-3 flex items-center justify-between gap-3 rounded-xl border border-dashed border-slate-300 bg-white p-3">
             <div className="flex min-w-0 items-center gap-3">
               {selectedImage.dataUrl ? <img src={selectedImage.dataUrl} alt={selectedImage.name} className="h-12 w-12 rounded-lg object-cover" /> : <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-200 text-lg">📄</div>}
-              <div className="min-w-0"><span className="block truncate text-sm font-medium text-slate-700">{selectedImage.name}</span>{selectedImage.ocrStatus && <span className="block text-xs text-slate-500">{t(selectedImage.ocrStatus)}</span>}</div>
+              <div className="min-w-0"><span className="block truncate text-sm font-medium text-slate-700">{selectedImage.name}</span>{selectedImage.ocrStatus && <span className="block text-xs text-slate-600">{t(selectedImage.ocrStatus)}</span>}</div>
             </div>
             <button type="button" className="text-sm font-semibold text-[#0d2b55]" onClick={() => setSelectedImage(null)}>{t("assistant_attachment_remove")}</button>
           </div>}

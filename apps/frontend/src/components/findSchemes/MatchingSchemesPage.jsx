@@ -134,7 +134,7 @@ export default function MatchingSchemesPage() {
                   {t("results_title")}
                 </h1>
 
-                <p className="mt-2 max-w-170 text-[14px] leading-6 text-slate-500">
+                <p className="mt-2 max-w-170 text-[14px] leading-6 text-slate-600">
                   {t("results_subtitle")}
                 </p>
               </div>
@@ -326,7 +326,7 @@ function SchemeCard({ scheme, onView }) {
       {scheme.failed_conditions?.length > 0 && <p className="mt-3 text-xs text-red-700"><AutoTranslate text={scheme.failed_conditions.join("; ")} /></p>}
       {/* DESCRIPTION */}
 
-      <p className="mt-4 text-[12px] leading-5 text-slate-500"><AutoTranslate text={scheme.description} /></p>
+      <p className="mt-4 text-[12px] leading-5 text-slate-600"><AutoTranslate text={scheme.description} /></p>
 
       {/* BENEFITS */}
 
@@ -358,7 +358,7 @@ function SchemeCard({ scheme, onView }) {
 
       <div className="mt-4 border-t border-slate-100 pt-4">
         <p className="text-[11px] font-semibold text-[#172b49]">{t("How to apply")}</p>
-        <p className="mt-1 text-[11px] leading-5 text-slate-500"><AutoTranslate text={scheme.application_route} /></p>
+        <p className="mt-1 text-[11px] leading-5 text-slate-600"><AutoTranslate text={scheme.application_route} /></p>
       </div>
 
       <SaveSchemeButton scheme={scheme} />
@@ -383,13 +383,13 @@ function SchemeCard({ scheme, onView }) {
             {loadingGraph ? (
               <p className="text-slate-600 text-[11px] py-1 text-center">{t("Finding graph relationships...")}</p>
             ) : relatedSchemes.length === 0 ? (
-              <p className="text-slate-500 text-[11px] py-1">{t("No other active schemes currently linked in this category.")}</p>
+              <p className="text-slate-600 text-[11px] py-1">{t("No other active schemes currently linked in this category.")}</p>
             ) : (
               <div className="space-y-1.5">
                 {relatedSchemes.map((rel) => (
                   <div key={rel.scheme_id} className="p-2 rounded bg-white border border-slate-200">
                     <p className="font-semibold text-slate-800 text-[11px]"><AutoTranslate text={rel.scheme_name} /></p>
-                    <p className="text-[10px] text-slate-500 line-clamp-1"><AutoTranslate text={rel.description} /></p>
+                    <p className="text-[10px] text-slate-600 line-clamp-1"><AutoTranslate text={rel.description} /></p>
                   </div>
                 ))}
               </div>
@@ -423,7 +423,7 @@ function StatusMessage({ title, body, action, onRetry }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white px-6 py-16 text-center shadow-sm">
       <h2 className="mt-4 text-lg font-bold text-[#172b49]">{title}</h2>
-      <p className="mx-auto mt-2 max-w-md text-[13px] leading-5 text-slate-500">{body}</p>
+      <p className="mx-auto mt-2 max-w-md text-[13px] leading-5 text-slate-600">{body}</p>
 
       {onRetry && (
         <button
@@ -456,7 +456,7 @@ function EmptyResults({ onReset }) {
 
       <h2 className="mt-4 text-lg font-bold text-[#172b49]">{t("No schemes found")}</h2>
 
-      <p className="mx-auto mt-2 max-w-md text-[13px] leading-5 text-slate-500">
+      <p className="mx-auto mt-2 max-w-md text-[13px] leading-5 text-slate-600">
         {t("We couldn't find schemes matching your search. Try another keyword, or none of the current schemes may fit your profile yet.")}</p>
 
       <button

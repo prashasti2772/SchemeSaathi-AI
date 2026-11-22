@@ -83,7 +83,7 @@ export default function ProgressSteps({ currentStep = 1 }) {
                     ${
                       active
                         ? "font-medium text-slate-700"
-                        : "text-slate-500"
+                        : "text-slate-600"
                     }
                   `}
                 >

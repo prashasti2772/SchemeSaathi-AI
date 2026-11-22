@@ -236,7 +236,7 @@ export default function GraphExplorerPage() {
 
             {/* Category / Sector Chips (All 14 Sectors) */}
             <div className="mt-4 pt-4 border-t border-slate-100">
-              <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+              <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">
                 {t("Filter by Sector Node (14 Sectors):")}
               </div>
               <div className="flex flex-wrap gap-2">
@@ -301,7 +301,7 @@ export default function GraphExplorerPage() {
                 {Number(totalFound).toLocaleString()} {t("schemes")}
               </span>
             </h2>
-            <div className="text-xs text-slate-500">
+            <div className="text-xs text-slate-600">
               {t("Showing page")} <strong className="text-slate-800">{page}</strong> {t("of")} <strong className="text-slate-800">{totalPages}</strong>
               {selectedCategory !== "All" && (
                 <span> {t("in")} <strong className="text-slate-800"><AutoTranslate text={selectedCategory} /></strong></span>
@@ -312,7 +312,7 @@ export default function GraphExplorerPage() {
           {loading ? (
             <div className="text-center py-16">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-[#081d3d] border-t-transparent"></div>
-              <p className="mt-3 text-slate-500 text-sm">{t("Querying Knowledge Graph across 3,400 schemes...")}</p>
+              <p className="mt-3 text-slate-600 text-sm">{t("Querying Knowledge Graph across 3,400 schemes...")}</p>
             </div>
           ) : schemes.length === 0 ? (
             <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
@@ -348,7 +348,7 @@ export default function GraphExplorerPage() {
                         </h3>
 
                         {scheme.department && (
-                          <p className="text-[11px] text-slate-500 mt-1 font-medium">
+                          <p className="text-[11px] text-slate-600 mt-1 font-medium">
                             🏛️ <AutoTranslate text={scheme.department} />
                           </p>
                         )}
@@ -372,7 +372,7 @@ export default function GraphExplorerPage() {
 
                         {/* Graph Relationship Visualizer Badge */}
                         <div className="mt-4 p-3 bg-slate-50 border border-slate-200/80 rounded-xl">
-                          <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">
+                          <div className="text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-2">
                             {t("Knowledge Graph Topology:")}
                           </div>
                           <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
@@ -405,7 +405,7 @@ export default function GraphExplorerPage() {
                                 {t("Traversing relationship paths...")}
                               </div>
                             ) : related.length === 0 ? (
-                              <div className="py-2 text-xs text-slate-500 italic">
+                              <div className="py-2 text-xs text-slate-600 italic">
                                 {t("No additional related schemes found sharing this category.")}
                               </div>
                             ) : (
@@ -416,7 +416,7 @@ export default function GraphExplorerPage() {
                                     className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs"
                                   >
                                     <div className="font-semibold text-slate-800"><AutoTranslate text={rel.scheme_name} /></div>
-                                    <div className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">
+                                    <div className="text-[10px] text-slate-600 mt-0.5 line-clamp-1">
                                       <AutoTranslate text={rel.description} />
                                     </div>
                                   </div>

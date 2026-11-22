@@ -142,7 +142,7 @@ export default function BusinessDetailsPage() {
               {t("Tell us about your business")}</h1>
 
             {isEditMode && (
-              <p className="mt-2 text-[13px] text-slate-500">
+              <p className="mt-2 text-[13px] text-slate-600">
                 {t("Update your business information below.")}</p>
             )}
           </div>

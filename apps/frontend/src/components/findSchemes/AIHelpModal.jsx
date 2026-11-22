@@ -212,7 +212,7 @@ export default function AIHelpModal({ isOpen, onClose, currentStep = 1 }) {
                             <div className="flex items-start justify-between gap-1">
                               <span className="font-bold text-[#172b49] line-clamp-1">{s.scheme_name}</span>
                               {s.level && (
-                                <span className="rounded bg-white px-1 py-0.2 text-[8px] font-medium text-slate-500">
+                                <span className="rounded bg-white px-1 py-0.2 text-[8px] font-medium text-slate-600">
                                   {s.level}
                                 </span>
                               )}

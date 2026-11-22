@@ -67,7 +67,7 @@ export default function DiscoverySections() {
               <p className="text-xs font-semibold uppercase tracking-wide text-[#6e5300]"><AutoTranslate text={scheme.category} /></p>
               <h3 className="mt-3 text-lg font-bold text-[#0d2b55]"><AutoTranslate text={scheme.scheme_name} /></h3>
               <p className="mt-3 text-sm leading-7 text-slate-600"><AutoTranslate text={scheme.benefits || scheme.description} /></p>
-              <p className="mt-4 text-xs text-slate-500">{t("Guidance reviewed")}: {scheme.verified_on}</p>
+              <p className="mt-4 text-xs text-slate-600">{t("Guidance reviewed")}: {scheme.verified_on}</p>
               {official && <a href={official} target="_blank" rel="noopener noreferrer" className="mt-4 text-sm font-semibold text-[#0d2b55] underline underline-offset-4">{t("Official application guidance")}</a>}
               <a href={`/categories?q=${encodeURIComponent(scheme.scheme_name)}`} className="mt-auto pt-4 text-sm font-semibold text-[#0d2b55] underline underline-offset-4">{t("Benefits, eligibility and application details")}</a>
             </article>;

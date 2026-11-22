@@ -161,7 +161,7 @@ export default function CategoriesPage() {
           <div className="mt-8 space-y-5">
             <div className="flex flex-wrap items-center justify-between gap-3 md:flex-nowrap">
               <h2 className="text-2xl font-bold text-[#0d2b55]">{t("categories_browse")}</h2>
-              <span className="text-sm text-slate-500">{t("categories_count", { count: baseCategories.length })}</span>
+              <span className="text-sm text-slate-600">{t("categories_count", { count: baseCategories.length })}</span>
             </div>
 
             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -244,7 +244,7 @@ export default function CategoriesPage() {
               <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
                 {result.schemes.map((s, i) => (
                   <article key={s.scheme_name} className="flex min-w-0 flex-col rounded-[24px] border border-slate-200 bg-white p-5 shadow-[0_10px_22px_rgba(15,23,42,0.04)]">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-600">
                       {s.level || t("categories_record")}
                     </p>
                     <h2 className="my-2 text-lg font-bold text-[#0d2b55]"><AutoTranslate text={s.scheme_name} /></h2>
@@ -267,7 +267,7 @@ export default function CategoriesPage() {
                       </dl>
                     )}
                     <SaveSchemeButton scheme={s} />
-                    {s.verified_on && <p className="my-3 text-xs text-slate-500">{t("Source checked")}: {s.verified_on}</p>}
+                    {s.verified_on && <p className="my-3 text-xs text-slate-600">{t("Source checked")}: {s.verified_on}</p>}
                     <div className="mt-auto flex flex-wrap gap-3 border-t border-slate-200 pt-4 text-sm">
                       {officialSchemeUrl(s.official_url) && (
                         <a href={officialSchemeUrl(s.official_url)} target="_blank" rel="noopener noreferrer" className="font-semibold underline text-[#0d2b55]">

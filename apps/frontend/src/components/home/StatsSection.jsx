@@ -37,7 +37,7 @@ export default function StatsSection() {
               {t(stat.labelKey)}
             </div>
             {stat.footnoteKey && (
-              <div className="mt-1 text-center text-xs text-slate-500">
+              <div className="mt-1 text-center text-xs text-slate-600">
                 {stat.footnoteCount} {t(stat.footnoteKey)}
               </div>
             )}

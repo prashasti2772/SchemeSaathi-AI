@@ -49,7 +49,7 @@ export default function ProfilePage() {
     return (
       <MainLayout>
         <div className="min-h-[calc(100vh-132px)] bg-[#f7f8fc] py-16 text-center">
-          <p className="text-sm text-slate-500">{t("Loading your profile...")}</p>
+          <p className="text-sm text-slate-600">{t("Loading your profile...")}</p>
         </div>
       </MainLayout>
     );
@@ -72,7 +72,7 @@ export default function ProfilePage() {
                 <h1 className="text-lg font-bold text-[#172b49]">
                   {personal?.fullName || user?.fullName || "Your Profile"}
                 </h1>
-                <p className="mt-0.5 text-sm text-slate-500">
+                <p className="mt-0.5 text-sm text-slate-600">
                   {personal?.phoneNumber || user?.mobile || "No mobile number on file"}
                 </p>
               </div>
@@ -204,7 +204,7 @@ function FieldGrid({ fields }) {
 
 function EmptyNote({ text, href, cta }) {
   return (
-    <div className="rounded-lg bg-slate-50 px-4 py-4 text-sm text-slate-500">
+    <div className="rounded-lg bg-slate-50 px-4 py-4 text-sm text-slate-600">
       {text}{" "}
       <a href={href} className="font-medium text-[#0d2b55] hover:underline">
         {cta} →
