@@ -12,7 +12,7 @@ SchemeSaathi is a full-stack web platform designed to make government scheme dis
 Instead of manually searching through multiple schemes and eligibility rules, users can enter their basic profile and business details to receive relevant scheme recommendations along with eligibility explanations, required documents, benefits, and official references.
 
 **Live Website:** 
-https://schemesathi-ai-26kj.onrender.com
+https://schemesaathi-3.onrender.com
 
 ---
 
