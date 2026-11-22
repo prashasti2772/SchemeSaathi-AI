@@ -6,7 +6,7 @@ import WhyAskCard from "./WhyAskCard";
 import { MainLayout } from "../layout";
 import { STATES, getDistrictsForState } from "../../lib/statesDistricts";
 import { getUserItem } from "../../lib/userStorage";
-import { useLanguage } from "../../lib/i18n.jsx";
+import { AutoTranslate, useLanguage } from "../../lib/i18n.jsx";
 
 /* ====== INITIAL FORM ====== */
 

@@ -27,6 +27,7 @@ def wav_base64(*, channels=1, sample_width=2, sample_rate=16000, frames=1600):
 @pytest.fixture
 def transcribe_app(monkeypatch):
     monkeypatch.setattr(voice_assistant.limiter, "enabled", False)
+    monkeypatch.setattr(voice_assistant.sarvam_client, "configured", lambda: False)
     monkeypatch.setattr(voice_assistant.bhashini_client, "configured", lambda: True)
     speech = AsyncMock(return_value={"text": "Which documents do I need?"})
     monkeypatch.setattr(voice_assistant.bhashini_client, "speech_to_text", speech)

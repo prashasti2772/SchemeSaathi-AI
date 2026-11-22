@@ -10,7 +10,7 @@ import {
   syncGraphSchemes,
   apiError,
 } from "../../lib/api";
-import { useLanguage } from "../../lib/i18n.jsx";
+import { AutoTranslate, useLanguage } from "../../lib/i18n.jsx";
 import { officialSchemeUrl } from "../../lib/citizenProfile";
 import SaveSchemeButton from "../schemes/SaveSchemeButton";
 
@@ -148,22 +148,22 @@ export default function GraphExplorerPage() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
               <div>
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-[#f4d780]/20 text-[#f4d780] border border-[#f4d780]/40 mb-3">
-                  SchemeSaathi
+                  {t("SchemeSaathi")}
                 </div>
                 <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
-                  Explore government schemes
+                  {t("Explore government schemes")}
                 </h1>
                 <p className="mt-2 text-slate-300 max-w-2xl text-sm sm:text-base">
-                  Browse the verified pilot catalogue by your needs. Availability and application windows vary; some searches may have no verified entry yet.
+                  {t("Browse the verified pilot catalogue by your needs. Availability and application windows vary; some searches may have no verified entry yet.")}
                 </p>
               </div>
 
               {/* Neo4j Status Card */}
               <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 min-w-[290px]">
                 <div className="flex items-center justify-between pb-2 border-b border-white/10">
-                  <span className="text-xs font-medium text-slate-300">Graph Database</span>
+                  <span className="text-xs font-medium text-slate-300">{t("Graph Database")}</span>
                   <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/40">
-                    ● Neo4j Graph (Active)
+                    ● {t("Neo4j Graph (Active)")}
                   </span>
                 </div>
 
@@ -172,19 +172,19 @@ export default function GraphExplorerPage() {
                     <div className="text-lg font-bold text-[#f4d780]">
                       {stats?.total_schemes ? Number(stats.total_schemes).toLocaleString() : "3,400"}
                     </div>
-                    <div className="text-[10px] text-slate-300 font-medium">Schemes</div>
+                    <div className="text-[10px] text-slate-300 font-medium">{t("Schemes")}</div>
                   </div>
                   <div className="bg-white/5 rounded-lg p-2 border border-white/10">
                     <div className="text-lg font-bold text-[#f4d780]">
                       {stats?.total_categories ?? "14"}
                     </div>
-                    <div className="text-[10px] text-slate-300 font-medium">Sectors</div>
+                    <div className="text-[10px] text-slate-300 font-medium">{t("Sectors")}</div>
                   </div>
                   <div className="bg-white/5 rounded-lg p-2 border border-white/10">
                     <div className="text-lg font-bold text-[#f4d780]">
                       {stats?.total_departments ?? "14"}
                     </div>
-                    <div className="text-[10px] text-slate-300 font-medium">Departments</div>
+                    <div className="text-[10px] text-slate-300 font-medium">{t("Departments")}</div>
                   </div>
                 </div>
 
@@ -193,7 +193,7 @@ export default function GraphExplorerPage() {
                   onClick={handleSync}
                   className="mt-3 w-full py-1.5 px-3 rounded-lg text-xs font-semibold bg-[#f4d780] text-[#081d3d] hover:bg-[#ffe594] transition shadow-sm cursor-pointer"
                 >
-                  {syncStatus || "Sync 3,400 Schemes → Graph"}
+                  {syncStatus ? <AutoTranslate text={syncStatus} /> : t("Sync 3,400 Schemes → Graph")}
                 </button>
               </div>
             </div>
@@ -209,7 +209,7 @@ export default function GraphExplorerPage() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search among 3,400 schemes (e.g. loan, farmer, scholarship, women, subsidy, artisan, pension)..."
+                  placeholder={t("Search among 3,400 schemes (e.g. loan, farmer, scholarship, women, subsidy, artisan, pension)...")}
                   className="w-full pl-4 pr-10 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#081d3d] text-sm"
                 />
                 {searchQuery && (
@@ -230,14 +230,14 @@ export default function GraphExplorerPage() {
                 type="submit"
                 className="px-6 py-3 bg-[#081d3d] text-white font-medium rounded-xl hover:bg-[#0e2a57] transition text-sm flex items-center justify-center gap-2 cursor-pointer font-semibold shadow-sm"
               >
-                Graph Search
+                {t("Graph Search")}
               </button>
             </form>
 
             {/* Category / Sector Chips (All 14 Sectors) */}
             <div className="mt-4 pt-4 border-t border-slate-100">
               <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-                Filter by Sector Node (14 Sectors):
+                {t("Filter by Sector Node (14 Sectors):")}
               </div>
               <div className="flex flex-wrap gap-2">
                 <button
@@ -249,7 +249,7 @@ export default function GraphExplorerPage() {
                       : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                   }`}
                 >
-                  All Sectors ({Number(stats?.total_schemes || 3400).toLocaleString()})
+                  {t("All Sectors")} ({Number(stats?.total_schemes || 3400).toLocaleString()})
                 </button>
                 {(categories.length > 0
                   ? categories
@@ -280,7 +280,7 @@ export default function GraphExplorerPage() {
                         : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                     }`}
                   >
-                    {cat}
+                    {t(cat)}
                   </button>
                 ))}
               </div>
@@ -296,15 +296,15 @@ export default function GraphExplorerPage() {
 
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
             <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-              Graph Nodes & Connected Schemes
+              {t("Graph Nodes & Connected Schemes")}
               <span className="text-xs font-semibold text-[#081d3d] bg-[#f4d780]/40 px-2.5 py-0.5 rounded-full">
-                {Number(totalFound).toLocaleString()} schemes
+                {Number(totalFound).toLocaleString()} {t("schemes")}
               </span>
             </h2>
             <div className="text-xs text-slate-500">
-              Showing page <strong className="text-slate-800">{page}</strong> of <strong className="text-slate-800">{totalPages}</strong>
+              {t("Showing page")} <strong className="text-slate-800">{page}</strong> {t("of")} <strong className="text-slate-800">{totalPages}</strong>
               {selectedCategory !== "All" && (
-                <span> in <strong className="text-slate-800">{selectedCategory}</strong></span>
+                <span> {t("in")} <strong className="text-slate-800"><AutoTranslate text={selectedCategory} /></strong></span>
               )}
             </div>
           </div>
@@ -312,12 +312,12 @@ export default function GraphExplorerPage() {
           {loading ? (
             <div className="text-center py-16">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-[#081d3d] border-t-transparent"></div>
-              <p className="mt-3 text-slate-500 text-sm">Querying Knowledge Graph across 3,400 schemes...</p>
+              <p className="mt-3 text-slate-500 text-sm">{t("Querying Knowledge Graph across 3,400 schemes...")}</p>
             </div>
           ) : schemes.length === 0 ? (
             <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-              <p className="text-slate-600 font-medium">No graph schemes matched your criteria.</p>
-              <p className="text-slate-400 text-xs mt-1">Try another keyword or select &ldquo;All Sectors&rdquo;.</p>
+              <p className="text-slate-600 font-medium">{t("No graph schemes matched your criteria.")}</p>
+              <p className="text-slate-400 text-xs mt-1">{t("Try another keyword or select All Sectors.")}</p>
             </div>
           ) : (
             <>
@@ -338,34 +338,34 @@ export default function GraphExplorerPage() {
                         {/* Top metadata tags */}
                         <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                           <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-                            {scheme.category || "General"}
+                            <AutoTranslate text={scheme.category || "General"} />
                           </span>
                           <SaveSchemeButton scheme={scheme} />
                         </div>
 
                         <h3 className="text-base font-bold text-slate-900 leading-snug">
-                          {scheme.scheme_name || scheme.name}
+                          <AutoTranslate text={scheme.scheme_name || scheme.name} />
                         </h3>
 
                         {scheme.department && (
                           <p className="text-[11px] text-slate-500 mt-1 font-medium">
-                            🏛️ {scheme.department}
+                            🏛️ <AutoTranslate text={scheme.department} />
                           </p>
                         )}
 
                         {scheme.description && (
                           <p className="mt-2 text-xs text-slate-600 line-clamp-3 leading-relaxed">
-                            {scheme.description}
+                            <AutoTranslate text={scheme.description} />
                           </p>
                         )}
 
                         {scheme.benefits && (
                           <div className="mt-3 p-2.5 bg-emerald-50/70 border border-emerald-100 rounded-xl">
                             <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wide block mb-0.5">
-                              Key Benefit:
+                              {t("Key Benefit:")}
                             </span>
                             <p className="text-xs text-emerald-900 line-clamp-2">
-                              {scheme.benefits}
+                              <AutoTranslate text={scheme.benefits} />
                             </p>
                           </div>
                         )}
@@ -373,19 +373,19 @@ export default function GraphExplorerPage() {
                         {/* Graph Relationship Visualizer Badge */}
                         <div className="mt-4 p-3 bg-slate-50 border border-slate-200/80 rounded-xl">
                           <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">
-                            Knowledge Graph Topology:
+                            {t("Knowledge Graph Topology:")}
                           </div>
                           <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
                             <span className="bg-[#081d3d] text-white px-2 py-0.5 rounded font-mono font-medium">
-                              :Scheme
+                              :{t("Scheme")}
                             </span>
-                            <span className="text-slate-400 font-bold">──[:TARGETS]──&gt;</span>
+                            <span className="text-slate-400 font-bold">──[:{t("TARGETS")}]──&gt;</span>
                             <span className="bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded font-mono font-medium">
-                              :{scheme.category || "Sector"}
+                              :<AutoTranslate text={scheme.category || "Sector"} />
                             </span>
-                            <span className="text-slate-400 font-bold">──[:MANAGED_BY]──&gt;</span>
+                            <span className="text-slate-400 font-bold">──[:{t("MANAGED_BY")}]──&gt;</span>
                             <span className="bg-indigo-100 text-indigo-900 border border-indigo-200 px-2 py-0.5 rounded font-mono font-medium text-[10px]">
-                              :Department
+                              :{t("Department")}
                             </span>
                           </div>
                         </div>
@@ -394,19 +394,19 @@ export default function GraphExplorerPage() {
                         {isExpanded && (
                           <div className="mt-4 pt-3 border-t border-slate-200">
                             <div className="text-xs font-bold text-slate-700 mb-2 flex items-center justify-between">
-                              <span>Connected Schemes in this Sector:</span>
+                              <span>{t("Connected Schemes in this Sector:")}</span>
                               {isRelatedLoading && (
-                                <span className="text-[10px] text-slate-400 font-normal">Loading...</span>
+                                <span className="text-[10px] text-slate-400 font-normal">{t("Loading...")}</span>
                               )}
                             </div>
 
                             {isRelatedLoading ? (
                               <div className="py-3 text-center text-xs text-slate-400">
-                                Traversing relationship paths...
+                                {t("Traversing relationship paths...")}
                               </div>
                             ) : related.length === 0 ? (
                               <div className="py-2 text-xs text-slate-500 italic">
-                                No additional related schemes found sharing this category.
+                                {t("No additional related schemes found sharing this category.")}
                               </div>
                             ) : (
                               <div className="space-y-2">
@@ -415,9 +415,9 @@ export default function GraphExplorerPage() {
                                     key={rel.scheme_id}
                                     className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs"
                                   >
-                                    <div className="font-semibold text-slate-800">{rel.scheme_name}</div>
+                                    <div className="font-semibold text-slate-800"><AutoTranslate text={rel.scheme_name} /></div>
                                     <div className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">
-                                      {rel.description}
+                                      <AutoTranslate text={rel.description} />
                                     </div>
                                   </div>
                                 ))}
@@ -434,7 +434,7 @@ export default function GraphExplorerPage() {
                           onClick={() => handleToggleRelated(schemeId)}
                           className="text-xs font-semibold text-[#081d3d] hover:text-blue-700 underline underline-offset-2 flex items-center gap-1 cursor-pointer"
                         >
-                          {isExpanded ? "Hide Connected Graph" : "Explore Related Schemes (Graph)"}
+                          {isExpanded ? t("Hide Connected Graph") : t("Explore Related Schemes (Graph)")}
                         </button>
 
                         {officialUrl && (
@@ -444,7 +444,7 @@ export default function GraphExplorerPage() {
                             rel="noopener noreferrer"
                             className="px-3 py-1.5 bg-[#081d3d] text-white text-xs font-medium rounded-lg hover:bg-[#143d78] transition"
                           >
-                            Official Portal ↗
+                            {t("Official Portal ↗")}
                           </a>
                         )}
                       </div>
@@ -457,7 +457,7 @@ export default function GraphExplorerPage() {
               {totalPages > 1 && (
                 <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
                   <div className="text-xs text-slate-600">
-                    Showing <strong>{((page - 1) * 20) + 1}</strong> – <strong>{Math.min(page * 20, totalFound)}</strong> of <strong>{Number(totalFound).toLocaleString()}</strong> schemes
+                    {t("Showing")} <strong>{((page - 1) * 20) + 1}</strong> – <strong>{Math.min(page * 20, totalFound)}</strong> {t("of")} <strong>{Number(totalFound).toLocaleString()}</strong> {t("schemes")}
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -471,11 +471,11 @@ export default function GraphExplorerPage() {
                           : "bg-[#081d3d] text-white hover:bg-[#143d78]"
                       }`}
                     >
-                      ← Previous
+                      ← {t("Previous")}
                     </button>
 
                     <span className="text-xs font-medium px-2 text-slate-700">
-                      Page {page} of {totalPages}
+                      {t("Page")} {page} {t("of")} {totalPages}
                     </span>
 
                     <button
@@ -488,7 +488,7 @@ export default function GraphExplorerPage() {
                           : "bg-[#081d3d] text-white hover:bg-[#143d78]"
                       }`}
                     >
-                      Next →
+                      {t("Next")} →
                     </button>
                   </div>
                 </div>

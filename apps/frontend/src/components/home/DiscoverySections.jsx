@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { fetchCatalogSchemes } from "../../lib/api";
 import { officialSchemeUrl } from "../../lib/citizenProfile";
-import { useLanguage } from "../../lib/i18n.jsx";
+import { AutoTranslate, useLanguage } from "../../lib/i18n.jsx";
 
 const categories = [
   ["Grants and subsidies", "subsidy"],
@@ -18,11 +18,11 @@ const headingClass = "text-2xl font-extrabold tracking-tight text-[#081d3d]";
 const cardClass = "min-w-0 rounded-3xl border border-[#d7dfe9] bg-white p-6 shadow-[0_12px_30px_rgba(8,29,61,0.05)]";
 
 export default function DiscoverySections() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [featured, setFeatured] = useState(null);
   useEffect(() => {
     let active = true;
-    fetchCatalogSchemes("", 50).then(data => {
+    fetchCatalogSchemes("", 50, 0, "", language).then(data => {
       const preferred = ["pm-vishwakarma", "pmegp", "pmkvy-4-stt", "esdp", "nssh", "pmmy"];
       const rows = [...data.schemes].sort((a, b) => {
         const rank = scheme => {
@@ -34,7 +34,7 @@ export default function DiscoverySections() {
       if (active) setFeatured(rows.slice(0, 3));
     }).catch(() => { if (active) setFeatured([]); });
     return () => { active = false; };
-  }, []);
+  }, [language]);
 
   return (
     <>
@@ -64,9 +64,9 @@ export default function DiscoverySections() {
           {featured.map(scheme => {
             const official = officialSchemeUrl(scheme.application_url || scheme.official_url);
             return <article key={scheme.scheme_id} className={`${cardClass} flex flex-col`}>
-              <p className="text-xs font-semibold uppercase tracking-wide text-[#6e5300]">{t(scheme.category)}</p>
-              <h3 className="mt-3 text-lg font-bold text-[#0d2b55]">{scheme.scheme_name}</h3>
-              <p className="mt-3 text-sm leading-7 text-slate-600">{scheme.benefits || scheme.description}</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-[#6e5300]"><AutoTranslate text={scheme.category} /></p>
+              <h3 className="mt-3 text-lg font-bold text-[#0d2b55]"><AutoTranslate text={scheme.scheme_name} /></h3>
+              <p className="mt-3 text-sm leading-7 text-slate-600"><AutoTranslate text={scheme.benefits || scheme.description} /></p>
               <p className="mt-4 text-xs text-slate-500">{t("Guidance reviewed")}: {scheme.verified_on}</p>
               {official && <a href={official} target="_blank" rel="noopener noreferrer" className="mt-4 text-sm font-semibold text-[#0d2b55] underline underline-offset-4">{t("Official application guidance")}</a>}
               <a href={`/categories?q=${encodeURIComponent(scheme.scheme_name)}`} className="mt-auto pt-4 text-sm font-semibold text-[#0d2b55] underline underline-offset-4">{t("Benefits, eligibility and application details")}</a>

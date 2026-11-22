@@ -24,7 +24,12 @@ def _load_csv_application_routes() -> tuple[dict[str, str], dict[str, str]]:
     routes_by_name = {}
     with SCHEME_CSV_PATH.open("r", encoding="utf-8-sig", errors="ignore", newline="") as csv_file:
         for row in csv.DictReader(csv_file):
-            application = str(row.get("application") or "").strip()
+            application = str(
+                row.get("how to apply")
+                or row.get("application")
+                or row.get("application_process")
+                or ""
+            ).strip()
             if not application:
                 continue
             slug = _normalize_scheme_key(row.get("slug"))

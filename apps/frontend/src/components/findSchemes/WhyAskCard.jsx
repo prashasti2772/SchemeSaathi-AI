@@ -19,7 +19,7 @@ export default function WhyAskCard() {
         {reasons.map((reason) => (
           <div key={reason} className="flex items-center gap-4">
             <span className="h-3 w-3 shrink-0 rounded-full bg-[#299a68]" />
-            <span className="text-[13px] text-slate-700">{reason}</span>
+            <span className="text-[13px] text-slate-700">{t(reason)}</span>
           </div>
         ))}
       </div>

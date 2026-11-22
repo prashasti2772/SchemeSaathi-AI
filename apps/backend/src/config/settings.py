@@ -72,7 +72,8 @@ class Settings(BaseSettings):
 
     # Bhashini (Digital India Bhashini / ULCA-Dhruva) — real government NLP pipeline
     # for ASR, translation and TTS across Indian languages.
-    VOICE_AI_PROVIDER: str = "bhashini"
+    VOICE_AI_PROVIDER: str = "sarvam"
+    SARVAM_API_KEY: str = ""
     BHASHINI_USER_ID: str = ""
     BHASHINI_API_KEY: str = ""
     BHASHINI_PIPELINE_ID: str = "64392f96daac500b55c543cd"

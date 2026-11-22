@@ -13,6 +13,7 @@ from src.modules.eligibility import localization as loc
 def no_live_provider(monkeypatch):
     for key in ["GEMINI_API_KEY", "CHATBOT_API_KEY", "BHASHINI_USER_ID", "BHASHINI_API_KEY"]:
         monkeypatch.setattr(loc.settings, key, "")
+    monkeypatch.setattr(loc.sarvam_client, "configured", lambda: False)
 
 
 def with_database(action):

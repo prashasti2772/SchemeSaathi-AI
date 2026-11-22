@@ -382,9 +382,22 @@ Official Website: {self._clean_text(doc.get('official_url', ''))}
             if previous:
                 message = previous
         await asyncio.to_thread(self._ensure_initialized)
-        named = self._named_schemes(message)
+
+        # For non-English messages, translate to English for semantic understanding & intent classification
+        en_message = message
+        if language != "en":
+            try:
+                from src.integrations import sarvam_client
+                if sarvam_client.configured():
+                    trans_en = await asyncio.wait_for(sarvam_client.translate_text(message, language, "en"), timeout=12)
+                    if trans_en and trans_en.strip():
+                        en_message = trans_en.strip()
+            except Exception as e:
+                logger.debug("user_query_translation_to_en_skipped", error=str(e))
+
+        named = self._named_schemes(en_message) or self._named_schemes(message)
         # Reuse an earlier named scheme for a follow-up, never for a new concept.
-        if not named and not conv.topics(message) and re.search(conv.FOLLOWUP, conv.normalize(message)):
+        if not named and not conv.topics(en_message) and re.search(conv.FOLLOWUP, conv.normalize(en_message)):
             for turn in reversed(history[-12:]):
                 if turn.get("role") in {"user", "assistant"}:
                     if conv.topics(turn.get("content", "")) and re.search(conv.DEFINITION, conv.normalize(turn.get("content", ""))) and not self._named_schemes(turn.get("content", "")):
@@ -392,19 +405,29 @@ Official Website: {self._clean_text(doc.get('official_url', ''))}
                     named = self._named_schemes(turn.get("content", ""))
                     if named:
                         break
-        intent, found = conv.classify(message, history, named)
+        intent, found = conv.classify(en_message, history, named)
         local_intents = {"greeting", "thanks", "explanation", "example", "repayment", "which_scheme", "profile"}
         if intent in local_intents:
             generated = None
             if intent in {"explanation", "example", "repayment"}:
-                generated = await self._generate(message, history, [], language, intent)
+                generated = await self._generate(en_message, history, [], language, intent)
             if generated:
                 return {"reply": generated, "retrieved_schemes": [], "mode": "generated", "intent": intent, "language": language}
-            return {"reply": conv.local_answer(intent, found, language), "retrieved_schemes": [],
+            ans = conv.local_answer(intent, found, language)
+            if language != "en":
+                try:
+                    from src.integrations import sarvam_client
+                    if sarvam_client.configured():
+                        translated = await asyncio.wait_for(sarvam_client.translate_text(ans, "en", language), timeout=10)
+                        if translated:
+                            ans = translated
+                except Exception:
+                    pass
+            return {"reply": ans, "retrieved_schemes": [],
                     "mode": "local_guide", "intent": intent, "language": language, "topics": found}
         docs = named
         if intent == "discovery":
-            query = conv.catalogue_query(message)
+            query = conv.catalogue_query(en_message)
             if profile:
                 query += " " + " ".join(str(profile.get(key) or "") for key in ("occupation", "interests", "welfare_needs", "welfareNeeds", "business_type", "businessActivity", "preferred_support"))
             docs = await self.search_async(query, top_k=3)
@@ -413,6 +436,15 @@ Official Website: {self._clean_text(doc.get('official_url', ''))}
         words = conv.COPY.get(language, conv.COPY["en"])
         if not docs:
             reply = words["no_match"] if intent == "discovery" else words["clarify"]
+            if language != "en" and language not in conv.COPY:
+                try:
+                    from src.integrations import sarvam_client
+                    if sarvam_client.configured():
+                        translated = await asyncio.wait_for(sarvam_client.translate_text(reply, "en", language), timeout=10)
+                        if translated:
+                            reply = translated
+                except Exception:
+                    pass
         else:
             fields = [intent] if intent in conv.FIELD_PATTERNS else ["description"]
             if intent == "discovery":
@@ -424,7 +456,13 @@ Official Website: {self._clean_text(doc.get('official_url', ''))}
                 reply = conv.COPY["en"]["search_intro"] + "\n\n" + reply
             if language != "en":
                 translated = None
-                if bhashini_client.configured():
+                from src.integrations import sarvam_client
+                if sarvam_client.configured():
+                    try:
+                        translated = await asyncio.wait_for(sarvam_client.translate_text(reply, "en", language), timeout=25)
+                    except Exception:
+                        pass
+                if not translated and bhashini_client.configured():
                     try:
                         translated = await asyncio.wait_for(bhashini_client.translate_text(reply, "en", language), timeout=25)
                     except (HTTPException, asyncio.TimeoutError):

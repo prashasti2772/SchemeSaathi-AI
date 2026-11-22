@@ -153,7 +153,7 @@ def test_new_scheme_facts_and_sources_are_not_rewritten_by_a_provider(monkeypatc
         raise AssertionError("Scheme-specific answers must remain grounded")
     monkeypatch.setattr(chatbot_service, "_genai_client", SimpleNamespace(aio=SimpleNamespace(models=SimpleNamespace(generate_content=fabricated))))
     answer = asyncio.run(chatbot_service.chat("How do I apply for PM Vishwakarma?"))
-    assert "Common Service Centre" in answer["reply"]
+    assert "CSC" in answer["reply"]
     assert "https://pmvishwakarma.gov.in/" in answer["reply"]
     assert "2026-10-31" in answer["reply"]
 

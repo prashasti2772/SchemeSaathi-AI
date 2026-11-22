@@ -19,11 +19,27 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.config.database import Base
 from src.config.settings import settings
 from src.config.logging import get_logger
-from src.integrations import bhashini_client, google_bridge
+from src.integrations import bhashini_client, google_bridge, sarvam_client
 
-Language = Literal["en", "hi", "mr", "gu", "ta", "te", "bn", "kn"]
-LANGUAGES = {"en": "English", "hi": "Hindi", "mr": "Marathi", "gu": "Gujarati", "ta": "Tamil", "te": "Telugu", "bn": "Bengali", "kn": "Kannada"}
-SCRIPTS = {"hi": (0x900, 0x97f), "mr": (0x900, 0x97f), "gu": (0xa80, 0xaff), "ta": (0xb80, 0xbff), "te": (0xc00, 0xc7f), "bn": (0x980, 0x9ff), "kn": (0xc80, 0xcff)}
+Language = Literal["en", "hi", "mr", "gu", "ta", "te", "bn", "kn", "ml", "pa", "or", "od", "ur", "as", "kok", "mai", "ne", "sa", "sd", "brx", "doi", "mni", "sat", "ks"]
+LANGUAGES = {
+    "en": "English", "hi": "Hindi", "mr": "Marathi", "gu": "Gujarati", "ta": "Tamil",
+    "te": "Telugu", "bn": "Bengali", "kn": "Kannada", "ml": "Malayalam",
+    "pa": "Punjabi", "or": "Odia", "od": "Odia", "ur": "Urdu", "as": "Assamese",
+    "kok": "Konkani", "mai": "Maithili", "ne": "Nepali", "sa": "Sanskrit",
+    "sd": "Sindhi", "brx": "Bodo", "doi": "Dogri", "mni": "Manipuri",
+    "sat": "Santali", "ks": "Kashmiri",
+}
+SCRIPTS = {
+    "hi": (0x900, 0x97f), "mr": (0x900, 0x97f), "gu": (0xa80, 0xaff),
+    "ta": (0xb80, 0xbff), "te": (0xc00, 0xc7f), "bn": (0x980, 0x9ff),
+    "kn": (0xc80, 0xcff), "ml": (0xd00, 0xd7f), "pa": (0xa00, 0xa7f),
+    "or": (0xb00, 0xb7f), "od": (0xb00, 0xb7f), "ur": (0x600, 0x6ff),
+    "as": (0x980, 0x9ff), "kok": (0x900, 0x97f), "mai": (0x900, 0x97f),
+    "ne": (0x900, 0x97f), "sa": (0x900, 0x97f), "sd": (0x600, 0x6ff),
+    "brx": (0x900, 0x97f), "doi": (0x900, 0x97f), "mni": (0xabc, 0xabf),
+    "sat": (0x1c50, 0x1c7f), "ks": (0x600, 0x6ff),
+}
 PUBLIC_FIELDS = {"scheme_name", "name", "description", "benefits", "eligibility", "application_process", "documents", "level", "schemeCategory", "tags", "department", "category", "application_route", "required_documents"}
 logger = get_logger("catalogue_translation")
 
@@ -60,6 +76,14 @@ def valid_translation(source, target, language):
 
 async def translate_batch(texts, source_language, target_language):
     """Bounded official-provider call; exceptions never disclose credentials."""
+    if sarvam_client.configured():
+        result = []
+        for text in texts:
+            result.append(await sarvam_client.translate_text(text, source_language, target_language))
+        if not isinstance(result, list) or len(result) != len(texts):
+            raise ValueError("Translation shape mismatch")
+        return result
+
     key = settings.GEMINI_API_KEY or settings.CHATBOT_API_KEY
     if google_bridge.ready():
         result = (await google_bridge.call({"kind": "translate", "texts": texts, "source": source_language, "target": target_language}))["translations"]

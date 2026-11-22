@@ -1,13 +1,18 @@
 // The same ISO language code is sent to chat and Bhashini. Browser APIs need a locale.
 export const SPEECH_LANGUAGES = Object.freeze({
-  en: { locale: "en-IN", bhashini: "en" },
-  hi: { locale: "hi-IN", bhashini: "hi" },
-  mr: { locale: "mr-IN", bhashini: "mr" },
-  bn: { locale: "bn-IN", bhashini: "bn" },
-  gu: { locale: "gu-IN", bhashini: "gu" },
-  ta: { locale: "ta-IN", bhashini: "ta" },
-  te: { locale: "te-IN", bhashini: "te" },
-  kn: { locale: "kn-IN", bhashini: "kn" },
+  en: { locale: "en-IN", bhashini: "en", sarvam: "en-IN" },
+  hi: { locale: "hi-IN", bhashini: "hi", sarvam: "hi-IN" },
+  mr: { locale: "mr-IN", bhashini: "mr", sarvam: "mr-IN" },
+  bn: { locale: "bn-IN", bhashini: "bn", sarvam: "bn-IN" },
+  gu: { locale: "gu-IN", bhashini: "gu", sarvam: "gu-IN" },
+  ta: { locale: "ta-IN", bhashini: "ta", sarvam: "ta-IN" },
+  te: { locale: "te-IN", bhashini: "te", sarvam: "te-IN" },
+  kn: { locale: "kn-IN", bhashini: "kn", sarvam: "kn-IN" },
+  ml: { locale: "ml-IN", bhashini: "ml", sarvam: "ml-IN" },
+  pa: { locale: "pa-IN", bhashini: "pa", sarvam: "pa-IN" },
+  or: { locale: "or-IN", bhashini: "or", sarvam: "od-IN" },
+  od: { locale: "od-IN", bhashini: "od", sarvam: "od-IN" },
+  ur: { locale: "ur-IN", bhashini: "ur", sarvam: "ur-IN" },
 });
 
 const normalize = value => String(value || "").replaceAll("_", "-").toLowerCase();

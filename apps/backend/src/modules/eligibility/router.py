@@ -114,9 +114,19 @@ async def search_schemes(request: Request, query: Optional[str] = Query(None, ma
 
 @router.get("/categories")
 def scheme_categories():
-    from collections import Counter
-    counts = Counter(row["category"] for row in eligibility_service.scheme_catalog.values())
-    return {"total": sum(counts.values()), "categories": [{"name": key, "count": value} for key, value in sorted(counts.items())]}
+    try:
+        from src.database.scheme_graph import load_graph_catalog
+        all_schemes = load_graph_catalog()
+        from collections import Counter
+        counts = Counter(row.get("category") or "Social Welfare" for row in all_schemes)
+        return {
+            "total": len(all_schemes),
+            "categories": [{"name": key, "count": value} for key, value in sorted(counts.items())]
+        }
+    except Exception:
+        from collections import Counter
+        counts = Counter(row["category"] for row in eligibility_service.scheme_catalog.values())
+        return {"total": sum(counts.values()), "categories": [{"name": key, "count": value} for key, value in sorted(counts.items())]}
 
 
 @router.get("/schemes/{scheme_id}")

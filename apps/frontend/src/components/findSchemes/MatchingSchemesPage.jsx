@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useLanguage } from "../../lib/i18n.jsx";
+import { AutoTranslate, useLanguage } from "../../lib/i18n.jsx";
 import ProgressSteps from "./ProgressSteps";
 import { MainLayout } from "../layout";
 import { fetchMatchingSchemes, fetchRelatedSchemes } from "../../lib/api";
@@ -18,7 +18,7 @@ function getLocalStorageData(key) {
 /* ====== COMPONENT ====== */
 
 export default function MatchingSchemesPage() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [search, setSearch] = useState("");
   const [matches, setMatches] = useState([]);
   const [status, setStatus] = useState("loading"); // loading | ready | error | needs-profile
@@ -49,6 +49,7 @@ export default function MatchingSchemesPage() {
 
     try {
       const payload = buildCitizenProfile(personalDetails, businessDetails, otherDetails);
+      payload.preferred_language = language;
       const result = await fetchMatchingSchemes(payload);
       if (result.error) throw new Error(result.error);
       setMatches(result.matches || []);
@@ -156,12 +157,12 @@ export default function MatchingSchemesPage() {
                   <h2 className="text-[15px] font-bold text-[#172b49]">{t("Your application profile")}</h2>
 
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {personalDetails?.state && <ProfileTag>{personalDetails.state}</ProfileTag>}
-                    {personalDetails?.category && <ProfileTag>{personalDetails.category}</ProfileTag>}
-                    {personalDetails?.entrepreneurshipSupport === "Yes" && businessDetails?.businessType && <ProfileTag>{businessDetails.businessType}</ProfileTag>}
-                    {personalDetails?.entrepreneurshipSupport === "Yes" && businessDetails?.businessStage && <ProfileTag>{businessDetails.businessStage}</ProfileTag>}
-                    {otherDetails?.preferredSupport && <ProfileTag>{otherDetails.preferredSupport}</ProfileTag>}
-                    {otherDetails?.interestedSchemeType && <ProfileTag>{otherDetails.interestedSchemeType}</ProfileTag>}
+                    {personalDetails?.state && <ProfileTag><AutoTranslate text={personalDetails.state} /></ProfileTag>}
+                    {personalDetails?.category && <ProfileTag><AutoTranslate text={personalDetails.category} /></ProfileTag>}
+                    {personalDetails?.entrepreneurshipSupport === "Yes" && businessDetails?.businessType && <ProfileTag><AutoTranslate text={businessDetails.businessType} /></ProfileTag>}
+                    {personalDetails?.entrepreneurshipSupport === "Yes" && businessDetails?.businessStage && <ProfileTag><AutoTranslate text={businessDetails.businessStage} /></ProfileTag>}
+                    {otherDetails?.preferredSupport && <ProfileTag><AutoTranslate text={otherDetails.preferredSupport} /></ProfileTag>}
+                    {otherDetails?.interestedSchemeType && <ProfileTag><AutoTranslate text={otherDetails.interestedSchemeType} /></ProfileTag>}
                   </div>
                 </div>
 
@@ -293,9 +294,9 @@ function SchemeCard({ scheme, onView }) {
 
           <div className="min-w-0 flex-1">
             <h2 className="truncate whitespace-nowrap text-[16px] font-bold leading-5 text-[#172b49]" title={scheme.name || scheme.scheme_name}>
-              {scheme.name || scheme.scheme_name}
+              <AutoTranslate text={scheme.name || scheme.scheme_name} />
             </h2>
-            <p className="mt-1 text-[11px] text-slate-400">{scheme.department}</p>
+            <p className="mt-1 text-[11px] text-slate-400"><AutoTranslate text={scheme.department} /></p>
             <div className="mt-2 flex flex-wrap items-center gap-1.5">
               <span className="rounded-full bg-[#fff5c9] px-2.5 py-1 text-[10px] font-semibold text-[#8c6b00]">
                 {t(scheme.status === "UNKNOWN" ? "More information needed" : scheme.status === "ELIGIBLE" ? "Recorded criteria met" : "Preliminary screening")}
@@ -315,23 +316,23 @@ function SchemeCard({ scheme, onView }) {
         <div className="mt-3 flex flex-wrap gap-1.5">
           {scheme.matched_conditions.map((cond) => (
             <span key={cond} className="inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
-              ✓ {cond}
+              ✓ <AutoTranslate text={cond} />
             </span>
           ))}
         </div>
       )}
 
-      {scheme.unknown_conditions?.length > 0 && <div className="mt-3 rounded-lg bg-amber-50 p-3 text-xs text-amber-900"><p className="font-semibold">{t("Information needed")}</p><ul className="mt-1 list-inside list-disc">{scheme.unknown_conditions.map(condition => <li key={condition}>{condition}</li>)}</ul></div>}
-      {scheme.failed_conditions?.length > 0 && <p className="mt-3 text-xs text-red-700">{scheme.failed_conditions.join("; ")}</p>}
+      {scheme.unknown_conditions?.length > 0 && <div className="mt-3 rounded-lg bg-amber-50 p-3 text-xs text-amber-900"><p className="font-semibold">{t("Information needed")}</p><ul className="mt-1 list-inside list-disc">{scheme.unknown_conditions.map(condition => <li key={condition}><AutoTranslate text={condition} /></li>)}</ul></div>}
+      {scheme.failed_conditions?.length > 0 && <p className="mt-3 text-xs text-red-700"><AutoTranslate text={scheme.failed_conditions.join("; ")} /></p>}
       {/* DESCRIPTION */}
 
-      <p className="mt-4 text-[12px] leading-5 text-slate-500">{scheme.description}</p>
+      <p className="mt-4 text-[12px] leading-5 text-slate-500"><AutoTranslate text={scheme.description} /></p>
 
       {/* BENEFITS */}
 
       <div className="mt-4 rounded-xl bg-slate-50 p-3">
         <p className="text-[10px] font-medium uppercase tracking-wide text-slate-400">{t("Benefits")}</p>
-        <p className="mt-1 text-[14px] font-bold text-[#172b49]">{scheme.benefits}</p>
+        <p className="mt-1 text-[14px] font-bold text-[#172b49]"><AutoTranslate text={scheme.benefits} /></p>
       </div>
 
       {/* REQUIRED DOCUMENTS */}
@@ -340,7 +341,7 @@ function SchemeCard({ scheme, onView }) {
         <div className="mt-4 flex flex-wrap gap-2">
           {scheme.required_documents.map((doc) => (
             <span key={doc} className="rounded-md bg-slate-100 px-2 py-1 text-[10px] font-medium text-slate-600">
-              {doc}
+              <AutoTranslate text={doc} />
             </span>
           ))}
         </div>
@@ -350,14 +351,14 @@ function SchemeCard({ scheme, onView }) {
 
       <div className="mt-4 rounded-lg bg-emerald-50 px-3 py-2">
         <p className="text-[11px] font-semibold text-emerald-700">{t("✓ Why this was suggested")}</p>
-        <p className="mt-1 text-[11px] leading-5 text-emerald-800">{scheme.explanation}</p>
+        <p className="mt-1 text-[11px] leading-5 text-emerald-800"><AutoTranslate text={scheme.explanation} /></p>
       </div>
 
       {/* APPLICATION ROUTE */}
 
       <div className="mt-4 border-t border-slate-100 pt-4">
         <p className="text-[11px] font-semibold text-[#172b49]">{t("How to apply")}</p>
-        <p className="mt-1 text-[11px] leading-5 text-slate-500">{scheme.application_route}</p>
+        <p className="mt-1 text-[11px] leading-5 text-slate-500"><AutoTranslate text={scheme.application_route} /></p>
       </div>
 
       <SaveSchemeButton scheme={scheme} />
@@ -370,25 +371,25 @@ function SchemeCard({ scheme, onView }) {
           className="w-full py-1.5 px-3 rounded-lg text-[11px] font-semibold border border-indigo-200 bg-indigo-50/70 text-indigo-900 hover:bg-indigo-100/80 transition flex items-center justify-center gap-1.5 cursor-pointer"
         >
           <span>🕸️</span>
-          <span>{showGraph ? "Hide Graph Connections" : "View Connected Schemes (Neo4j Graph)"}</span>
+          <span>{showGraph ? t("Hide Graph Connections") : t("View Connected Schemes (Neo4j Graph)")}</span>
         </button>
 
         {showGraph && (
           <div className="mt-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
             <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 mb-2">
-              <span>Neo4j Graph Connections:</span>
-              <a href="/graph" className="text-blue-600 hover:underline font-normal text-[10px]">Open Full Graph ↗</a>
+              <span>{t("Neo4j Graph Connections:")}</span>
+              <a href="/graph" className="text-blue-600 hover:underline font-normal text-[10px]">{t("Open Full Graph ↗")}</a>
             </div>
             {loadingGraph ? (
-              <p className="text-slate-400 text-[11px] py-1 text-center">Finding graph relationships...</p>
+              <p className="text-slate-400 text-[11px] py-1 text-center">{t("Finding graph relationships...")}</p>
             ) : relatedSchemes.length === 0 ? (
-              <p className="text-slate-500 text-[11px] py-1">No other active schemes currently linked in this category.</p>
+              <p className="text-slate-500 text-[11px] py-1">{t("No other active schemes currently linked in this category.")}</p>
             ) : (
               <div className="space-y-1.5">
                 {relatedSchemes.map((rel) => (
                   <div key={rel.scheme_id} className="p-2 rounded bg-white border border-slate-200">
-                    <p className="font-semibold text-slate-800 text-[11px]">{rel.scheme_name}</p>
-                    <p className="text-[10px] text-slate-500 line-clamp-1">{rel.description}</p>
+                    <p className="font-semibold text-slate-800 text-[11px]"><AutoTranslate text={rel.scheme_name} /></p>
+                    <p className="text-[10px] text-slate-500 line-clamp-1"><AutoTranslate text={rel.description} /></p>
                   </div>
                 ))}
               </div>

@@ -161,7 +161,7 @@ export default function Header() {
 
           {/* ================= LANGUAGE ================= */}
 
-          <div className="relative hidden xl:block">
+          <div className="relative hidden xl:block" data-no-translate="true">
 
             <button
               type="button"
@@ -383,7 +383,7 @@ export default function Header() {
               <div className="mt-2 border-t border-slate-100 pt-3">
                 <p className="px-4 pb-2 text-xs font-medium uppercase tracking-wide text-slate-400">{t("Language")}</p>
 
-                <div className="flex flex-wrap gap-2 px-4">
+                <div className="flex flex-wrap gap-2 px-4" data-no-translate="true">
                   {LANGUAGES.map((lang) => (
                     <button
                       key={lang.code}

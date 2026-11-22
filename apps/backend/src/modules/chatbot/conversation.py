@@ -63,26 +63,44 @@ def topics(text):
     return [topic for topic, pattern in CONCEPTS.items() if re.search(pattern, normalize(text))]
 
 
+ALL_INDIAN_LANGUAGES = {"hi", "mr", "gu", "bn", "ta", "te", "kn", "ml", "pa", "od", "or", "ur"}
+
 def language_for(message, preferred="en"):
     text = normalize(message)
-    # An explicit request such as 'in Hindi' wins over the UI preference.
+    # An explicit request such as 'in Hindi' or 'in Gujarati' wins over the UI preference.
     for code, pattern in LANGUAGE_NAMES.items():
         if re.search(r"(?:in |speak |reply |answer |explain |translate.*?)(?:" + pattern + r")\b", text) or re.search(
             r"(?:" + pattern + r")(?:\s+(?:mein|me|में|मध्ये|માં|లో|তে|ನಲ್ಲಿ)|\s*$)", text
         ):
             return code
-    # A selected Indian language also works for English/transliterated input.
-    if preferred in COPY and preferred != "en":
-        return preferred
-    for code, start, end in [("ta",0x0B80,0x0BFF),("te",0x0C00,0x0C7F),("bn",0x0980,0x09FF),
-                             ("gu",0x0A80,0x0AFF),("kn",0x0C80,0x0CFF),("hi",0x0900,0x097F)]:
+
+    # Script-based detection for all Indian language scripts
+    script_ranges = [
+        ("gu", 0x0A80, 0x0AFF),  # Gujarati
+        ("pa", 0x0A00, 0x0A7F),  # Gurmukhi / Punjabi
+        ("bn", 0x0980, 0x09FF),  # Bengali
+        ("od", 0x0B00, 0x0B7F),  # Odia
+        ("ta", 0x0B80, 0x0BFF),  # Tamil
+        ("te", 0x0C00, 0x0C7F),  # Telugu
+        ("kn", 0x0C80, 0x0CFF),  # Kannada
+        ("ml", 0x0D00, 0x0D7F),  # Malayalam
+        ("hi", 0x0900, 0x097F),  # Devanagari (Hindi / Marathi)
+        ("ur", 0x0600, 0x06FF),  # Arabic / Urdu
+    ]
+    for code, start, end in script_ranges:
         if any(start <= ord(c) <= end for c in message):
-            if code == "hi" and re.search(r"म्हणजे|आहे|काय|सांगा", text):
+            if code == "hi" and re.search(r"म्हणजे|आहे|काय|सांगा|कसे|मिळेल", text):
                 return "mr"
             return code
+
+    # If user selected an Indian language in the UI, keep it even for romanized input
+    clean_pref = str(preferred or "en").lower().strip()
+    if clean_pref in ALL_INDIAN_LANGUAGES:
+        return clean_pref
+
     if re.search(r"\b(kya|kaise|matlab|batao|samjhao|chahiye|hota|hoti)\b", text):
         return "hi"
-    return preferred if preferred in COPY else "en"
+    return clean_pref if clean_pref in ALL_INDIAN_LANGUAGES or clean_pref in COPY else "en"
 
 
 def is_language_switch(message):

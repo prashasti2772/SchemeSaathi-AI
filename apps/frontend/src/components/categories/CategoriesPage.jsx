@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { MainLayout } from "../layout";
 import { apiError, fetchCatalogSchemes } from "../../lib/api";
-import { useLanguage } from "../../lib/i18n.jsx";
+import { AutoTranslate, useLanguage } from "../../lib/i18n.jsx";
 import { officialSchemeUrl } from "../../lib/citizenProfile";
 import SaveSchemeButton from "../schemes/SaveSchemeButton";
 
@@ -22,7 +22,7 @@ const baseCategories = [
 
 
 export default function CategoriesPage() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const initial = new URLSearchParams(window.location.search);
   const [query, setQuery] = useState(initial.get("q") || "");
   const [category, setCategory] = useState("");
@@ -49,7 +49,7 @@ export default function CategoriesPage() {
 
     const timer = setTimeout(async () => {
       try {
-        const data = await fetchCatalogSchemes(query.trim(), 12, page * 12, category);
+        const data = await fetchCatalogSchemes(query.trim(), 12, page * 12, category, language);
         if (active) setResult(data);
       } catch (e) {
         if (active) setError(apiError(e));
@@ -66,7 +66,7 @@ export default function CategoriesPage() {
       active = false;
       clearTimeout(timer);
     };
-  }, [query, category, page, retry, hasFilter]);
+  }, [query, category, page, retry, hasFilter, language]);
 
   function reset() {
     setQuery("");
@@ -176,8 +176,8 @@ export default function CategoriesPage() {
                     </div>
                   </div>
 
-                  <h3 className="mt-4 text-lg font-bold text-[#0d2b55]">{t(item.nameKey)}</h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">{t(item.descriptionKey)}</p>
+                  <h3 className="mt-4 text-lg font-bold text-[#0d2b55]"><AutoTranslate text={item.nameKey} /></h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600"><AutoTranslate text={item.descriptionKey} /></p>
 
                   <div className="mt-4 flex flex-wrap gap-2">
                     {item.tags.slice(0, 4).map((tag) => (
@@ -185,7 +185,7 @@ export default function CategoriesPage() {
                         key={tag}
                         className="max-w-full whitespace-normal rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.08em] text-slate-600"
                       >
-                        {t(tag)}
+                        <AutoTranslate text={tag} />
                       </span>
                     ))}
                   </div>
@@ -247,8 +247,8 @@ export default function CategoriesPage() {
                     <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
                       {s.level || t("categories_record")}
                     </p>
-                    <h2 className="my-2 text-lg font-bold text-[#0d2b55]">{s.scheme_name}</h2>
-                    <p className="line-clamp-4 text-sm leading-7 text-slate-600">{s.description}</p>
+                    <h2 className="my-2 text-lg font-bold text-[#0d2b55]"><AutoTranslate text={s.scheme_name} /></h2>
+                    <p className="line-clamp-4 text-sm leading-7 text-slate-600"><AutoTranslate text={s.description} /></p>
                     <button
                       aria-expanded={expanded === i}
                       onClick={() => setExpanded(expanded === i ? null : i)}
@@ -261,7 +261,7 @@ export default function CategoriesPage() {
                         {[ [t("categories_benefits"), "benefits"], [t("categories_eligibility"), "eligibility"], [t("categories_documents"), "documents"], [t("categories_how_to_apply"), "application_process"] ].map(([label, key]) => (
                           <div key={key}>
                             <dt className="font-bold text-[#0d2b55]">{label}</dt>
-                            <dd className="whitespace-pre-wrap [overflow-wrap:anywhere]">{s[key] || t("categories_not_recorded")}</dd>
+                            <dd className="whitespace-pre-wrap [overflow-wrap:anywhere]"><AutoTranslate text={s[key] || t("categories_not_recorded")} /></dd>
                           </div>
                         ))}
                       </dl>

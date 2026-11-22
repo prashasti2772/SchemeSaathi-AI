@@ -49,6 +49,25 @@ export async function synthesizeSpeech(text, language = "en", signal) {
   return response.data;
 }
 
+export async function translateText(text, targetLanguage = "hi", sourceLanguage = "en", signal) {
+  const response = await api.post("/public/voice/translate", {
+    text,
+    source_language: sourceLanguage,
+    target_language: targetLanguage,
+  }, { timeout: 45000, signal });
+  return response.data;
+}
+
+export async function translateBatch(texts, targetLanguage = "hi", sourceLanguage = "en", signal) {
+  if (!texts || texts.length === 0) return { translations: {} };
+  const response = await api.post("/public/voice/translate-batch", {
+    texts,
+    source_language: sourceLanguage,
+    target_language: targetLanguage,
+  }, { timeout: 60000, signal });
+  return response.data;
+}
+
 export async function sendAssistantMessageWithAttachment(message, file, history = [], phoneNumber = null, profile = null, language = "en", signal) {
   const form = new FormData();
   form.append("message", message || "");
@@ -139,9 +158,9 @@ export async function syncGraphSchemes() {
 }
 
 /* Fetches catalog schemes filtered by category or query */
-export async function fetchCatalogSchemes(query = "", limit = 50, offset = 0, category = "") {
+export async function fetchCatalogSchemes(query = "", limit = 50, offset = 0, category = "", language = "en") {
   const response = await api.get("/eligibility/schemes", {
-    params: { query: query || undefined, category: category || undefined, limit, offset },
+    params: { query: query || undefined, category: category || undefined, limit, offset, language },
   });
   return response.data;
 }

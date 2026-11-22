@@ -135,6 +135,7 @@ register_exception_handlers(app)
 api_router_prefix = settings.API_V1_PREFIX
 app.include_router(citizen_router, prefix=api_router_prefix)
 app.include_router(browser_voice_router, prefix=api_router_prefix)
+app.include_router(browser_voice_router)  # Also expose /public/voice directly
 app.include_router(auth_router, prefix=api_router_prefix)
 app.include_router(users_router, prefix=api_router_prefix)
 if settings.ENABLE_STAFF_API:

@@ -427,7 +427,7 @@ function ReviewCard({
 /* ====== INFORMATION GRID ====== */
 
 function InfoGrid({ items }) {
-
+  const { t } = useLanguage();
   return (
     <div
       className="
@@ -452,7 +452,7 @@ function InfoGrid({ items }) {
               text-slate-400
             "
           >
-            {label}
+            {t(label)}
           </p>
 
           <p
@@ -464,7 +464,7 @@ function InfoGrid({ items }) {
               text-slate-700
             "
           >
-            {value}
+            <span>{t(String(value))}</span>
           </p>
 
         </div>

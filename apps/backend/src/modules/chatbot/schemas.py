@@ -8,7 +8,7 @@ class ChatTurn(BaseModel):
 
 
 class AssistantChatRequest(BaseModel):
-    language: Literal["en", "hi", "mr", "gu", "ta", "te", "bn", "kn"] = "en"
+    language: str = "en"
     message: str = Field(min_length=1, max_length=2000)
     history: list[ChatTurn] = Field(default_factory=list, max_length=20)
     phone_number: str | None = None
