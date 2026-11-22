@@ -194,7 +194,7 @@ function FieldGrid({ fields }) {
     <div className="grid gap-4 sm:grid-cols-2">
       {fields.map(([label, value]) => (
         <div key={label}>
-          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">{label}</p>
+          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-600">{label}</p>
           <p className="mt-1 text-sm text-slate-700">{value || "Not provided"}</p>
         </div>
       ))}

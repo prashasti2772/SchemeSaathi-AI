@@ -140,7 +140,7 @@ export default function MatchingSchemesPage() {
               </div>
 
               <div className="rounded-xl border border-slate-200 bg-white px-5 py-3 shadow-sm">
-                <p className="text-[11px] font-medium text-slate-400">{t("MATCHED SCHEMES")}</p>
+                <p className="text-[11px] font-medium text-slate-600">{t("MATCHED SCHEMES")}</p>
                 <p className="mt-1 text-2xl font-extrabold text-[#0d2b55]">
                   {status === "ready" ? filteredSchemes.length : "–"}
                 </p>
@@ -199,7 +199,7 @@ export default function MatchingSchemesPage() {
           {status === "ready" && (
             <section className="mt-6">
               <div className="relative w-full">
-                <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">⌕</span>
+                <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-600">⌕</span>
 
                 <input
                   type="text"
@@ -296,7 +296,7 @@ function SchemeCard({ scheme, onView }) {
             <h2 className="truncate whitespace-nowrap text-[16px] font-bold leading-5 text-[#172b49]" title={scheme.name || scheme.scheme_name}>
               <AutoTranslate text={scheme.name || scheme.scheme_name} />
             </h2>
-            <p className="mt-1 text-[11px] text-slate-400"><AutoTranslate text={scheme.department} /></p>
+            <p className="mt-1 text-[11px] text-slate-600"><AutoTranslate text={scheme.department} /></p>
             <div className="mt-2 flex flex-wrap items-center gap-1.5">
               <span className="rounded-full bg-[#fff5c9] px-2.5 py-1 text-[10px] font-semibold text-[#8c6b00]">
                 {t(scheme.status === "UNKNOWN" ? "More information needed" : scheme.status === "ELIGIBLE" ? "Recorded criteria met" : "Preliminary screening")}
@@ -331,7 +331,7 @@ function SchemeCard({ scheme, onView }) {
       {/* BENEFITS */}
 
       <div className="mt-4 rounded-xl bg-slate-50 p-3">
-        <p className="text-[10px] font-medium uppercase tracking-wide text-slate-400">{t("Benefits")}</p>
+        <p className="text-[10px] font-medium uppercase tracking-wide text-slate-600">{t("Benefits")}</p>
         <p className="mt-1 text-[14px] font-bold text-[#172b49]"><AutoTranslate text={scheme.benefits} /></p>
       </div>
 
@@ -381,7 +381,7 @@ function SchemeCard({ scheme, onView }) {
               <a href="/graph" className="text-blue-600 hover:underline font-normal text-[10px]">{t("Open Full Graph ↗")}</a>
             </div>
             {loadingGraph ? (
-              <p className="text-slate-400 text-[11px] py-1 text-center">{t("Finding graph relationships...")}</p>
+              <p className="text-slate-600 text-[11px] py-1 text-center">{t("Finding graph relationships...")}</p>
             ) : relatedSchemes.length === 0 ? (
               <p className="text-slate-500 text-[11px] py-1">{t("No other active schemes currently linked in this category.")}</p>
             ) : (

@@ -171,7 +171,7 @@ export default function AIHelpModal({ isOpen, onClose, currentStep = 1 }) {
 
         {/* SUGGESTION CHIPS */}
         <div className="border-b border-slate-100 bg-slate-50 px-4 py-2">
-          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">{t("Suggested for")}{stepName}:</p>
+          <p className="text-[10px] font-semibold text-slate-600 uppercase tracking-wider">{t("Suggested for")}{stepName}:</p>
           <div className="mt-1.5 flex flex-wrap gap-1.5">
             {suggestions.map((q, idx) => (
               <button
@@ -240,7 +240,7 @@ export default function AIHelpModal({ isOpen, onClose, currentStep = 1 }) {
           {isSending && (
             <div className="flex justify-start">
               <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-xs">
-                <p className="text-[11px] text-slate-400">{t("Thinking...")}</p>
+                <p className="text-[11px] text-slate-600">{t("Thinking...")}</p>
               </div>
             </div>
           )}

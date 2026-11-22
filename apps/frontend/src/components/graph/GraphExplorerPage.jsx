@@ -220,7 +220,7 @@ export default function GraphExplorerPage() {
                       setPage(1);
                       loadSchemes(selectedCategory, "", 1);
                     }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm font-bold"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-600 text-sm font-bold"
                   >
                     ×
                   </button>
@@ -317,7 +317,7 @@ export default function GraphExplorerPage() {
           ) : schemes.length === 0 ? (
             <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
               <p className="text-slate-600 font-medium">{t("No graph schemes matched your criteria.")}</p>
-              <p className="text-slate-400 text-xs mt-1">{t("Try another keyword or select All Sectors.")}</p>
+              <p className="text-slate-600 text-xs mt-1">{t("Try another keyword or select All Sectors.")}</p>
             </div>
           ) : (
             <>
@@ -379,11 +379,11 @@ export default function GraphExplorerPage() {
                             <span className="bg-[#081d3d] text-white px-2 py-0.5 rounded font-mono font-medium">
                               :{t("Scheme")}
                             </span>
-                            <span className="text-slate-400 font-bold">──[:{t("TARGETS")}]──&gt;</span>
+                            <span className="text-slate-600 font-bold">──[:{t("TARGETS")}]──&gt;</span>
                             <span className="bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded font-mono font-medium">
                               :<AutoTranslate text={scheme.category || "Sector"} />
                             </span>
-                            <span className="text-slate-400 font-bold">──[:{t("MANAGED_BY")}]──&gt;</span>
+                            <span className="text-slate-600 font-bold">──[:{t("MANAGED_BY")}]──&gt;</span>
                             <span className="bg-indigo-100 text-indigo-900 border border-indigo-200 px-2 py-0.5 rounded font-mono font-medium text-[10px]">
                               :{t("Department")}
                             </span>
@@ -396,12 +396,12 @@ export default function GraphExplorerPage() {
                             <div className="text-xs font-bold text-slate-700 mb-2 flex items-center justify-between">
                               <span>{t("Connected Schemes in this Sector:")}</span>
                               {isRelatedLoading && (
-                                <span className="text-[10px] text-slate-400 font-normal">{t("Loading...")}</span>
+                                <span className="text-[10px] text-slate-600 font-normal">{t("Loading...")}</span>
                               )}
                             </div>
 
                             {isRelatedLoading ? (
-                              <div className="py-3 text-center text-xs text-slate-400">
+                              <div className="py-3 text-center text-xs text-slate-600">
                                 {t("Traversing relationship paths...")}
                               </div>
                             ) : related.length === 0 ? (
@@ -467,7 +467,7 @@ export default function GraphExplorerPage() {
                       onClick={() => handlePageChange(page - 1)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
                         page <= 1
-                          ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                          ? "bg-slate-100 text-slate-600 cursor-not-allowed"
                           : "bg-[#081d3d] text-white hover:bg-[#143d78]"
                       }`}
                     >
@@ -484,7 +484,7 @@ export default function GraphExplorerPage() {
                       onClick={() => handlePageChange(page + 1)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
                         page >= totalPages
-                          ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                          ? "bg-slate-100 text-slate-600 cursor-not-allowed"
                           : "bg-[#081d3d] text-white hover:bg-[#143d78]"
                       }`}
                     >

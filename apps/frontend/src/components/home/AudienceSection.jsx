@@ -31,7 +31,7 @@ export default function AudienceSection() {
                 {t(item)}
               </span>
               {index < audiences.length - 1 && (
-                <span aria-hidden="true" className="text-slate-400">•</span>
+                <span aria-hidden="true" className="text-slate-600">•</span>
               )}
             </React.Fragment>
           ))}

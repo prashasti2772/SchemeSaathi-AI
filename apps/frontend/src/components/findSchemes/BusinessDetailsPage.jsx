@@ -264,7 +264,7 @@ function FormInput({
         placeholder={placeholder}
         value={value}
         onChange={onChange}
-        className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3.5 text-[13px] outline-none placeholder:text-slate-400 focus:border-[#0d2b55] focus:ring-2 focus:ring-[#0d2b55]/10"
+        className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3.5 text-[13px] outline-none placeholder:text-slate-600 focus:border-[#0d2b55] focus:ring-2 focus:ring-[#0d2b55]/10"
       />
     </label>
   );
@@ -291,7 +291,7 @@ function FormSelect({
         value={value}
         onChange={onChange}
         className={`h-11 w-full rounded-lg border border-slate-300 bg-white px-3.5 text-[13px] outline-none focus:border-[#0d2b55] focus:ring-2 focus:ring-[#0d2b55]/10 ${
-          value ? "text-slate-700" : "text-slate-400"
+          value ? "text-slate-700" : "text-slate-600"
         }`}
       >
         <option value="" disabled={!optional}>

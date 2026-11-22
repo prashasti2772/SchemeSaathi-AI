@@ -73,7 +73,6 @@ export default function DiscoverySections() {
             </article>;
           })}
         </div> : <p className="mt-5 text-sm text-slate-600">{t("entrepreneur_featured_unavailable")}</p>}
-        <a href="/search" className="mt-5 inline-block text-sm font-semibold text-[#0d2b55] underline underline-offset-4">{t("Browse all schemes")}</a>
       </section>
 
       <section className={sectionClass} aria-labelledby="home-benefits">

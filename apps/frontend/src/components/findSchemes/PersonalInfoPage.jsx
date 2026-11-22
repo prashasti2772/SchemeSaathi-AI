@@ -402,7 +402,7 @@ function FormInput({
         max={max}
         required={!optional}
         maxLength={500}
-        className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3.5 text-[13px] text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#0d2b55] focus:ring-2 focus:ring-[#0d2b55]/10"
+        className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3.5 text-[13px] text-slate-700 outline-none transition placeholder:text-slate-600 focus:border-[#0d2b55] focus:ring-2 focus:ring-[#0d2b55]/10"
       />
 
     </label>
@@ -436,7 +436,7 @@ function FormSelect({
         className={`h-11 w-full rounded-lg border border-slate-300 bg-white px-3.5 text-[13px] outline-none transition focus:border-[#0d2b55] focus:ring-2 focus:ring-[#0d2b55]/10 ${
           value
             ? "text-slate-700"
-            : "text-slate-400"
+            : "text-slate-600"
         }`}
       >
 
@@ -488,7 +488,7 @@ function FormComboBox({
         placeholder={placeholder}
         autoComplete="off"
         required
-        className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3.5 text-[13px] text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-[#0d2b55] focus:ring-2 focus:ring-[#0d2b55]/10"
+        className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3.5 text-[13px] text-slate-700 outline-none transition placeholder:text-slate-600 focus:border-[#0d2b55] focus:ring-2 focus:ring-[#0d2b55]/10"
       />
 
       <datalist id={listId}>

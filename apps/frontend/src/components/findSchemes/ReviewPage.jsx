@@ -449,7 +449,7 @@ function InfoGrid({ items }) {
               font-medium
               uppercase
               tracking-wide
-              text-slate-400
+              text-slate-600
             "
           >
             {t(label)}

@@ -353,7 +353,7 @@ export default function AIAssistantPage() {
             <input ref={galleryInputRef} type="file" accept="image/*,.pdf,.txt,.doc,.docx" onChange={e => attachImage(e.target.files?.[0])} />
             <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={e => attachImage(e.target.files?.[0], "camera")} />
           </div>
-          <p className="mt-2 text-center text-[11px] text-slate-400">{t("assistant_tools_hint")}</p>
+          <p className="mt-2 text-center text-[11px] text-slate-600">{t("assistant_tools_hint")}</p>
         </div>
       </main>
     </div>
